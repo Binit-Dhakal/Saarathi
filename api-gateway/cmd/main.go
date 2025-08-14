@@ -20,12 +20,12 @@ func main() {
 	userServiceProxy := httputil.NewSingleHostReverseProxy(userServiceURL)
 
 	mux := http.NewServeMux()
-	mux.Handle("/api/v1/users/riders", rest.CorsMiddleware(proxyHandler(userServiceProxy)))
-	mux.Handle("/api/v1/tokens", rest.CorsMiddleware(proxyHandler(userServiceProxy)))
+	mux.Handle("/api/v1/users/", proxyHandler(userServiceProxy))
+	mux.Handle("/api/v1/tokens/", proxyHandler(userServiceProxy))
 
 	server := &http.Server{
 		Addr:         ":8081",
-		Handler:      mux,
+		Handler:      rest.CorsMiddleware(mux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
@@ -40,7 +40,6 @@ func main() {
 
 func proxyHandler(p *httputil.ReverseProxy) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Forwarding request to %s", r.URL.Path)
 		p.ServeHTTP(w, r)
 	}
 }
