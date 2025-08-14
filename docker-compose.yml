@@ -1,0 +1,53 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: users_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: usersdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrate:
+    image: migrate/migrate:v4.17.0
+    depends_on:
+      - postgres
+    volumes:
+      - ./users/migrations:/migrations
+    entrypoint: [
+      "migrate",
+      "-path", "/migrations",
+      "-database", "postgres://myuser:mypassword@postgres:5432/usersdb?sslmode=disable",
+      "up"
+    ]
+    restart: "on-failure"
+
+  users-service:
+    build:
+      context: .
+      dockerfile: users/Dockerfile.dev
+    container_name: users_service
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_NAME: usersdb
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./users:/app/users
+      - /app/users/tmp
+    restart: always
+
+volumes:
+  postgres_data:
+

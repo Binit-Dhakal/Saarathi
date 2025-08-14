@@ -1,0 +1,21 @@
+FROM golang:1.24.5
+
+WORKDIR /app
+
+# Install Air for hot reload
+RUN go install github.com/air-verse/air@latest
+ENV PATH=$PATH:/go/bin
+
+# Copy go.mod and go.sum first (for caching)
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the entire repo (so go.mod at root is accessible)
+COPY . .
+
+WORKDIR /app/users
+RUN mkdir -p tmp
+
+CMD ["air", "-c", ".air.toml"]
+
+
