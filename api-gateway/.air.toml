@@ -1,0 +1,14 @@
+# .air.toml — Air config for hot reload
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/api-gateway ./cmd/main.go"
+bin = "tmp/api-gateway"
+full_bin = ""
+include_ext = ["go"]
+exclude_dir = ["tmp", "vendor"]
+
+[log]
+timestamp = true
+

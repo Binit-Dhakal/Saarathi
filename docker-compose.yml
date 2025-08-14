@@ -41,11 +41,26 @@ services:
       DB_PASSWORD: mypassword
       DB_NAME: usersdb
       PORT: 8080
-    ports:
-      - "8080:8080"
+      JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
     volumes:
       - ./users:/app/users
       - /app/users/tmp
+    restart: always
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile.dev
+    container_name: api_gateway
+    depends_on:
+      - users-service
+    environment:
+      JWT_PUBLIC_KEY: ${RSA_PUBLIC_KEY}
+    ports:
+      - "8080:8081"
+    volumes:
+      - ./api-gateway:/app/api-gateway
+      - /app/api-gateway/tmp
     restart: always
 
 volumes:

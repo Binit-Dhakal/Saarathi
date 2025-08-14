@@ -1,6 +1,9 @@
 package application
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"time"
 
@@ -23,7 +26,7 @@ type Token struct {
 }
 
 type JWTService struct {
-	secretKey string
+	secretKey *rsa.PrivateKey
 	tokenRepo domain.TokenRepo
 }
 
@@ -34,9 +37,29 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+func getPrivateKey(keyString string) (*rsa.PrivateKey, error) {
+	// Decode the PEM encoded key
+	block, _ := pem.Decode([]byte(keyString))
+	if block == nil {
+		return nil, fmt.Errorf("failed to parse PEM block containing the key")
+	}
+
+	// Parse the key
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private key: %w", err)
+	}
+
+	return key.(*rsa.PrivateKey), nil
+}
+
 func NewJWTService(secretKey string, tokenRepo domain.TokenRepo) *JWTService {
+	jwtSecretKey, err := getPrivateKey(secretKey)
+	if err != nil {
+		panic(err)
+	}
 	return &JWTService{
-		secretKey: secretKey,
+		secretKey: jwtSecretKey,
 		tokenRepo: tokenRepo,
 	}
 }
@@ -63,20 +86,19 @@ func (j *JWTService) GenerateAccessAndRefreshTokens(userID string, roleID int) (
 		},
 	}
 
-	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(j.secretKey))
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, accessClaims).SignedString(j.secretKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign access token: %w", err)
 	}
 
 	refreshExpiry := time.Now().Add(time.Hour * 24 * 7)
-
 	refreshClaims := &jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(refreshExpiry),
 		Issuer:    "saarathi",
 		Subject:   userID,
 	}
 
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(j.secretKey))
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, refreshClaims).SignedString(j.secretKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign refresh token: %w", err)
 	}

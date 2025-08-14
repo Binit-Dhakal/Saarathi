@@ -29,7 +29,11 @@ func main() {
 	userRepo := postgres.NewUserRepo(dbpool)
 	tokenRepo := postgres.NewTokenRepo(dbpool)
 
-	jwtSecretKey := getEnvWithDefault("secret_key", "abcdedsafgsdf")
+	jwtSecretKey := getEnvWithDefault("JWT_PRIVATE_KEY", "")
+	// key, err := getPrivateKey(jwtSecretKey)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	authService := application.NewAuthService(dbpool, userRepo)
 	tokenService := application.NewJWTService(jwtSecretKey, tokenRepo)
