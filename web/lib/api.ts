@@ -1,90 +1,51 @@
+import apiClient from "./api-client"
+
 export async function signUpRider(name: string, email: string, phoneNumber: string, password: string) {
-  const res = await fetch("http://api.saarathi.com:8080/api/v1/users/riders", {
-    method: "POST",
-    body: JSON.stringify({
+  try {
+    await apiClient.post("/users/riders", {
       name,
       email,
       phoneNumber,
       password,
-    }),
-    headers: {
-      "Content-Type": "application/json"
-    },
-    credentials: "include"
-  })
-
-  if (!res.ok) {
-    // TODO: we can shown toast error message
-    throw new Error("Failed to sign up")
+    })
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Failed to register rider")
   }
-
-  return res.json()
 }
 
 export async function signInRider(email: string, password: string) {
-  const res = await fetch("http://api.saarathi.com:8080/api/v1/tokens/authentication", {
-    method: "POST",
-    body: JSON.stringify({
+  try {
+    await apiClient.post("/tokens/authentication", {
       email,
       password,
-      role: "rider",
-    }),
-    headers: {
-      "Content-Type": "application/json"
-    },
-    credentials: "include"
-  })
-
-  if (!res.ok) {
-    // TODO: we can shown toast error message
-    throw new Error("Failed to sign in")
+      role: "rider"
+    })
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Failed to sign in rider")
   }
-
-  return res.json()
 }
 
 export async function signUpDriver(name: string, email: string, phoneNumber: string, password: string) {
-  const res = await fetch("http://api.saarathi.com:8080/api/v1/users/drivers", {
-    method: "POST",
-    body: JSON.stringify({
+  try {
+    await apiClient.post("/users/drivers", {
       name,
       email,
       phoneNumber,
       password,
-    }),
-    headers: {
-      "Content-Type": "application/json"
-    },
-    credentials: "include"
-  })
-
-  if (!res.ok) {
-    // TODO: we can shown toast error message
-    throw new Error("Failed to sign up")
+    })
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Failed to register driver")
   }
-
-  return res.json()
 }
 
-
 export async function signInDriver(email: string, password: string) {
-  const res = await fetch("http://api.saarathi.com:8080/api/v1/tokens/authentication", {
-    method: "POST",
-    body: JSON.stringify({
+  try {
+    await apiClient.post("/tokens/authentication", {
       email,
       password,
-      role: "driver",
-    }),
-    headers: {
-      "Content-Type": "application/json"
-    },
-    credentials: "include",
-  })
-
-  if (!res.ok) {
-    // TODO: we can shown toast error message
-    throw new Error("Failed to sign in")
+      role: "driver"
+    })
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Failed to sign in driver")
   }
-
-  return res.json()
 }

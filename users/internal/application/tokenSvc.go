@@ -115,7 +115,6 @@ func (j *JWTService) GenerateAccessAndRefreshTokens(userID string, roleID int) (
 		ExpiresAt:    refreshExpiry,
 	}
 
-	fmt.Println("token", token)
 	err = j.tokenRepo.CreateToken(token)
 	if err != nil {
 		return nil, err

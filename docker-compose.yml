@@ -75,11 +75,10 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      # Mount the local web directory into the container
       - ./web:/app
-      # Exclude node_modules from the volume to prevent issues
-      - /app/node_modules
+      - node_modules_data:/app/node_modules
     restart: "on-failure"
 volumes:
   postgres_data:
+  node_modules_data:
 

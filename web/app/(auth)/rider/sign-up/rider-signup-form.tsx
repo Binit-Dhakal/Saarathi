@@ -36,8 +36,8 @@ const CredentialsSignUpForm = () => {
             await signUpRider(values.name, values.email, values.phoneNumber, values.password)
             router.refresh()
             router.replace("/")
-        } catch (err) {
-            setError("Sign-in failed. Check your credentials")
+        } catch (err: any) {
+            setError(err?.message || "Sign-up failed.")
         } finally {
             setIsLoading(false)
         }

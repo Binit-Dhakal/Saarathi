@@ -16,7 +16,6 @@ const CredentialsSignInForm = () => {
     const [isLoading, setIsLoading] = useState(false); // Add a loading state
     const [error, setError] = useState<string | null>(null); // Add an error state
 
-
     const form = useForm<z.infer<typeof SignInSchema>>({
         resolver: zodResolver(SignInSchema),
         defaultValues: {
@@ -30,11 +29,11 @@ const CredentialsSignInForm = () => {
         setError(null)
 
         try {
-            const res = await signInRider(values.email, values.password)
+            await signInRider(values.email, values.password)
             router.refresh()
             router.replace("/")
-        } catch (err) {
-            setError("Sign-in failed. Check your credentials")
+        } catch (err: any) {
+            setError(err?.message || "Sign-in failed. Check your credentials")
         } finally {
             setIsLoading(false)
         }
