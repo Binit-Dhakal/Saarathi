@@ -7,7 +7,7 @@ import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-// import { signInUser } from "@/lib/api";
+import { signInUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 const CredentialsSignInForm = () => {
@@ -22,18 +22,15 @@ const CredentialsSignInForm = () => {
     })
 
     const onSubmit = (values: z.infer<typeof SignInSchema>) => {
-        //     signInUser(values.email, values.password)
-        //         .then((res) => {
-        //             // TODO: redirect to sign in page if success
-        //             console.log(res)
-        //             router.push("/")
-        //         })
-        //         .catch((err) => {
-        //             console.log(err)
-        //         })
-        // }
-        // 
-        console.log(values)
+        signInUser(values.email, values.password)
+            .then((res) => {
+                // TODO: redirect to sign in page if success
+                console.log(res)
+                router.push("/")
+            })
+            .catch((err) => {
+                console.log(err)
+            })
     }
 
     return (
