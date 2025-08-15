@@ -31,7 +31,7 @@ func NewUserHandler(authApp application.AuthService, tokenApp application.TokenS
 	}
 }
 
-func (u *UserHandler) authCookieGenerator(w http.ResponseWriter, r *http.Request, userID string, roleID int) error {
+func (u *UserHandler) authCookieGenerator(w http.ResponseWriter, r *http.Request, userID string, roleID int, message string) error {
 	token, err := u.tokenApp.GenerateAccessAndRefreshTokens(userID, roleID)
 	if err != nil {
 		return err
@@ -42,6 +42,10 @@ func (u *UserHandler) authCookieGenerator(w http.ResponseWriter, r *http.Request
 		Value:    token.RefreshToken,
 		HttpOnly: true,
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		Domain:   ".saarathi.com",
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		Secure:   false,
 	}
 
 	err = cookies.Write(w, refreshCookie)
@@ -54,9 +58,18 @@ func (u *UserHandler) authCookieGenerator(w http.ResponseWriter, r *http.Request
 		Value:    token.AccessToken,
 		HttpOnly: true,
 		Expires:  time.Now().Add(15 * time.Minute),
+		Domain:   ".saarathi.com",
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		Secure:   false,
 	}
 
 	err = cookies.Write(w, accessCookie)
+	if err != nil {
+		return err
+	}
+
+	err = u.jsonWriter.JSON(w, 201, map[string]string{"message": message})
 	if err != nil {
 		return err
 	}
@@ -78,7 +91,7 @@ func (u *UserHandler) CreateRiderHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = u.authCookieGenerator(w, r, userID, domain.RoleRider)
+	err = u.authCookieGenerator(w, r, userID, domain.RoleRider, "Rider Created successfully")
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
 	}
@@ -98,7 +111,7 @@ func (u *UserHandler) CreateDriverHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = u.authCookieGenerator(w, r, userID, domain.RoleDriver)
+	err = u.authCookieGenerator(w, r, userID, domain.RoleDriver, "Driver created successfully")
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
 	}
@@ -124,9 +137,12 @@ func (u *UserHandler) CreateTokenHandler(w http.ResponseWriter, r *http.Request)
 		role = domain.RoleRider
 	case "driver":
 		role = domain.RoleDriver
+	default:
+		u.errorResponder.BadRequest(w, r, fmt.Errorf("Role is not defined(rider/driver)- %v", userInput.Role))
+		return
 	}
 
-	err = u.authCookieGenerator(w, r, userID, domain.RoleDriver)
+	err = u.authCookieGenerator(w, r, userID, role, "Logged in successfully")
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
 	}
@@ -151,7 +167,7 @@ func (u *UserHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = u.authCookieGenerator(w, r, t.UserID, t.RoleID)
+	err = u.authCookieGenerator(w, r, t.UserID, t.RoleID, "Token Refreshed successfully")
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
 	}

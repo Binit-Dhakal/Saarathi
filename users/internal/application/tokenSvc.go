@@ -9,14 +9,13 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/users/internal/domain"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type TokenService interface {
 	GenerateAccessAndRefreshTokens(userID string, roleID int) (*Token, error)
 	ValidateRefreshToken(refreshToken string) (*domain.Token, error)
 	RevokeRefreshToken(refreshToken string) error
-
-	// ValidateAccessToken(tokenString string) (*CustomClaims, error)
 }
 
 type Token struct {
@@ -91,11 +90,17 @@ func (j *JWTService) GenerateAccessAndRefreshTokens(userID string, roleID int) (
 		return nil, fmt.Errorf("failed to sign access token: %w", err)
 	}
 
+	jti, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate UUID for JIT: %w", err)
+	}
+
 	refreshExpiry := time.Now().Add(time.Hour * 24 * 7)
 	refreshClaims := &jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(refreshExpiry),
 		Issuer:    "saarathi",
 		Subject:   userID,
+		ID:        jti.String(),
 	}
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, refreshClaims).SignedString(j.secretKey)
@@ -110,6 +115,7 @@ func (j *JWTService) GenerateAccessAndRefreshTokens(userID string, roleID int) (
 		ExpiresAt:    refreshExpiry,
 	}
 
+	fmt.Println("token", token)
 	err = j.tokenRepo.CreateToken(token)
 	if err != nil {
 		return nil, err

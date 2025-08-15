@@ -9,9 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signInRider } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const CredentialsSignInForm = () => {
     const router = useRouter()
+    const [isLoading, setIsLoading] = useState(false); // Add a loading state
+    const [error, setError] = useState<string | null>(null); // Add an error state
+
 
     const form = useForm<z.infer<typeof SignInSchema>>({
         resolver: zodResolver(SignInSchema),
@@ -21,16 +25,19 @@ const CredentialsSignInForm = () => {
         }
     })
 
-    const onSubmit = (values: z.infer<typeof SignInSchema>) => {
-        signInRider(values.email, values.password)
-            .then((res) => {
-                // TODO: redirect to sign in page if success
-                console.log(res)
-                router.push("/")
-            })
-            .catch((err) => {
-                console.log(err)
-            })
+    const onSubmit = async (values: z.infer<typeof SignInSchema>) => {
+        setIsLoading(true)
+        setError(null)
+
+        try {
+            const res = await signInRider(values.email, values.password)
+            router.refresh()
+            router.replace("/")
+        } catch (err) {
+            setError("Sign-in failed. Check your credentials")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -62,10 +69,12 @@ const CredentialsSignInForm = () => {
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full">Log In</Button>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Signing In..." : "Sign In"}
+                </Button>
             </form>
-
-        </Form>
+        </Form >
     )
 }
 

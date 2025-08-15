@@ -1,46 +1,46 @@
-// middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  var hostname = request.headers.get("host");
+  const hostname = request.headers.get("host");
   const pathname = request.nextUrl.pathname;
+  const accessToken = request.cookies.get("accessToken");
 
+  const publicPaths = [
+    '/driver/sign-in',
+    '/driver/sign-up',
+    '/rider/sign-in',
+    '/rider/sign-up'
+  ];
 
-  // Handle redirects for the 'driver' subdomain
-  if (hostname?.startsWith('driver.saarathi.com')) {
-    if (pathname === '/sign-in') {
-      const redirectUrl = new URL('/driver/sign-in', request.url);
-      return NextResponse.redirect(redirectUrl);
+  const isPublicPath = publicPaths.includes(pathname);
+
+  // Condition 1: User is NOT logged in and is trying to access a protected page.
+  if (!accessToken && !isPublicPath) {
+    if (hostname?.startsWith('driver.saarathi.com')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/driver/sign-in';
+      return NextResponse.redirect(url);
     }
-    if (pathname === '/sign-up') {
-      const redirectUrl = new URL('/driver/sign-up', request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
+    // Assume all other hosts are for riders by default
+    const url = request.nextUrl.clone();
+    url.pathname = '/rider/sign-in';
+    return NextResponse.redirect(url);
   }
 
-  // Handle redirects for the 'saarathi' subdomain (riders)
-  if (hostname?.startsWith('saarathi.com')) {
-    if (pathname === '/sign-in') {
-      const redirectUrl = new URL('/rider/sign-in', request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-    if (pathname === '/sign-up') {
-      const redirectUrl = new URL('/rider/sign-up', request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
+  // Condition 2: User IS logged in and is trying to access a public sign-in/sign-up page.
+  if (accessToken && isPublicPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/'; // Redirect to the protected root path
+    return NextResponse.redirect(url);
   }
 
-  // For all other requests, let the request proceed as normal without a redirect
+  // fallback
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Apply middleware to specific paths that might need a redirect
-    '/sign-in',
-    '/sign-up',
-    // You can also include other paths as needed
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$).*)',
   ],
 };
-

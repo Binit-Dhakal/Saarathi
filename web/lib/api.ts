@@ -1,5 +1,5 @@
 export async function signUpRider(name: string, email: string, phoneNumber: string, password: string) {
-  const res = await fetch("http://localhost:8080/api/v1/users/riders", {
+  const res = await fetch("http://api.saarathi.com:8080/api/v1/users/riders", {
     method: "POST",
     body: JSON.stringify({
       name,
@@ -9,7 +9,8 @@ export async function signUpRider(name: string, email: string, phoneNumber: stri
     }),
     headers: {
       "Content-Type": "application/json"
-    }
+    },
+    credentials: "include"
   })
 
   if (!res.ok) {
@@ -21,7 +22,7 @@ export async function signUpRider(name: string, email: string, phoneNumber: stri
 }
 
 export async function signInRider(email: string, password: string) {
-  const res = await fetch("http://localhost:8080/api/v1/tokens/authentication", {
+  const res = await fetch("http://api.saarathi.com:8080/api/v1/tokens/authentication", {
     method: "POST",
     body: JSON.stringify({
       email,
@@ -43,7 +44,7 @@ export async function signInRider(email: string, password: string) {
 }
 
 export async function signUpDriver(name: string, email: string, phoneNumber: string, password: string) {
-  const res = await fetch("http://localhost:8080/api/v1/users/drivers", {
+  const res = await fetch("http://api.saarathi.com:8080/api/v1/users/drivers", {
     method: "POST",
     body: JSON.stringify({
       name,
@@ -53,7 +54,8 @@ export async function signUpDriver(name: string, email: string, phoneNumber: str
     }),
     headers: {
       "Content-Type": "application/json"
-    }
+    },
+    credentials: "include"
   })
 
   if (!res.ok) {
@@ -66,7 +68,7 @@ export async function signUpDriver(name: string, email: string, phoneNumber: str
 
 
 export async function signInDriver(email: string, password: string) {
-  const res = await fetch("http://localhost:8080/api/v1/tokens/authentication", {
+  const res = await fetch("http://api.saarathi.com:8080/api/v1/tokens/authentication", {
     method: "POST",
     body: JSON.stringify({
       email,
@@ -76,7 +78,7 @@ export async function signInDriver(email: string, password: string) {
     headers: {
       "Content-Type": "application/json"
     },
-    credentials: "include"
+    credentials: "include",
   })
 
   if (!res.ok) {

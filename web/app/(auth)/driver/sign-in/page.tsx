@@ -16,7 +16,7 @@ async function SignInPage() {
                         <CredentialsSignInForm />
                     </CardContent>
                     <CardFooter className="justify-center text-sm text-muted-foreground">
-                        Don't have an account? <a className="underline ml-2" href="/sign-up">Sign up</a>
+                        Don't have an account? <a className="underline ml-2" href="/driver/sign-up">Sign up</a>
                     </CardFooter>
                 </Card>
             </div >
