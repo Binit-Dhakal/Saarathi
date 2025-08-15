@@ -1,0 +1,26 @@
+# Use a Node.js base image
+FROM node:18-alpine AS base
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the package.json and package-lock.json to install dependencies
+COPY package*.json ./
+
+# Install dependencies using 'npm ci' for a deterministic build
+# This is preferred in CI/CD and Docker builds over `npm install`
+RUN npm ci
+
+# --- Development Stage ---
+FROM base AS development
+
+# Copy the rest of your application code
+COPY . .
+
+# Expose the default Next.js development port
+EXPOSE 3000
+
+# Use 'npx' to execute the local Next.js binary
+# This is a more robust way to run locally installed packages inside a shell
+CMD ["npx", "next", "dev"]
+

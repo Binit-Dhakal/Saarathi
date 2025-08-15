@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: [
+    'saarathi.com',
+    'driver.saarathi.com',
+  ]
 };
 
 export default nextConfig;

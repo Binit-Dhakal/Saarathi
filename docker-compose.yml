@@ -56,6 +56,7 @@ services:
       - users-service
     environment:
       JWT_PUBLIC_KEY: ${RSA_PUBLIC_KEY}
+      TRUSTED_ORIGINS: "http://saarathi.com:3001,http://driver.saarathi.com:3001"
     ports:
       - "8080:8081"
     volumes:
@@ -63,6 +64,22 @@ services:
       - /app/api-gateway/tmp
     restart: always
 
+  web-app:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    container_name: nextjs_web_app
+    # Assumes your Next.js app will call the API Gateway
+    depends_on:
+      - api-gateway
+    ports:
+      - "3001:3000"
+    volumes:
+      # Mount the local web directory into the container
+      - ./web:/app
+      # Exclude node_modules from the volume to prevent issues
+      - /app/node_modules
+    restart: "on-failure"
 volumes:
   postgres_data:
 

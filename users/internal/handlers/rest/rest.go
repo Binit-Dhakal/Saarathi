@@ -31,6 +31,39 @@ func NewUserHandler(authApp application.AuthService, tokenApp application.TokenS
 	}
 }
 
+func (u *UserHandler) authCookieGenerator(w http.ResponseWriter, r *http.Request, userID string, roleID int) error {
+	token, err := u.tokenApp.GenerateAccessAndRefreshTokens(userID, roleID)
+	if err != nil {
+		return err
+	}
+
+	refreshCookie := http.Cookie{
+		Name:     "refreshToken",
+		Value:    token.RefreshToken,
+		HttpOnly: true,
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+	}
+
+	err = cookies.Write(w, refreshCookie)
+	if err != nil {
+		return err
+	}
+
+	accessCookie := http.Cookie{
+		Name:     "accessToken",
+		Value:    token.AccessToken,
+		HttpOnly: true,
+		Expires:  time.Now().Add(15 * time.Minute),
+	}
+
+	err = cookies.Write(w, accessCookie)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (u *UserHandler) CreateRiderHandler(w http.ResponseWriter, r *http.Request) {
 	var dst dto.RiderRegistrationDTO
 	err := u.jsonReader.DecodeJSONStrict(w, r, &dst)
@@ -45,29 +78,9 @@ func (u *UserHandler) CreateRiderHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	token, err := u.tokenApp.GenerateAccessAndRefreshTokens(userID, domain.RoleRider)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	cookie := http.Cookie{
-		Name:     "refreshToken",
-		Value:    token.RefreshToken,
-		HttpOnly: true,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-	}
-
-	err = cookies.Write(w, cookie)
+	err = u.authCookieGenerator(w, r, userID, domain.RoleRider)
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
-		return
-	}
-
-	err = u.jsonWriter.JSON(w, 201, map[string]string{"access_token": token.AccessToken})
-	if err != nil {
-		u.errorResponder.ServerError(w, r, err)
-		return
 	}
 }
 
@@ -85,29 +98,9 @@ func (u *UserHandler) CreateDriverHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	token, err := u.tokenApp.GenerateAccessAndRefreshTokens(userID, domain.RoleRider)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	cookie := http.Cookie{
-		Name:     "refreshToken",
-		Value:    token.RefreshToken,
-		HttpOnly: true,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-	}
-
-	err = cookies.Write(w, cookie)
+	err = u.authCookieGenerator(w, r, userID, domain.RoleDriver)
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
-		return
-	}
-
-	err = u.jsonWriter.JSON(w, 201, map[string]string{"access_token": token.AccessToken})
-	if err != nil {
-		u.errorResponder.ServerError(w, r, err)
-		return
 	}
 }
 
@@ -125,29 +118,17 @@ func (u *UserHandler) CreateTokenHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	token, err := u.tokenApp.GenerateAccessAndRefreshTokens(userID, domain.RoleRider)
-	if err != nil {
-		fmt.Println(err)
-		return
+	var role int
+	switch userInput.Role {
+	case "rider":
+		role = domain.RoleRider
+	case "driver":
+		role = domain.RoleDriver
 	}
 
-	cookie := http.Cookie{
-		Name:     "refreshToken",
-		Value:    token.RefreshToken,
-		HttpOnly: true,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-	}
-
-	err = cookies.Write(w, cookie)
+	err = u.authCookieGenerator(w, r, userID, domain.RoleDriver)
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
-		return
-	}
-
-	err = u.jsonWriter.JSON(w, 201, map[string]string{"access_token": token.AccessToken})
-	if err != nil {
-		u.errorResponder.ServerError(w, r, err)
-		return
 	}
 }
 
@@ -170,29 +151,8 @@ func (u *UserHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	token, err := u.tokenApp.GenerateAccessAndRefreshTokens(t.UserID, t.RoleID)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	cookie := http.Cookie{
-		Name:     "refreshToken",
-		Value:    token.RefreshToken,
-		HttpOnly: true,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-	}
-
-	err = cookies.Write(w, cookie)
+	err = u.authCookieGenerator(w, r, t.UserID, t.RoleID)
 	if err != nil {
 		u.errorResponder.ServerError(w, r, err)
-		return
 	}
-
-	err = u.jsonWriter.JSON(w, 201, map[string]string{"access_token": token.AccessToken})
-	if err != nil {
-		u.errorResponder.ServerError(w, r, err)
-		return
-	}
-
 }

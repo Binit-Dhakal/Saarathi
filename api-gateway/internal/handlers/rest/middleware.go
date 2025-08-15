@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/cookies"
 	"github.com/golang-jwt/jwt/v5"
@@ -13,13 +15,15 @@ import (
 type MiddlewareFunc func(http.Handler) http.Handler
 
 func CorsMiddleware(next http.Handler) http.Handler {
-	trustedOrigins := []string{"http://localhost:3001"}
+	trustedOriginsStr := os.Getenv("TRUSTED_ORIGINS")
+	trustedOrigins := strings.Split(trustedOriginsStr, ",")
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Origin")
 		w.Header().Add("Vary", "Access-Control-Request-Method")
 
 		origin := r.Header.Get("Origin")
+		fmt.Println(origin)
 
 		if origin != "" {
 			for i := range trustedOrigins {
