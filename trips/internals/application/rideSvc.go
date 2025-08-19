@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
 )
@@ -70,6 +72,7 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
+	fmt.Println("USERID", userID)
 	routeID, err := f.tripRepo.SaveRouteDetail(&ephermalFare.Route, userID)
 	if err != nil {
 		return "", err

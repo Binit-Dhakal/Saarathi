@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/api-gateway/internal/handlers/rest"
+	"github.com/Binit-Dhakal/Saarathi/pkg/env"
 )
 
 func main() {
@@ -25,7 +26,14 @@ func main() {
 	mux.Handle("/api/v1/users/", proxyHandler(userServiceProxy))
 	mux.Handle("/api/v1/tokens/", proxyHandler(userServiceProxy))
 
-	mux.Handle("/api/v1/fare/", proxyHandler(tripServiceProxy))
+	// Authenticated request
+	publicKey, err := getPublicKey()
+	if err != nil {
+		panic(err)
+	}
+
+	authMiddleware := rest.NewAuthMiddleware(publicKey)
+	mux.Handle("/api/v1/fare/", authMiddleware(proxyHandler(tripServiceProxy)))
 
 	server := &http.Server{
 		Addr:         ":8081",
@@ -50,9 +58,9 @@ func proxyHandler(p *httputil.ReverseProxy) http.HandlerFunc {
 }
 
 func getPublicKey() (*rsa.PublicKey, error) {
-	keyString := os.Getenv("JWT_PUBLIC_KEY")
-	if keyString == "" {
-		return nil, fmt.Errorf("JWT_PUBLIC_KEY not set")
+	keyString, err := env.GetEnv("JWT_PUBLIC_KEY")
+	if err != nil {
+		return nil, err
 	}
 
 	block, _ := pem.Decode([]byte(keyString))

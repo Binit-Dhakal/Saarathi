@@ -73,7 +73,7 @@ func (j *JWTService) GenerateAccessAndRefreshTokens(userID string, roleID int) (
 		RoleID:      roleID,
 		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 			Issuer:    "saarathi",
 			Subject:   userID,
 		},

@@ -1,9 +1,9 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/ctxutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
@@ -82,13 +82,13 @@ func (t *TripHandler) ConfirmFare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := ctxutil.GetContext(r.Context(), ctxutil.UserContextKey)
-	if err != nil {
-		t.errorResponder.BadRequest(w, r, err)
+	userID := r.Header.Get("X-User-ID")
+	if userID == "" {
+		t.errorResponder.BadRequest(w, r, fmt.Errorf("missing X-User-ID"))
 		return
 	}
 
-	rideID, err := t.rideSvc.FareAcceptByRider(&confirmRequest, userID.(string))
+	rideID, err := t.rideSvc.FareAcceptByRider(&confirmRequest, userID)
 	if err != nil {
 		t.errorResponder.ServerError(w, r, err)
 		return

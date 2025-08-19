@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
@@ -29,7 +30,7 @@ func (rf *RedisFareRepository) CreateEphemeralFareEntry(fare *domain.FareQuote) 
 	}
 
 	key := "fare:" + id
-	err = rf.client.Set(context.Background(), key, data, 5*time.Minute).Err()
+	err = rf.client.Set(context.Background(), key, data, 60*time.Minute).Err()
 	if err != nil {
 		return "", err
 	}
@@ -47,6 +48,7 @@ func (rf *RedisFareRepository) GetEphemeralFareEntry(id string) (*domain.FareQuo
 
 	var fare domain.FareQuote
 	if err := json.Unmarshal([]byte(data), &fare); err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 

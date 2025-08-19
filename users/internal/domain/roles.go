@@ -6,6 +6,8 @@ const (
 	RoleDriver
 )
 
+type Permission string
+
 type Roles struct {
 	ID          string
 	Name        string

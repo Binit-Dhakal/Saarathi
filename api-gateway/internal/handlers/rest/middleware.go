@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"crypto/rsa"
 	"fmt"
 	"net/http"
@@ -12,7 +11,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/claims"
-	"github.com/Binit-Dhakal/Saarathi/pkg/ctxutil"
 )
 
 type MiddlewareFunc func(http.Handler) http.Handler
@@ -58,7 +56,7 @@ func NewAuthMiddleware(publicKey *rsa.PublicKey) MiddlewareFunc {
 				return
 			}
 
-			token, err := jwt.Parse(authToken, func(token *jwt.Token) (any, error) {
+			token, err := jwt.ParseWithClaims(authToken, &claims.CustomClaims{}, func(token *jwt.Token) (any, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 				}
@@ -76,8 +74,8 @@ func NewAuthMiddleware(publicKey *rsa.PublicKey) MiddlewareFunc {
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), ctxutil.UserContextKey, claims.UserID)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			r.Header.Set("X-User-ID", claims.UserID)
+			next.ServeHTTP(w, r)
 		})
 	}
 }

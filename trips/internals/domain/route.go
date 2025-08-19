@@ -34,3 +34,7 @@ func (c *Coordinate) UnmarshalJSON(data []byte) error {
 	c.Lat = coords[1]
 	return nil
 }
+
+func (c *Coordinate) MarshalJSON() ([]byte, error) {
+	return json.Marshal([2]float64{c.Lon, c.Lat})
+}

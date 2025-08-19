@@ -54,6 +54,7 @@ services:
     container_name: api_gateway
     depends_on:
       - users-service
+      - trips-service
     environment:
       JWT_PUBLIC_KEY: ${RSA_PUBLIC_KEY}
       TRUSTED_ORIGINS: "http://saarathi.com:3001,http://driver.saarathi.com:3001"
