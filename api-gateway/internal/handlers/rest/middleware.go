@@ -1,15 +1,18 @@
 package rest
 
 import (
+	"context"
 	"crypto/rsa"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/cookies"
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/Binit-Dhakal/Saarathi/pkg/claims"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ctxutil"
 )
 
 type MiddlewareFunc func(http.Handler) http.Handler
@@ -23,7 +26,6 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Add("Vary", "Access-Control-Request-Method")
 
 		origin := r.Header.Get("Origin")
-		fmt.Println(origin)
 
 		if origin != "" {
 			for i := range trustedOrigins {
@@ -63,19 +65,19 @@ func NewAuthMiddleware(publicKey *rsa.PublicKey) MiddlewareFunc {
 				return publicKey, nil
 			})
 
-			if err != nil {
-				log.Printf("Token validation failed: %v", err)
+			if err != nil || !token.Valid {
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return
 			}
 
-			if token.Valid {
-				next.ServeHTTP(w, r)
-			} else {
-				log.Println("Received an invalid token")
-				http.Error(w, "Invalid token", http.StatusUnauthorized)
+			claims, ok := token.Claims.(*claims.CustomClaims)
+			if !ok {
+				http.Error(w, "Invalid Claims", http.StatusUnauthorized)
 				return
 			}
+
+			ctx := context.WithValue(r.Context(), ctxutil.UserContextKey, claims.UserID)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

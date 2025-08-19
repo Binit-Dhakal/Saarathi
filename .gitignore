@@ -2,3 +2,4 @@ private.key
 public.key
 
 .env
+osrm-data/

@@ -1,6 +1,6 @@
 
 services:
-  postgres:
+  users-db:
     image: postgres:16
     container_name: users_postgres
     restart: always
@@ -11,18 +11,18 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_users_data:/var/lib/postgresql/data
 
-  migrate:
+  users-migrate:
     image: migrate/migrate:v4.17.0
     depends_on:
-      - postgres
+      - users-db
     volumes:
       - ./users/migrations:/migrations
     entrypoint: [
       "migrate",
       "-path", "/migrations",
-      "-database", "postgres://myuser:mypassword@postgres:5432/usersdb?sslmode=disable",
+      "-database", "postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable",
       "up"
     ]
     restart: "on-failure"
@@ -33,9 +33,9 @@ services:
       dockerfile: users/Dockerfile.dev
     container_name: users_service
     depends_on:
-      - postgres
+      - users-db
     environment:
-      DB_HOST: postgres
+      DB_HOST: users-db 
       DB_PORT: 5432
       DB_USER: myuser
       DB_PASSWORD: mypassword
@@ -64,21 +64,89 @@ services:
       - /app/api-gateway/tmp
     restart: always
 
+  osrm-backend:
+    image: ghcr.io/project-osrm/osrm-backend
+    container_name: osrm_backend
+    command: osrm-routed --algorithm mld /data/nepal-latest.osrm
+    volumes:
+      - ./osrm-data:/data
+    restart: always
+
   web-app:
     build:
       context: ./web
       dockerfile: Dockerfile.dev
     container_name: nextjs_web_app
-    # Assumes your Next.js app will call the API Gateway
     depends_on:
       - api-gateway
     ports:
       - "3001:3000"
     volumes:
       - ./web:/app
-      - node_modules_data:/app/node_modules
+      - web_node_modules:/app/node_modules
     restart: "on-failure"
+
+  trips-db:
+    image: postgres:16
+    container_name: trips_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: tripsdb
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_trips_data:/var/lib/postgresql/data
+
+  trips-migrate:
+    image: migrate/migrate:v4.17.0
+    depends_on:
+      - trips-db
+    volumes:
+      - ./trips/migrations:/migrations
+    entrypoint: [
+      "migrate",
+      "-path", "/migrations",
+      "-database", "postgres://myuser:mypassword@trips-db:5432/tripsdb?sslmode=disable",
+      "up"
+    ]
+    restart: "on-failure"
+
+  trips-service:
+    build:
+      context: .
+      dockerfile: trips/Dockerfile.dev
+    container_name: trips_service
+    depends_on:
+      - trips-db
+    environment:
+      DB_HOST:  trips-db
+      DB_PORT: 5432
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_NAME: tripsdb
+      PORT: 8080
+      JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./trips:/app/trips
+      - /app/trips/tmp
+    restart: always
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
 volumes:
-  postgres_data:
-  node_modules_data:
+  postgres_trips_data:
+  postgres_users_data:
+  web_node_modules:
+  redis_data: 
 

@@ -18,9 +18,14 @@ func main() {
 	userServiceURL, _ := url.Parse("http://users-service:8080")
 	userServiceProxy := httputil.NewSingleHostReverseProxy(userServiceURL)
 
+	tripServiceURL, _ := url.Parse("http://trips-service:8082")
+	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
+
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/users/", proxyHandler(userServiceProxy))
 	mux.Handle("/api/v1/tokens/", proxyHandler(userServiceProxy))
+
+	mux.Handle("/api/v1/fare/", proxyHandler(tripServiceProxy))
 
 	server := &http.Server{
 		Addr:         ":8081",
@@ -39,6 +44,7 @@ func main() {
 
 func proxyHandler(p *httputil.ReverseProxy) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("Serving: %v", r.URL)
 		p.ServeHTTP(w, r)
 	}
 }

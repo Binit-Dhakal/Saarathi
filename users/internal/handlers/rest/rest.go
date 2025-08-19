@@ -57,7 +57,7 @@ func (u *UserHandler) authCookieGenerator(w http.ResponseWriter, r *http.Request
 		Name:     "accessToken",
 		Value:    token.AccessToken,
 		HttpOnly: true,
-		Expires:  time.Now().Add(15 * time.Minute),
+		Expires:  time.Now().Add(1 * 24 * time.Hour), // dev - temporary
 		Domain:   ".saarathi.com",
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",

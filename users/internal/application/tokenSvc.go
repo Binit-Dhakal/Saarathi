@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/claims"
 	"github.com/Binit-Dhakal/Saarathi/users/internal/domain"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -27,13 +28,6 @@ type Token struct {
 type JWTService struct {
 	secretKey *rsa.PrivateKey
 	tokenRepo domain.TokenRepo
-}
-
-type CustomClaims struct {
-	UserID      string
-	RoleID      int
-	Permissions []domain.Permission
-	jwt.RegisteredClaims
 }
 
 func getPrivateKey(keyString string) (*rsa.PrivateKey, error) {
@@ -64,17 +58,17 @@ func NewJWTService(secretKey string, tokenRepo domain.TokenRepo) *JWTService {
 }
 
 func (j *JWTService) GenerateAccessAndRefreshTokens(userID string, roleID int) (*Token, error) {
-	permissions := []domain.Permission{}
+	permissions := []claims.Permission{}
 	switch roleID {
 	case domain.RoleAdmin:
-		permissions = []domain.Permission{domain.PermissionFullAccess}
+		permissions = []claims.Permission{claims.PermissionFullAccess}
 	case domain.RoleRider:
-		permissions = []domain.Permission{domain.PermissionCheckFare}
+		permissions = []claims.Permission{claims.PermissionCheckFare}
 	case domain.RoleDriver:
-		permissions = []domain.Permission{domain.PermissionAcceptRide}
+		permissions = []claims.Permission{claims.PermissionAcceptRide}
 	}
 
-	accessClaims := &CustomClaims{
+	accessClaims := &claims.CustomClaims{
 		UserID:      userID,
 		RoleID:      roleID,
 		Permissions: permissions,
