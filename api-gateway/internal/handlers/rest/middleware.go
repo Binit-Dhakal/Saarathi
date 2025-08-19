@@ -50,7 +50,9 @@ func CorsMiddleware(next http.Handler) http.Handler {
 func NewAuthMiddleware(publicKey *rsa.PublicKey) MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authToken, err := cookies.Read(r, "authToken")
+			fmt.Println(r.Cookies())
+			authToken, err := cookies.Read(r, "accessToken")
+			fmt.Println(authToken, err)
 			if err != nil {
 				http.Error(w, "Cookie Read error", http.StatusBadRequest)
 				return

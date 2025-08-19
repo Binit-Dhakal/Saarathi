@@ -1,8 +1,11 @@
 "use client"
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
-import InteractiveRouting from "./simplified-routing";
 import L from "leaflet";
+import { getRoute } from "@/lib/api";
+import { FareEstimateResponse } from "@/lib/types";
+import { RoutingControl } from "./routing-control";
+import { convertCoordinates } from "@/lib/utils";
 
 // Fix for default markers
 const sourceIcon = new L.Icon({
@@ -40,7 +43,24 @@ const Map = () => {
   const [source, setSource] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState<[number, number] | null>(null);
   const [clickMode, setClickMode] = useState<'source' | 'destination'>('source');
-  const [routingKey, setRoutingKey] = useState(0); // Force re-render of routing component
+  const [route, setRoute] = useState<[number, number][]>([]);
+  const [fare, setFare] = useState<FareEstimateResponse>();
+
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (source && destination) {
+        try {
+          const data = await getRoute(source[0], source[1], destination[0], destination[1])
+          setFare(data)
+          setRoute(convertCoordinates(data.Geometry.coordinates))
+        } catch (err) {
+          console.log("Failed to fetch route: ", err);
+        }
+      }
+    }
+
+    fetchRoute();
+  }, [source, destination])
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
     if (clickMode === 'source') {
@@ -50,28 +70,23 @@ const Map = () => {
       setDestination([lat, lng]);
       setClickMode('source');
     }
-    // Increment key to force routing component to re-render
-    setRoutingKey(prev => prev + 1);
   }, [clickMode]);
 
   const clearPoints = () => {
     setSource(null);
     setDestination(null);
     setClickMode('source');
-    setRoutingKey(prev => prev + 1);
   };
 
   const swapPoints = () => {
     if (source && destination) {
       setSource(destination);
       setDestination(source);
-      setRoutingKey(prev => prev + 1);
     }
   };
 
   return (
     <div className="relative w-full h-full">
-      {/* Control Panel */}
       <div className="absolute top-4 left-4 z-[1000] bg-white p-3 rounded-lg shadow-lg">
         <h3 className="font-semibold mb-2">Route Planning</h3>
         <div className="text-sm mb-2">
@@ -142,14 +157,7 @@ const Map = () => {
             </Popup>
           </Marker>
         )}
-
-        {source && destination && (
-          <InteractiveRouting
-            key={routingKey}
-            source={source}
-            destination={destination}
-          />
-        )}
+        {route && <RoutingControl route={route} />}
       </MapContainer>
     </div>
   );

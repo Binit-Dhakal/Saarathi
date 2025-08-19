@@ -1,4 +1,6 @@
 import apiClient from "./api-client"
+import { FareEstimateResponse } from "./types"
+import { convertCoordinates } from "./utils"
 
 export async function signUpRider(name: string, email: string, phoneNumber: string, password: string) {
   try {
@@ -50,36 +52,19 @@ export async function signInDriver(email: string, password: string) {
   }
 }
 
-interface Location {
-  latitude: number;
-  longitude: number;
-}
+export async function getRoute(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const fullUrl = `/fare/preview`
 
-interface RouteResponse {
-  routes: {
-    geometry: string;
-    distance: number;
-    duration: number;
-  }[];
-  waypoints: {
-    location: [number, number];
-    name: string;
-  }[];
-}
-
-export async function getRoute(start: Location, end: Location): Promise<RouteResponse> {
-  const coordinateString = `${start.longitude},${start.latitude};${end.longitude},${end.latitude}`
-  const fullUrl = `/osrm/route/v1/driving/${coordinateString}`
-
+  const pickUpLocation = [lon1, lat1]
+  const dropOffLocation = [lon2, lat2]
   try {
-    const response = await apiClient.get<RouteResponse>(fullUrl, {
-      params: {
-        geometries: 'polyline',
-        overview: 'simplified',
-        steps: 'false',
-        alternatives: 'false',
+    const response = await apiClient.post<FareEstimateResponse>(
+      fullUrl,
+      {
+        "pickUpLocation": pickUpLocation,
+        "dropOffLocation": dropOffLocation
       }
-    })
+    )
 
     return response.data
   } catch (err: any) {

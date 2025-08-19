@@ -1,7 +1,6 @@
 "use client"
 import 'leaflet/dist/leaflet.css'
 
-// import Map from "./map"
 import dynamic from 'next/dynamic';
 
 const DynamicMap = dynamic(() => import("./map"), {
@@ -13,12 +12,12 @@ const DynamicMap = dynamic(() => import("./map"), {
       </div>
     </div>
   ),
-  ssr: false, // Fixed: use false instead of !!false
+  ssr: false,
 });
 
 function RiderHomeMap() {
   return (
-    <div className="w-full h-[100vw]"> {/* Fixed: added specific height */}
+    <div className="w-full h-[100vw]">
       <DynamicMap />
     </div>
   )
