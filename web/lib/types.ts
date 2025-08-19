@@ -20,3 +20,10 @@ export interface FareEstimateResponse {
   Fares: Fare[];
   Geometry: Geometry;
 }
+
+export interface ConfirmRideResponse {
+  RideID: string;
+}
+
+export type TripStatus = "selecting" | "waiting" | "driverAssigned" | "completed";
+

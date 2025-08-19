@@ -1,6 +1,5 @@
 import apiClient from "./api-client"
-import { FareEstimateResponse } from "./types"
-import { convertCoordinates } from "./utils"
+import { CarPackage, ConfirmRideResponse, FareEstimateResponse } from "./types"
 
 export async function signUpRider(name: string, email: string, phoneNumber: string, password: string) {
   try {
@@ -68,6 +67,23 @@ export async function getRoute(lat1: number, lon1: number, lat2: number, lon2: n
 
     return response.data
   } catch (err: any) {
-    throw new Error(err?.response?.data?.message || "Failed to fetch route")
+    throw new Error(err?.response?.data?.message || "Failed to fetch route preview")
+  }
+}
+
+export async function confirmRide(fareID: string, carPackage: CarPackage) {
+  const fullUrl = "/fare/confirm"
+
+  try {
+    const response = await apiClient.post<ConfirmRideResponse>(
+      fullUrl,
+      {
+        "fareID": fareID,
+        "carPackage": carPackage
+      }
+    )
+    return response.data
+  } catch (err: any) {
+    throw new Error(err?.response?.data?.message || "Failed to fetch confirm ride")
   }
 }
