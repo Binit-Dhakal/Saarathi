@@ -145,6 +145,23 @@ services:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
 
+  driver-state-service:
+    build:
+      context: .
+      dockerfile: driver-state/Dockerfile.dev
+    container_name: driver-state-service
+    depends_on:
+      - redis
+      - api-gateway
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./driver-state:/app/driver-state
+      - /app/driver-state/tmp
+    restart: always
+
+
 volumes:
   postgres_trips_data:
   postgres_users_data:

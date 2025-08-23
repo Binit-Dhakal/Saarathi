@@ -5,15 +5,25 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/api-gateway/internal/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/pkg/env"
+	"github.com/gorilla/websocket"
 )
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	// might need to add checkOrigin
+}
 
 func main() {
 	userServiceURL, _ := url.Parse("http://users-service:8080")
@@ -22,6 +32,14 @@ func main() {
 	tripServiceURL, _ := url.Parse("http://trips-service:8082")
 	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
 
+	// driverWsURL, _ := url.Parse("ws://driver-state-service:8084/ws")
+	driverStateURL, _ := url.Parse("http://driver-state-service:8084")
+	driverStateProxy := httputil.NewSingleHostReverseProxy(driverStateURL)
+	driverStateProxy.Director = func(req *http.Request) {
+		req.URL.Scheme = driverStateURL.Scheme
+		req.URL.Host = driverStateURL.Host
+		req.URL.Path = "/ws"
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/users/", proxyHandler(userServiceProxy))
 	mux.Handle("/api/v1/tokens/", proxyHandler(userServiceProxy))
@@ -33,7 +51,10 @@ func main() {
 	}
 
 	authMiddleware := rest.NewAuthMiddleware(publicKey)
+
 	mux.Handle("/api/v1/fare/", authMiddleware(proxyHandler(tripServiceProxy)))
+
+	mux.Handle("/ws/driver", authMiddleware(proxyHandler(driverStateProxy)))
 
 	server := &http.Server{
 		Addr:         ":8081",
@@ -52,8 +73,85 @@ func main() {
 
 func proxyHandler(p *httputil.ReverseProxy) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("Serving: %v", r.URL)
 		p.ServeHTTP(w, r)
+	}
+}
+
+func websocketProxyHandler(target *url.URL) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		clientConn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Printf("Failed to upgrade client connection: %v", err)
+			return
+		}
+
+		headers := make(http.Header)
+		for key, values := range r.Header {
+			// Skip WebSocket-specific headers
+			if strings.HasPrefix(key, "Sec") || key == "Upgrade" || key == "Connection" {
+				continue
+			}
+			for _, value := range values {
+				headers.Add(key, value)
+			}
+		}
+
+		backendConn, _, err := websocket.DefaultDialer.Dial(target.String(), headers)
+		if err != nil {
+			log.Printf("Failed to dial to backend service: %v", err)
+			clientConn.WriteMessage(
+				websocket.CloseMessage,
+				websocket.FormatCloseMessage(
+					websocket.CloseServiceRestart,
+					"Backend service unavailable",
+				),
+			)
+			return
+		}
+
+		var once sync.Once
+		closeConns := func() {
+			backendConn.Close()
+			clientConn.Close()
+		}
+
+		// proxy data from client to backend
+		go func() {
+			defer once.Do(closeConns)
+			for {
+				messageType, p, err := clientConn.ReadMessage()
+				if err != nil {
+					log.Printf("client read error: %v", err)
+					return
+				}
+
+				err = backendConn.WriteMessage(messageType, p)
+				if err != nil {
+					log.Printf("Backend write error: %v", err)
+					return
+				}
+			}
+		}()
+
+		// proxy data from backend to client
+		go func() {
+			once.Do(closeConns)
+			for {
+				messageType, p, err := backendConn.ReadMessage()
+				if err != nil {
+					log.Printf("backend read error: %v", err)
+					return
+				}
+
+				err = clientConn.WriteMessage(messageType, p)
+				if err != nil {
+					log.Printf("Client write error: %v", err)
+					return
+				}
+
+			}
+		}()
+
 	}
 }
 
