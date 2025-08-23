@@ -7,6 +7,7 @@ import (
 	"time"
 
 	log "github.com/Binit-Dhakal/Saarathi/pkg/logger"
+	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
@@ -32,10 +33,20 @@ func main() {
 	}
 	defer redisClient.Close()
 
+	rConn, rCh, err := setup.SetupRabbitMQ()
+	if err != nil {
+		logger.Error("failed to connect to rabbitMQ", err)
+		os.Exit(1)
+	}
+	defer rConn.Close()
+	defer rCh.Close()
+
+	bus := messagebus.NewRabbitMQBus(rCh)
+
 	redisRepo := redis.NewRedisFareRepository(redisClient)
 	tripRepo := postgres.NewTripRepository(dbpool)
 
-	rideService := application.NewRideService(redisRepo, tripRepo)
+	rideService := application.NewRideService(redisRepo, tripRepo, bus)
 	routeService := application.NewRouteService()
 
 	jsonWriter := jsonutil.NewWriter()

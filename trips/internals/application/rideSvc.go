@@ -1,8 +1,10 @@
 package application
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/events"
+	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
 )
@@ -15,12 +17,14 @@ type RideService interface {
 type rideService struct {
 	fareRepo domain.FareRepository
 	tripRepo domain.TripRepository
+	bus      messagebus.Publisher
 }
 
-func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository) *rideService {
+func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, bus messagebus.Publisher) *rideService {
 	return &rideService{
 		fareRepo: fareRepo,
 		tripRepo: tripRepo,
+		bus:      bus,
 	}
 }
 
@@ -72,7 +76,6 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	fmt.Println("USERID", userID)
 	routeID, err := f.tripRepo.SaveRouteDetail(&ephermalFare.Route, userID)
 	if err != nil {
 		return "", err
@@ -107,5 +110,17 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
+	createdEvent := events.TripEventCreated{
+		RideID:    rideId,
+		Distance:  ephermalFare.Route.Distance,
+		Price:     fareDetail.TotalPrice,
+		PickupLat: ephermalFare.Route.Source.Lat,
+		PickupLon: ephermalFare.Route.Source.Lon,
+	}
+
+	err = f.bus.Publish(context.Background(), "trip_events_exchange", "trip.created", createdEvent)
+	if err != nil {
+		return "", err
+	}
 	return rideId, nil
 }
