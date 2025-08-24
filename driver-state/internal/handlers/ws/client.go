@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
@@ -20,6 +21,7 @@ type Client struct {
 func (c *Client) Start() {
 	c.done = make(chan struct{})
 	go c.readPump()
+	go c.writePump()
 }
 
 func (c *Client) readPump() {
@@ -51,7 +53,33 @@ func (c *Client) readPump() {
 				continue
 			}
 		}
+	}
+}
 
+func (c *Client) writePump() {
+	for {
+		select {
+		case message, ok := <-c.Send:
+			c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			if !ok {
+				_ = c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			data, err := json.Marshal(message)
+			if err != nil {
+				log.Printf("Failed to marshal message for driver %s:%v\n", c.ID, err)
+				continue
+			}
+
+			if err := c.Conn.WriteMessage(websocket.TextMessage, data); err != nil {
+				log.Printf("Failed to write message to driver: %s:%v\n", c.ID, err)
+				return
+			}
+
+		case <-c.done:
+			return
+		}
 	}
 }
 

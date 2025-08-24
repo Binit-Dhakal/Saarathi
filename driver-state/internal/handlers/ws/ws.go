@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -57,5 +58,21 @@ func (ws *WebsocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Driver %s connected", r.RemoteAddr)
 
 	client.Start()
+}
 
+func (ws *WebsocketHandler) NotifyClient(driverID string, payload any) error {
+	ws.mu.Lock()
+	client, ok := ws.clients[driverID]
+	ws.mu.Unlock()
+
+	if !ok {
+		return fmt.Errorf("driver %s not connected", driverID)
+	}
+
+	select {
+	case client.Send <- payload:
+		return nil
+	default:
+		return fmt.Errorf("send buffer full for driver %s", driverID)
+	}
 }

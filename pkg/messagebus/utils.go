@@ -1,7 +1,7 @@
 package messagebus
 
-func DriverRoutingKey(driverID string) string {
-	return DriverInstancePrefix + driverID
+func DriverRoutingKey(instanceID string) string {
+	return DriverInstancePrefix + instanceID
 }
 
 func RideMatchingRoutingKey(instanceID string) string {

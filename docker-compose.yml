@@ -120,7 +120,10 @@ services:
       dockerfile: trips/Dockerfile.dev
     container_name: trips_service
     depends_on:
-      - trips-db
+      rabbitmq:
+        condition: service_healthy
+      trips-db:
+        condition: service_started
     environment:
       DB_HOST:  trips-db
       DB_PORT: 5432
@@ -131,6 +134,7 @@ services:
       JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
     volumes:
       - ./trips:/app/trips
       - /app/trips/tmp
@@ -149,17 +153,17 @@ services:
     build:
       context: .
       dockerfile: driver-state/Dockerfile.dev
-    container_name: driver-state-service
     depends_on:
       - redis
       - api-gateway
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      INSTANCE_ID: ${HOSTNAME}
+      - rabbitmq
     deploy:
       mode: replicated
       replicas: 2
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
     volumes:
       - ./driver-state:/app/driver-state
       - /app/driver-state/tmp
@@ -169,7 +173,6 @@ services:
     build:
       context: .
       dockerfile: ride-matching/Dockerfile.dev 
-    container_name: ride-matching-service
     depends_on:
       - rabbitmq
       - driver-state-service 
@@ -179,16 +182,21 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      INSTANCE_ID: ${HOSTNAME}
+      AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
 
-  rabbimq:
+  rabbitmq:
     image: rabbitmq:4.1
     container_name: rabbitmq
     ports:
       - 5675:5672
-      - 15675- 15672
+      - 15675:15672
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s 
+      timeout: 10s 
+      retries: 5
 
 volumes:
   postgres_trips_data:

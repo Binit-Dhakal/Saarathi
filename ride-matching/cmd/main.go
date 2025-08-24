@@ -22,9 +22,9 @@ func main() {
 	defer conn.Close()
 	defer ch.Close()
 
-	instanceID := os.Getenv("INSTANCE_ID")
-	if instanceID == "" {
-		log.Fatal("INSTANCE ID not set")
+	instanceID, err := os.Hostname()
+	if err != nil {
+		log.Fatal("Hostname not set")
 	}
 
 	// for event from "trips" service to "ride-matching" service

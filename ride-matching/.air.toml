@@ -1,0 +1,14 @@
+# .air.toml — Air config for hot reload
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/ride-matching-service ./cmd/main.go"
+bin = "tmp/ride-matching-service"
+full_bin = ""
+include_ext = ["go"]
+exclude_dir = ["tmp", "vendor"]
+
+[log]
+timestamp = true
+
