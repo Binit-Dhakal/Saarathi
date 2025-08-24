@@ -31,7 +31,7 @@ const CredentialsSignInForm = () => {
         try {
             await signInDriver(values.email, values.password)
             router.refresh()
-            router.replace("/")
+            router.replace("/driver")
         } catch (err: any) {
             setError(err?.message || "Sign-in failed. Check your credentials")
         } finally {

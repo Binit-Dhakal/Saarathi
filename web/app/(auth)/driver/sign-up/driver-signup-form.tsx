@@ -34,7 +34,7 @@ const CredentialsSignUpForm = () => {
         try {
             await signUpDriver(values.name, values.email, values.phoneNumber, values.password)
             router.refresh()
-            router.replace("/")
+            router.replace("/driver")
         } catch (err: any) {
             setError(err?.message || "Registration failed")
         } finally {
