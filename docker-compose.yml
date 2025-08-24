@@ -156,15 +156,44 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      INSTANCE_ID: ${HOSTNAME}
+    deploy:
+      mode: replicated
+      replicas: 2
     volumes:
       - ./driver-state:/app/driver-state
       - /app/driver-state/tmp
     restart: always
 
+  ride-matching-service:
+    build:
+      context: .
+      dockerfile: ride-matching/Dockerfile.dev 
+    container_name: ride-matching-service
+    depends_on:
+      - rabbitmq
+      - driver-state-service 
+    deploy:
+      mode: replicated
+      replicas: 2
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      INSTANCE_ID: ${HOSTNAME}
+
+  rabbimq:
+    image: rabbitmq:4.1
+    container_name: rabbitmq
+    ports:
+      - 5675:5672
+      - 15675- 15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
 volumes:
   postgres_trips_data:
   postgres_users_data:
   web_node_modules:
   redis_data: 
+  rabbitmq_data:
 

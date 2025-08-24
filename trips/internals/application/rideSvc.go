@@ -111,14 +111,20 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 	}
 
 	createdEvent := events.TripEventCreated{
-		RideID:    rideId,
-		Distance:  ephermalFare.Route.Distance,
-		Price:     fareDetail.TotalPrice,
-		PickupLat: ephermalFare.Route.Source.Lat,
-		PickupLon: ephermalFare.Route.Source.Lon,
+		RideID:   rideId,
+		Distance: ephermalFare.Route.Distance,
+		Price:    fareDetail.TotalPrice,
+		PickUp:   [2]float64{ephermalFare.Route.Source.Lon, ephermalFare.Route.Source.Lat},
+		DropOff:  [2]float64{ephermalFare.Route.Destination.Lon, ephermalFare.Route.Destination.Lat},
+		CarType:  string(fareDetail.Package),
 	}
 
-	err = f.bus.Publish(context.Background(), "trip_events_exchange", "trip.created", createdEvent)
+	err = f.bus.Publish(
+		context.Background(),
+		messagebus.TripEventsExchange,
+		events.TripCreatedEvent,
+		createdEvent,
+	)
 	if err != nil {
 		return "", err
 	}

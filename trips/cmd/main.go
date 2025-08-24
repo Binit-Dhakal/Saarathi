@@ -41,6 +41,11 @@ func main() {
 	defer rConn.Close()
 	defer rCh.Close()
 
+	err = setup.DeclareExchange(rCh, messagebus.TripEventsExchange, "topic")
+	if err != nil {
+		logger.Error("declaring exchange", err)
+		os.Exit(1)
+	}
 	bus := messagebus.NewRabbitMQBus(rCh)
 
 	redisRepo := redis.NewRedisFareRepository(redisClient)
