@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/events"
@@ -32,7 +33,6 @@ func NewMatchingService(publisher messagebus.Publisher, matchRepo domain.RedisRi
 }
 
 func (m *matchingService) getDriverMetadata(driversIDs []string) ([]domain.DriverVehicleMetadata, error) {
-	fmt.Println("Nearest drivers id:", driversIDs)
 	//bulk search for metadata of nearDrivers
 	metadatas, err := m.redisMetaRepo.BulkSearchDriverMeta(driversIDs)
 	if err != nil {
@@ -45,8 +45,6 @@ func (m *matchingService) getDriverMetadata(driversIDs []string) ([]domain.Drive
 			missing = append(missing, d.DriverID)
 		}
 	}
-
-	fmt.Printf("%+v", metadatas)
 
 	if len(missing) > 0 {
 		go func(missing []string) {
@@ -69,7 +67,6 @@ func (m *matchingService) getDriverMetadata(driversIDs []string) ([]domain.Drive
 
 func (m *matchingService) HandleNewTripEvent(ctx context.Context, event *events.TripEventCreated) error {
 	// find nearest driver - geosearch
-	fmt.Println(event)
 	nearDrivers := m.matchRepo.FindNearestDriver(event.PickUp[1], event.PickUp[0])
 
 	metadatas, err := m.getDriverMetadata(nearDrivers)
@@ -78,9 +75,10 @@ func (m *matchingService) HandleNewTripEvent(ctx context.Context, event *events.
 	}
 
 	var candidateDrivers []domain.DriverVehicleMetadata
-	selectedVehicle := event.CarType
+	selectedVehicle := strings.ToUpper(event.CarType)
 	for _, metadata := range metadatas {
-		if metadata.VehicleType == selectedVehicle {
+		vt := strings.ToUpper(metadata.VehicleType)
+		if vt == selectedVehicle {
 			candidateDrivers = append(candidateDrivers, metadata)
 		}
 	}
@@ -89,7 +87,7 @@ func (m *matchingService) HandleNewTripEvent(ctx context.Context, event *events.
 	for _, driver := range candidateDrivers {
 		// Search in redis if driver:state:{driverId}
 		// Search for queue where driverId is connected to: "driver:presence:{driverID}"
-		// Direct Exchange to that queue
+		// Topic Exchange to that queue
 		// if !m.matchRepo.IsDriverAvailable(driver.DriverID) {
 		// 	continue
 		// }
@@ -103,6 +101,7 @@ func (m *matchingService) HandleNewTripEvent(ctx context.Context, event *events.
 			ExpiresAt: time.Now().Add(15 * time.Second),
 		}
 
+		fmt.Printf("Published message: %+v\n", offer)
 		err = m.publisher.Publish(context.Background(), "trip_offer_exchange", "trip.offer", offer)
 		if err != nil {
 			continue

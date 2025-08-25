@@ -32,6 +32,11 @@ func (r *rideMatchingRepository) checkDriverAvailabilty(ctx context.Context, can
 	pipe := r.client.Pipeline()
 	ttlCmds := make([]*redis.IntCmd, len(candidates))
 
+	for i, driverID := range candidates {
+		ttlKey := "geo:driver:" + driverID + ":ttl"
+		ttlCmds[i] = pipe.Exists(ctx, ttlKey)
+	}
+
 	_, err := pipe.Exec(ctx)
 	if err != nil && err != redis.Nil {
 		fmt.Println(err)

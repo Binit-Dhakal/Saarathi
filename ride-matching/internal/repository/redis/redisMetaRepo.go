@@ -39,25 +39,30 @@ func (d *driverMetaRepository) BulkInsertDriverMeta(metas []domain.DriverVehicle
 }
 
 func (d *driverMetaRepository) BulkSearchDriverMeta(driverIDs []string) ([]domain.DriverVehicleMetadata, error) {
-	pipe := d.client.Pipeline()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	for _, driverID := range driverIDs {
-		pipe.HMGet(ctx, fmt.Sprintf("driver:meta:%s", driverID), "vehicleType")
-	}
+	cmds, err := d.client.Pipelined(ctx, func(p redis.Pipeliner) error {
+		for _, driverID := range driverIDs {
+			p.HGet(ctx, fmt.Sprintf("driver:meta:%s", driverID), "vehicleType")
+		}
+		return nil
+	})
 
-	responses, err := pipe.Exec(ctx)
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
 	var metadata []domain.DriverVehicleMetadata
-	for i, resp := range responses {
+	for i, cmd := range cmds {
+		s, err := cmd.(*redis.StringCmd).Result()
+		if err != nil && err != redis.Nil {
+			return nil, err
+		}
+
 		m := domain.DriverVehicleMetadata{
 			DriverID:    driverIDs[i],
-			VehicleType: resp.String(),
+			VehicleType: s,
 		}
 
 		metadata = append(metadata, m)
