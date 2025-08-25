@@ -14,20 +14,41 @@ type WebsocketHandler struct {
 	clients     map[string]*Client
 	upgrader    websocket.Upgrader
 	locationSvc application.LocationService
+	presenceSvc application.PresenceService
+	connCleaner chan *Client
 	mu          sync.Mutex
 }
 
-func NewWebSocketHandler(locationSvc application.LocationService) *WebsocketHandler {
+func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc application.PresenceService) *WebsocketHandler {
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			// temporary solution
+			return true
+		},
 	}
 
 	var clients = make(map[string]*Client)
-	return &WebsocketHandler{
+	ws := &WebsocketHandler{
 		clients:     clients,
 		upgrader:    upgrader,
 		locationSvc: locationSvc,
+		presenceSvc: presenceSvc,
+		connCleaner: make(chan *Client, 100),
+	}
+
+	go ws.CleanCloseConnection()
+
+	return ws
+}
+
+func (ws *WebsocketHandler) CleanCloseConnection() {
+	for client := range ws.connCleaner {
+		ws.mu.Lock()
+		delete(ws.clients, client.ID)
+		ws.mu.Unlock()
+		ws.locationSvc.DeleteDriverLocation(client.ID)
 	}
 }
 
@@ -47,15 +68,17 @@ func (ws *WebsocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
 	client := &Client{
 		ID:          driverID,
 		Conn:        conn,
-		Send:        make(chan any),
+		Send:        make(chan any, 32),
 		locationSvc: ws.locationSvc,
+		presenceSvc: ws.presenceSvc,
+		connCleaner: ws.connCleaner,
 	}
 
 	ws.mu.Lock()
 	ws.clients[driverID] = client
 	ws.mu.Unlock()
 
-	log.Printf("Driver %s connected", r.RemoteAddr)
+	log.Printf("Driver %s connected from %s", driverID, r.RemoteAddr)
 
 	client.Start()
 }

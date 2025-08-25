@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
@@ -15,13 +16,35 @@ type Client struct {
 	Conn        *websocket.Conn
 	Send        chan any
 	locationSvc application.LocationService
+	presenceSvc application.PresenceService
 	done        chan struct{}
+	connCleaner chan *Client
+	cleanupOnce sync.Once
 }
 
 func (c *Client) Start() {
 	c.done = make(chan struct{})
 	go c.readPump()
 	go c.writePump()
+	go c.heartbeat()
+}
+
+func (c *Client) heartbeat() {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	select {
+	case <-ticker.C:
+		if err := c.presenceSvc.SaveWSDetail(c.ID); err != nil {
+			log.Printf("Failed to save WS detail for driver %s: %v\n", c.ID, err)
+		}
+
+	case <-c.done:
+		if err := c.presenceSvc.DeleteWSDetail(c.ID); err != nil {
+			log.Printf("Failed to delete WS detail for driver %s: %v\n", c.ID, err)
+		}
+		return
+	}
 }
 
 func (c *Client) readPump() {
@@ -84,13 +107,11 @@ func (c *Client) writePump() {
 }
 
 func (c *Client) cleanup() {
-	select {
-	case <-c.done:
-		return
-	default:
+	c.cleanupOnce.Do(func() {
 		close(c.done)
 		close(c.Send)
 		c.Conn.Close()
+		c.connCleaner <- c
 		log.Printf("Driver %s fully cleaned up", c.ID)
-	}
+	})
 }

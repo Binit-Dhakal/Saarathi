@@ -26,6 +26,7 @@ const destinationIcon = new L.Icon({
 
 const Map = () => {
   const [loc, setLoc] = useState<[number, number] | null>(null);
+  const locRef = useRef<[number, number] | null>(null);
   const { sendMessage } = useWS()
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -33,21 +34,25 @@ const Map = () => {
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        setLoc([position.coords.latitude, position.coords.longitude])
+        const newLoc: [number, number] = [position.coords.latitude, position.coords.longitude]
+        setLoc(newLoc)
+        locRef.current = newLoc;
       },
       (error) => {
-        setLoc([27.6922, 85.3344])
+        const fallback: [number, number] = [27.6922, 85.3344]
         console.log(error)
+        setLoc(fallback)
+        locRef.current = fallback;
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 })
 
     const sendLocation = () => {
-      if (!loc) { return }
+      if (!locRef.current) { return }
       sendMessage({
         event: "DRIVER_LOCATION_UPDATE",
         data: {
-          "latitude": loc[0],
-          "longitude": loc[1]
+          "latitude": locRef.current[0],
+          "longitude": locRef.current[1]
         }
       })
     }
@@ -59,7 +64,7 @@ const Map = () => {
       navigator.geolocation.clearWatch(watchId)
       if (intervalRef.current) clearInterval(intervalRef.current);
     }
-  }, [sendMessage])
+  }, [])
 
   return (
     <div className="relative w-full h-full">

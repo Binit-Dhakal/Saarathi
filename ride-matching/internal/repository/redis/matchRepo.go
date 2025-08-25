@@ -13,51 +13,64 @@ type rideMatchingRepository struct {
 	client *redis.Client
 }
 
-func NewRideMatchingRepository(client *redis.Client) domain.RideMatchingRepository {
+func NewRideMatchingRepository(client *redis.Client) domain.RedisRideMatchingRepository {
 	return &rideMatchingRepository{
 		client: client,
 	}
+}
+
+func (r *rideMatchingRepository) deleteUnavailableDriver(ctx context.Context, expiredDrivers []string) {
+	if len(expiredDrivers) > 0 {
+		r.client.ZRem(ctx, "geo:drivers:available", expiredDrivers)
+	}
+}
+
+func (r *rideMatchingRepository) checkDriverAvailabilty(ctx context.Context, candidates []string) ([]string, []string) {
+	validDrivers := make([]string, 0, len(candidates))
+	expiredDrivers := make([]string, 0)
+
+	pipe := r.client.Pipeline()
+	ttlCmds := make([]*redis.IntCmd, len(candidates))
+
+	_, err := pipe.Exec(ctx)
+	if err != nil && err != redis.Nil {
+		fmt.Println(err)
+		return []string{}, []string{}
+	}
+
+	for i, cmd := range ttlCmds {
+		if cmd.Val() > 0 {
+			validDrivers = append(validDrivers, candidates[i])
+		} else {
+			expiredDrivers = append(expiredDrivers, candidates[i])
+		}
+	}
+
+	return validDrivers, expiredDrivers
 }
 
 func (r *rideMatchingRepository) FindNearestDriver(lat, lon float64) []string {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	return r.client.GeoSearch(ctx, "geo:drivers:available", &redis.GeoSearchQuery{
+	candidates := r.client.GeoSearch(ctx, "geo:drivers:available", &redis.GeoSearchQuery{
 		Latitude:  lat,
 		Longitude: lon,
 		Radius:    3,
 		Sort:      "ASC",
 		Count:     50,
 	}).Val()
-}
 
-func (r *rideMatchingRepository) BulkSearchDriverMeta(driverIDs []string) ([]domain.DriverVehicleMetadata, error) {
-	pipe := r.client.Pipeline()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	for _, driverID := range driverIDs {
-		pipe.HMGet(ctx, fmt.Sprintf("driver:meta:%s", driverID), "vehicleType")
+	if len(candidates) == 0 {
+		return []string{}
 	}
 
-	responses, err := pipe.Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
+	validDrivers, expiredDrivers := r.checkDriverAvailabilty(ctx, candidates)
 
-	var metadata []domain.DriverVehicleMetadata
-	for i, resp := range responses {
-		m := domain.DriverVehicleMetadata{
-			DriverID:    driverIDs[i],
-			VehicleType: resp.String(),
-		}
+	r.deleteUnavailableDriver(ctx, expiredDrivers)
 
-		metadata = append(metadata, m)
-	}
+	return validDrivers
 
-	return metadata, nil
 }
 
 func (r *rideMatchingRepository) IsDriverAvailable(driverID string) bool {
@@ -68,5 +81,4 @@ func (r *rideMatchingRepository) IsDriverAvailable(driverID string) bool {
 	}
 
 	return false
-
 }

@@ -8,7 +8,6 @@ type BaseMessage struct {
 }
 
 type DriverLocationMessage struct {
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	CarPackage string  `json:"carPackage"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }

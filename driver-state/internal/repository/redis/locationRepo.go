@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/redis/go-redis/v9"
@@ -18,17 +19,25 @@ func NewLocationRepo(client *redis.Client) *LocationRepo {
 }
 
 func (l *LocationRepo) SaveActiveGeoLocation(loc *domain.DriverLocation) error {
-	key := "geo:drivers:available"
+	pipe := l.client.TxPipeline()
 
-	return l.client.GeoAdd(
+	geoKey := "geo:drivers:available"
+	ttlKey := "geo:driver:" + loc.DriverID + ":ttl"
+
+	pipe.GeoAdd(
 		context.Background(),
-		key,
+		geoKey,
 		&redis.GeoLocation{
 			Longitude: loc.Longitude,
 			Latitude:  loc.Latitude,
 			Name:      loc.DriverID,
 		},
-	).Err()
+	)
+
+	pipe.Set(context.Background(), ttlKey, 1, 30*time.Second)
+
+	_, err := pipe.Exec(context.Background())
+	return err
 }
 
 func (l *LocationRepo) RemoveActiveGeoLocation(driverID string) error {

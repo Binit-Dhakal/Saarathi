@@ -10,9 +10,9 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func ListenForTripEvents(ch *amqp.Channel, svc application.MatchingService) {
+func ListenForTripEvents(ch *amqp.Channel, queueName string, svc application.MatchingService) {
 	msgs, err := ch.Consume(
-		"ride-matching.trip-create",
+		queueName,
 		"",
 		false,
 		false,

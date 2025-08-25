@@ -10,10 +10,22 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/messaging"
+	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
 )
 
+// test
 func main() {
+	client, err := setup.SetupRedis()
+	if err != nil {
+		log.Fatal("Couldn't setup redis:", err)
+	}
+
+	usersDB, err := setup.SetupPostgresDB()
+	if err != nil {
+		log.Fatal("Couldn't setup users db:", err)
+	}
+
 	conn, ch, err := setup.SetupRabbitMQ()
 	if err != nil {
 		log.Println("RabbitMQ error: ", err)
@@ -28,8 +40,8 @@ func main() {
 	}
 
 	// for event from "trips" service to "ride-matching" service
-	queue_name := "ride-matching.trip-create"
-	queue, err := setup.DeclareQueue(ch, queue_name)
+	trip_create_queue_name := "ride-matching.trip-create"
+	queue, err := setup.DeclareQueue(ch, trip_create_queue_name)
 	if err != nil {
 		log.Fatal("Failed to declare queue: ", err)
 	}
@@ -45,8 +57,8 @@ func main() {
 		log.Fatal("Failed to declare exchange: ", err)
 	}
 
-	queue_name = fmt.Sprintf("ride-matching.instance.%s", instanceID)
-	queue, err = setup.DeclareQueue(ch, queue_name)
+	instance_queue_name := fmt.Sprintf("ride-matching.instance.%s", instanceID)
+	queue, err = setup.DeclareQueue(ch, instance_queue_name)
 	if err != nil {
 		log.Fatal("Failed to declare queue: ", err)
 	}
@@ -57,14 +69,11 @@ func main() {
 		log.Fatal("Failed to bind queue to the exchange: ", err)
 	}
 
-	client, err := setup.SetupRedis()
-	if err != nil {
-		log.Fatal("Couldn't setup redis:", err)
-	}
-
-	repo := redis.NewRideMatchingRepository(client)
+	rideRepo := redis.NewRideMatchingRepository(client)
+	redisMetaRepo := redis.NewCacheDriverMetaRepo(client)
+	pgMetaRepo := postgres.NewPGMetaRepo(usersDB)
 	bus := messagebus.NewRabbitMQBus(ch)
-	matchingSvc := application.NewMatchingService(bus, repo)
+	matchingSvc := application.NewMatchingService(bus, rideRepo, redisMetaRepo, pgMetaRepo)
 
-	messaging.ListenForTripEvents(ch, matchingSvc)
+	messaging.ListenForTripEvents(ch, trip_create_queue_name, matchingSvc)
 }

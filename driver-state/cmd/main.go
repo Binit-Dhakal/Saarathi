@@ -58,10 +58,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	redisRepo := redis.NewLocationRepo(redisClient)
+	locationRepo := redis.NewLocationRepo(redisClient)
+	wsRepo := redis.NewWSRepo(redisClient)
 
-	locationSvc := application.NewLocationService(redisRepo)
-	driverStateHandler := ws.NewWebSocketHandler(locationSvc)
+	presenceSvc := application.NewPresenceService(wsRepo)
+	locationSvc := application.NewLocationService(locationRepo)
+	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc)
 
 	offerSvc := application.NewOfferService(driverStateHandler)
 	go messaging.ListenForOfferEvents(rCh, queueName, offerSvc)
@@ -69,7 +71,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", driverStateHandler.WsHandler)
 
-	logger.Info("Driver state service started on 8084")
+	logger.Info("Driver state service started on :8084")
 	err = http.ListenAndServe(":8084", mux)
 	if err != nil {
 		logger.Error("ListenAndServe: ", err)

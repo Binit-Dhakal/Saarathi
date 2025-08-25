@@ -5,13 +5,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"strings"
-	"sync"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/api-gateway/internal/handlers/rest"
@@ -23,6 +20,9 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	// might need to add checkOrigin
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 func main() {
@@ -32,7 +32,6 @@ func main() {
 	tripServiceURL, _ := url.Parse("http://trips-service:8082")
 	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
 
-	// driverWsURL, _ := url.Parse("ws://driver-state-service:8084/ws")
 	driverStateURL, _ := url.Parse("http://driver-state-service:8084")
 	driverStateProxy := httputil.NewSingleHostReverseProxy(driverStateURL)
 	driverStateProxy.Director = func(req *http.Request) {
@@ -74,84 +73,6 @@ func main() {
 func proxyHandler(p *httputil.ReverseProxy) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p.ServeHTTP(w, r)
-	}
-}
-
-func websocketProxyHandler(target *url.URL) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		clientConn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Printf("Failed to upgrade client connection: %v", err)
-			return
-		}
-
-		headers := make(http.Header)
-		for key, values := range r.Header {
-			// Skip WebSocket-specific headers
-			if strings.HasPrefix(key, "Sec") || key == "Upgrade" || key == "Connection" {
-				continue
-			}
-			for _, value := range values {
-				headers.Add(key, value)
-			}
-		}
-
-		backendConn, _, err := websocket.DefaultDialer.Dial(target.String(), headers)
-		if err != nil {
-			log.Printf("Failed to dial to backend service: %v", err)
-			clientConn.WriteMessage(
-				websocket.CloseMessage,
-				websocket.FormatCloseMessage(
-					websocket.CloseServiceRestart,
-					"Backend service unavailable",
-				),
-			)
-			return
-		}
-
-		var once sync.Once
-		closeConns := func() {
-			backendConn.Close()
-			clientConn.Close()
-		}
-
-		// proxy data from client to backend
-		go func() {
-			defer once.Do(closeConns)
-			for {
-				messageType, p, err := clientConn.ReadMessage()
-				if err != nil {
-					log.Printf("client read error: %v", err)
-					return
-				}
-
-				err = backendConn.WriteMessage(messageType, p)
-				if err != nil {
-					log.Printf("Backend write error: %v", err)
-					return
-				}
-			}
-		}()
-
-		// proxy data from backend to client
-		go func() {
-			once.Do(closeConns)
-			for {
-				messageType, p, err := backendConn.ReadMessage()
-				if err != nil {
-					log.Printf("backend read error: %v", err)
-					return
-				}
-
-				err = clientConn.WriteMessage(messageType, p)
-				if err != nil {
-					log.Printf("Client write error: %v", err)
-					return
-				}
-
-			}
-		}()
-
 	}
 }
 

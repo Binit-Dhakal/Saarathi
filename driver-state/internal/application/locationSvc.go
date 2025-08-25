@@ -7,6 +7,7 @@ import (
 
 type LocationService interface {
 	UpsertDriverLocation(loc *dto.DriverLocationMessage, driverID string) error
+	DeleteDriverLocation(driverID string) error
 }
 
 type locationService struct {
@@ -21,13 +22,21 @@ func NewLocationService(repo domain.LocationRepo) *locationService {
 
 func (l *locationService) UpsertDriverLocation(loc *dto.DriverLocationMessage, driverID string) error {
 	locInfo := &domain.DriverLocation{
-		DriverID:    driverID,
-		Longitude:   loc.Longitude,
-		Latitude:    loc.Latitude,
-		VehicleType: loc.CarPackage,
+		DriverID:  driverID,
+		Longitude: loc.Longitude,
+		Latitude:  loc.Latitude,
 	}
 
 	err := l.locationRepo.SaveActiveGeoLocation(locInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (l *locationService) DeleteDriverLocation(driverID string) error {
+	err := l.locationRepo.RemoveActiveGeoLocation(driverID)
 	if err != nil {
 		return err
 	}

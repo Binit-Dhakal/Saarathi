@@ -183,6 +183,16 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
+      DB_HOST: users-db 
+      DB_PORT: 5432
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_NAME: usersdb
+    volumes:
+      - ./ride-matching:/app/ride-matching
+      - /app/ride-matching/tmp
+
+
 
   rabbitmq:
     image: rabbitmq:4.1
