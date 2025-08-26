@@ -2,7 +2,6 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -28,11 +27,8 @@ func NewTripEventHandler(matchingSvc application.MatchingService, driverInfoSvc 
 	}
 }
 
-func (h *TripEventHandler) HandleTripEvent(body []byte) error {
-	var event events.TripEventCreated
-	if err := json.Unmarshal(body, &event); err != nil {
-		return fmt.Errorf("Failed to unmarshal event: %v", err)
-	}
+func (h *TripEventHandler) HandleTripEvent(ctx context.Context, evt events.Event) error {
+	event := evt.(*events.TripEventCreated)
 
 	driverCandidates := h.matchingSvc.FindDrivers(event.PickUp[0], event.PickUp[1])
 	onlineCandidates := h.driverInfoSvc.GetOnlineDrivers(driverCandidates)
@@ -57,7 +53,7 @@ func (h *TripEventHandler) HandleTripEvent(body []byte) error {
 	for _, driver := range shortlistDrivers {
 		instanceID, _ := h.presenceSvc.GetDriverInstance(driver.DriverID)
 
-		routingKey := messagebus.DriverRoutingKey(events.TripEventCreated{}.EventName(), instanceID)
+		routingKey := messagebus.DriverRoutingKey(event.EventName(), instanceID)
 
 		h.publisher.Publish(context.Background(), messagebus.TripEventsExchange, routingKey, event)
 	}

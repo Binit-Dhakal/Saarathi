@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/events"
 	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
@@ -49,8 +52,21 @@ func main() {
 	presenceSvc := application.NewPresenceService(presenceRepo)
 
 	handler := messaging.NewTripEventHandler(matchingSvc, driverInfoSvc, presenceSvc, bus)
+	fmt.Println("Subscribing to trip created event")
 
-	listenForTripEvents(ch, "ride-matching.trip-create", handler)
+	var event events.TripEventCreated
+	bus.Subscribe(
+		context.Background(),
+		event.EventName(),
+		event.EventName(),
+		handler.HandleTripEvent,
+	)
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	<-sigs
+	fmt.Println("Shutting down")
 }
 
 func buildRabbitMQEntity(ch *amqp.Channel) {
@@ -67,32 +83,5 @@ func buildRabbitMQEntity(ch *amqp.Channel) {
 	err = setup.SetupQueues(ch, configs)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func listenForTripEvents(ch *amqp.Channel, queueName string, handler *messaging.TripEventHandler) {
-	msgs, err := ch.Consume(
-		queueName,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Failed to register a consumer: %v", err)
-	}
-
-	for d := range msgs {
-		log.Printf("Received a message from RabbitMQ: %s", d.Body)
-		go func(d amqp.Delivery) {
-			if err = handler.HandleTripEvent(d.Body); err != nil {
-				log.Printf("Failed to handle trip event: %v", err)
-				_ = d.Nack(false, false) // retry false for now
-				return
-			}
-			_ = d.Ack(false)
-		}(d)
 	}
 }
