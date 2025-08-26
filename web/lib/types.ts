@@ -27,3 +27,14 @@ export interface ConfirmRideResponse {
 
 export type TripStatus = "selecting" | "waiting" | "driverAssigned" | "completed";
 
+export interface WSMessage {
+  event: string;
+  data: any;
+}
+
+export interface TripOffer {
+  tripId: string;
+  pickUp: [number, number]; // [lon, lat]
+  dropOff: [number, number]; // [lon, lat]
+  expiresAt: string;
+}

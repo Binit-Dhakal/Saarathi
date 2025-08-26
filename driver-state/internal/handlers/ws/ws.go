@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -85,11 +84,6 @@ func (ws *WebsocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WebsocketHandler) NotifyClient(driverID string, payload any) error {
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
 	ws.mu.Lock()
 	client, ok := ws.clients[driverID]
 	ws.mu.Unlock()
@@ -99,7 +93,7 @@ func (ws *WebsocketHandler) NotifyClient(driverID string, payload any) error {
 	}
 
 	select {
-	case client.Send <- data:
+	case client.Send <- payload:
 		return nil
 	default:
 		return fmt.Errorf("send buffer full for driver %s", driverID)

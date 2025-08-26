@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -77,6 +78,8 @@ func (c *Client) readPump() {
 				log.Println("Failed to save drivers location: ", err)
 				continue
 			}
+		default:
+			fmt.Println(baseMessage)
 		}
 	}
 }

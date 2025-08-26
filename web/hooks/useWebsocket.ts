@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { WSMessage } from "@/lib/types";
+
 
 export function useWebSocket(url: string) {
   const socketRef = useRef<WebSocket | null>(null)
-  const [messages, setMessages] = useState<any[]>([]);
+  const [lastMessage, setLastMessage] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false)
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null)
   const reconnectAttempts = useRef(0);
@@ -28,12 +30,16 @@ export function useWebSocket(url: string) {
     }
 
     socket.onmessage = (event) => {
+      let parsed: WSMessage;
       try {
-        const data = JSON.parse(event.data)
-        setMessages((prev) => [...prev, data]);
+        parsed = JSON.parse(event.data);
       } catch {
-        setMessages((prev) => [...prev, event.data])
+        parsed = event.data;
       }
+
+      console.log(parsed)
+
+      setLastMessage(parsed);
     }
   }
 
@@ -63,5 +69,5 @@ export function useWebSocket(url: string) {
     }
   }
 
-  return { isConnected, messages, sendMessage }
+  return { isConnected, lastMessage, sendMessage }
 }

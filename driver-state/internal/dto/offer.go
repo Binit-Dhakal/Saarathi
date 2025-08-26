@@ -7,6 +7,11 @@ type OfferResponse struct {
 	Data  any    `json:"data"`
 }
 
+type EventSend struct {
+	Event string `json:"event"`
+	Data  any    `json:"data"`
+}
+
 type OfferRequestDriver struct {
 	TripID    string     `json:"tripId"`
 	PickUp    [2]float64 `json:"pickUp"`

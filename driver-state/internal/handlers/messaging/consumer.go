@@ -2,7 +2,6 @@ package messaging
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
@@ -22,11 +21,16 @@ func NewTripOfferHandler(notifyClient domain.DriverNotifier) *TripOfferHandler {
 func (t *TripOfferHandler) HandleOfferRequest(ctx context.Context, evt events.Event) error {
 	event := evt.(*events.TripOfferRequest)
 
-	req := dto.OfferRequestDriver{
+	offerReq := dto.OfferRequestDriver{
 		TripID:    event.TripID,
 		PickUp:    event.PickUp,
 		DropOff:   event.DropOff,
 		ExpiresAt: event.ExpiresAt,
+	}
+
+	req := dto.EventSend{
+		Event: "TRIP_OFFER_REQUEST",
+		Data:  offerReq,
 	}
 
 	err := t.notifyClient.NotifyClient(event.DriverID, req)
