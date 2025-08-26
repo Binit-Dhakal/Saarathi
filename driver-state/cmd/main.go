@@ -64,6 +64,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		fmt.Println("Subscibing")
 		var event events.TripOfferRequest
 		bus.Subscribe(
 			context.Background(),

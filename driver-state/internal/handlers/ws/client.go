@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -37,7 +36,6 @@ func (c *Client) heartbeat() {
 	for {
 		select {
 		case <-ticker.C:
-			fmt.Println("Saving presence for ", c.ID)
 			if err := c.presenceSvc.SaveWSDetail(c.ID); err != nil {
 				log.Printf("Failed to save WS detail for driver %s: %v\n", c.ID, err)
 			}
