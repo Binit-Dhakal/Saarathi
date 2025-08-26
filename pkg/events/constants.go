@@ -1,5 +1,7 @@
 package events
 
-const (
-	TripCreatedEvent = "trip.created"
+var (
+	EventTripCreated   = TripEventCreated{}.EventName()
+	EventOfferCreated  = TripOffer{}.EventName()
+	EventOfferResponse = TripOfferResponse{}.EventName()
 )

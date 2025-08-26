@@ -9,12 +9,12 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
-	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/messaging"
+	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// test
 func main() {
 	client, err := setup.SetupRedis()
 	if err != nil {
@@ -34,46 +34,65 @@ func main() {
 	defer conn.Close()
 	defer ch.Close()
 
+	buildRabbitMQEntity(ch)
+
+	rideRepo := redis.NewRideMatchingRepository(client)
+	redisMetaRepo := redis.NewCacheDriverMetaRepo(client)
+	pgMetaRepo := postgres.NewPGMetaRepo(usersDB)
+	availabilityRepo := redis.NewDriverAvailableRepo(client)
+	presenceRepo := redis.NewPresenceRepo(client)
+
+	bus := messagebus.NewRabbitMQBus(ch)
+
+	matchingSvc := application.NewMatchingService(bus, rideRepo)
+	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, pgMetaRepo, availabilityRepo)
+	presenceSvc := application.NewPresenceService(presenceRepo)
+
+	handler := messaging.NewTripEventHandler(matchingSvc, driverInfoSvc, presenceSvc, bus)
+
+	listenForTripEvents(ch, "ride-matching.trip-create", handler)
+}
+
+func buildRabbitMQEntity(ch *amqp.Channel) {
 	instanceID, err := os.Hostname()
 	if err != nil {
 		log.Fatal("Hostname not set")
 	}
 
-	// for event from "trips" service to "ride-matching" service
-	trip_create_queue_name := "ride-matching.trip-create"
-	queue, err := setup.DeclareQueue(ch, trip_create_queue_name)
-	if err != nil {
-		log.Fatal("Failed to declare queue: ", err)
+	configs := []setup.QueueConfig{
+		{Name: "ride-matching.trip-create", Exchange: messagebus.TripEventsExchange, RoutingKey: events.EventTripCreated, Type: "topic", Durable: true},
+		{Name: fmt.Sprintf("ride-matching.instance.%s", instanceID), Exchange: messagebus.TripOfferExchange, RoutingKey: events.EventOfferResponse, Type: "topic", Durable: true},
 	}
 
-	err = setup.BindQueue(ch, queue.Name, events.TripCreatedEvent, messagebus.TripEventsExchange)
+	err = setup.SetupQueues(ch, configs)
 	if err != nil {
-		log.Fatal("Failed to bind queue: ", err)
+		log.Fatal(err)
+	}
+}
+
+func listenForTripEvents(ch *amqp.Channel, queueName string, handler *messaging.TripEventHandler) {
+	msgs, err := ch.Consume(
+		queueName,
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("Failed to register a consumer: %v", err)
 	}
 
-	// For event from "ride-matching service" to "driver state service"
-	err = setup.DeclareExchange(ch, messagebus.TripOfferExchange, "topic")
-	if err != nil {
-		log.Fatal("Failed to declare exchange: ", err)
+	for d := range msgs {
+		log.Printf("Received a message from RabbitMQ: %s", d.Body)
+		go func(d amqp.Delivery) {
+			if err = handler.HandleTripEvent(d.Body); err != nil {
+				log.Printf("Failed to handle trip event: %v", err)
+				_ = d.Nack(false, false) // retry false for now
+				return
+			}
+			_ = d.Ack(false)
+		}(d)
 	}
-
-	instance_queue_name := fmt.Sprintf("ride-matching.instance.%s", instanceID)
-	queue, err = setup.DeclareQueue(ch, instance_queue_name)
-	if err != nil {
-		log.Fatal("Failed to declare queue: ", err)
-	}
-
-	routing_key := messagebus.RideMatchingRoutingKey(instanceID)
-	err = setup.BindQueue(ch, queue.Name, routing_key, messagebus.TripOfferExchange)
-	if err != nil {
-		log.Fatal("Failed to bind queue to the exchange: ", err)
-	}
-
-	rideRepo := redis.NewRideMatchingRepository(client)
-	redisMetaRepo := redis.NewCacheDriverMetaRepo(client)
-	pgMetaRepo := postgres.NewPGMetaRepo(usersDB)
-	bus := messagebus.NewRabbitMQBus(ch)
-	matchingSvc := application.NewMatchingService(bus, rideRepo, redisMetaRepo, pgMetaRepo)
-
-	messaging.ListenForTripEvents(ch, trip_create_queue_name, matchingSvc)
 }

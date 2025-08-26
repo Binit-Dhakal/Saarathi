@@ -18,15 +18,3 @@ func SetupRabbitMQ() (*amqp.Connection, *amqp.Channel, error) {
 	ch, err := conn.Channel()
 	return conn, ch, err
 }
-
-func DeclareExchange(ch *amqp.Channel, name, kind string) error {
-	return ch.ExchangeDeclare(name, kind, true, false, false, false, nil)
-}
-
-func DeclareQueue(ch *amqp.Channel, name string) (amqp.Queue, error) {
-	return ch.QueueDeclare(name, true, false, false, false, nil)
-}
-
-func BindQueue(ch *amqp.Channel, queue, routingKey, exchange string) error {
-	return ch.QueueBind(queue, routingKey, exchange, false, nil)
-}

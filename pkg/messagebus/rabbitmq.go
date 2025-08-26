@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/events"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -17,15 +18,15 @@ func NewRabbitMQBus(ch *amqp.Channel) *RabbitMQBus {
 	}
 }
 
-func (r *RabbitMQBus) Publish(ctx context.Context, exchange string, topic string, message any) error {
-	body, err := json.Marshal(message)
+func (r *RabbitMQBus) Publish(ctx context.Context, exchange string, routingKey string, event events.Event) error {
+	body, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
 
 	return r.ch.Publish(
 		exchange,
-		topic,
+		routingKey,
 		false,
 		false,
 		amqp.Publishing{
@@ -35,8 +36,8 @@ func (r *RabbitMQBus) Publish(ctx context.Context, exchange string, topic string
 	)
 }
 
-func (r *RabbitMQBus) Consume(ctx context.Context, queue string) (<-chan amqp.Delivery, error) {
-	return r.ch.Consume(
+func (r *RabbitMQBus) Subscribe(ctx context.Context, queue string, eventName string, handler EventHandler) error {
+	msgs, err := r.ch.Consume(
 		queue,
 		"",
 		false,
@@ -45,4 +46,36 @@ func (r *RabbitMQBus) Consume(ctx context.Context, queue string) (<-chan amqp.De
 		false,
 		nil,
 	)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+
+			case d, ok := <-msgs:
+				if !ok {
+					return
+				}
+
+				evt, err := events.DecodeEvent(eventName, d.Body)
+				if err != nil {
+					d.Nack(false, false)
+					continue
+				}
+
+				if err := handler(ctx, evt); err != nil {
+					d.Nack(false, false)
+				} else {
+					d.Ack(false)
+				}
+
+			}
+		}
+	}()
+
+	return nil
 }

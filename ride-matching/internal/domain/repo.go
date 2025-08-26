@@ -1,9 +1,7 @@
 package domain
 
-// test
 type RedisRideMatchingRepository interface {
-	FindNearestDriver(lat, lon float64) []string
-	IsDriverAvailable(driverID string) bool
+	FindNearestDriver(lon, lat float64) []string
 }
 
 type RedisMetaRepository interface {
@@ -13,4 +11,14 @@ type RedisMetaRepository interface {
 
 type PGMetaRepository interface {
 	BulkSearchMeta(driverIDs []string) ([]DriverVehicleMetadata, error)
+}
+
+type DriverAvailabilityRepository interface {
+	IsDriverFree(driverID string) bool
+	DeleteUnavailableDrivers(expiredDrivers []string)
+	BulkCheckDriversOnline(driversID []string) ([]string, []string)
+}
+
+type PresenceRepository interface {
+	GetDriverInstanceLocation(driverID string) (string, error)
 }

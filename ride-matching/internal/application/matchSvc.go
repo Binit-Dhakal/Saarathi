@@ -12,57 +12,25 @@ import (
 )
 
 type MatchingService interface {
-	HandleNewTripEvent(ctx context.Context, event *events.TripEventCreated) error
+	FindDrivers(lon float64, lat float64) []string
 }
 
 type matchingService struct {
-	publisher     messagebus.Publisher
-	matchRepo     domain.RedisRideMatchingRepository
-	redisMetaRepo domain.RedisMetaRepository
-	pgMetaRepo    domain.PGMetaRepository
-	consumer      messagebus.Consumer
+	publisher messagebus.Publisher
+	matchRepo domain.RedisRideMatchingRepository
+	consumer  messagebus.Consumer
 }
 
-func NewMatchingService(publisher messagebus.Publisher, matchRepo domain.RedisRideMatchingRepository, redisMetaRepo domain.RedisMetaRepository, pgMetaRepo domain.PGMetaRepository) MatchingService {
+func NewMatchingService(publisher messagebus.Publisher, matchRepo domain.RedisRideMatchingRepository) MatchingService {
 	return &matchingService{
-		publisher:     publisher,
-		matchRepo:     matchRepo,
-		redisMetaRepo: redisMetaRepo,
-		pgMetaRepo:    pgMetaRepo,
+		publisher: publisher,
+		matchRepo: matchRepo,
 	}
 }
 
-func (m *matchingService) getDriverMetadata(driversIDs []string) ([]domain.DriverVehicleMetadata, error) {
-	//bulk search for metadata of nearDrivers
-	metadatas, err := m.redisMetaRepo.BulkSearchDriverMeta(driversIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	var missing []string
-	for _, d := range metadatas {
-		if d.VehicleType == "" {
-			missing = append(missing, d.DriverID)
-		}
-	}
-
-	if len(missing) > 0 {
-		go func(missing []string) {
-			dbMeta, err := m.pgMetaRepo.BulkSearchMeta(driversIDs)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			err = m.redisMetaRepo.BulkInsertDriverMeta(dbMeta)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}(missing)
-	}
-
-	return metadatas, nil
+// currently our algorithm just find drivers based on geographical location
+func (m *matchingService) FindDrivers(lon float64, lat float64) []string {
+	return m.matchRepo.FindNearestDriver(lon, lat)
 }
 
 func (m *matchingService) HandleNewTripEvent(ctx context.Context, event *events.TripEventCreated) error {
