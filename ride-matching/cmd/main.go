@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/events"
@@ -19,6 +20,8 @@ import (
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	client, err := setup.SetupRedis()
 	if err != nil {
 		log.Fatal("Couldn't setup redis:", err)
@@ -54,19 +57,29 @@ func main() {
 	handler := messaging.NewTripEventHandler(matchingSvc, driverInfoSvc, presenceSvc, bus)
 	fmt.Println("Subscribing to trip created event")
 
-	var event events.TripEventCreated
-	bus.Subscribe(
-		context.Background(),
-		event.EventName(),
-		event.EventName(),
-		handler.HandleTripEvent,
-	)
+	var wg sync.WaitGroup
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var event events.TripEventCreated
+		bus.Subscribe(
+			context.Background(),
+			event.EventName(),
+			event.EventName(),
+			handler.HandleTripEvent,
+		)
+	}()
+
 	<-sigs
-	fmt.Println("Shutting down")
+	fmt.Println("Shutdown signal received")
+	cancel()
+
+	wg.Wait()
+	fmt.Println("Graceful shutdown")
 }
 
 func buildRabbitMQEntity(ch *amqp.Channel) {
