@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -33,17 +34,20 @@ func (c *Client) heartbeat() {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
-	select {
-	case <-ticker.C:
-		if err := c.presenceSvc.SaveWSDetail(c.ID); err != nil {
-			log.Printf("Failed to save WS detail for driver %s: %v\n", c.ID, err)
-		}
+	for {
+		select {
+		case <-ticker.C:
+			fmt.Println("Saving presence for ", c.ID)
+			if err := c.presenceSvc.SaveWSDetail(c.ID); err != nil {
+				log.Printf("Failed to save WS detail for driver %s: %v\n", c.ID, err)
+			}
 
-	case <-c.done:
-		if err := c.presenceSvc.DeleteWSDetail(c.ID); err != nil {
-			log.Printf("Failed to delete WS detail for driver %s: %v\n", c.ID, err)
+		case <-c.done:
+			if err := c.presenceSvc.DeleteWSDetail(c.ID); err != nil {
+				log.Printf("Failed to delete WS detail for driver %s: %v\n", c.ID, err)
+			}
+			return
 		}
-		return
 	}
 }
 

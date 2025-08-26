@@ -23,27 +23,24 @@ func init() {
 	RegisterEvent(EventTripCreated, func() Event { return &TripEventCreated{} })
 }
 
-type TripOffer struct {
-	OfferID    string     `json:"offerId"`
-	TripID     string     `json:"tripId"`
-	DriverID   string     `json:"driverId"`
-	PickUp     [2]float64 `json:"pickUp"`
-	DropOff    [2]float64 `json:"dropOff"`
-	CarType    string     `json:"carType"`
-	ExpiresAt  time.Time  `json:"expiresAt"`
-	InstanceID string     `json:"instanceID"`
+type TripOfferRequest struct {
+	TripID    string     `json:"tripId"`
+	DriverID  string     `json:"driverId"`
+	PickUp    [2]float64 `json:"pickUp"`
+	DropOff   [2]float64 `json:"dropOff"`
+	CarType   string     `json:"carType"`
+	ExpiresAt time.Time  `json:"expiresAt"`
 }
 
-func (TripOffer) EventName() string {
+func (TripOfferRequest) EventName() string {
 	return "trip.offer"
 }
 
 func init() {
-	RegisterEvent(EventOfferCreated, func() Event { return &TripOffer{} })
+	RegisterEvent(EventOfferRequest, func() Event { return &TripOfferRequest{} })
 }
 
 type TripOfferResponse struct {
-	OfferID  string    `json:"offerId"`
 	TripID   string    `json:"tripId"`
 	DriverID string    `json:"driverId"`
 	Result   string    `json:"result"`

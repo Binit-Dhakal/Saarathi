@@ -10,14 +10,24 @@ type QueueConfig struct {
 	Durable    bool
 }
 
+func SetupExchange(ch *amqp.Channel, name string, typeEx string, durable bool) error {
+	err := ch.ExchangeDeclare(
+		name,
+		typeEx,
+		durable,
+		false, false, false, nil,
+	)
+	return err
+}
+
 func SetupQueues(ch *amqp.Channel, configs []QueueConfig) error {
 	for _, cfg := range configs {
 		if cfg.Exchange != "" {
-			if err := ch.ExchangeDeclare(
+			if err := SetupExchange(
+				ch,
 				cfg.Exchange,
 				cfg.Type,
 				cfg.Durable,
-				false, false, false, nil,
 			); err != nil {
 				return err
 			}

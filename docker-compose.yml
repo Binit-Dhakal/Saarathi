@@ -55,6 +55,8 @@ services:
     depends_on:
       - users-service
       - trips-service
+      - ride-matching-service
+      - driver-state-service
     environment:
       JWT_PUBLIC_KEY: ${RSA_PUBLIC_KEY}
       TRUSTED_ORIGINS: "http://saarathi.com:3001,http://driver.saarathi.com:3001"
@@ -124,6 +126,8 @@ services:
         condition: service_healthy
       trips-db:
         condition: service_started
+      ride-matching-service:
+        condition: service_started
     environment:
       DB_HOST:  trips-db
       DB_PORT: 5432
@@ -148,15 +152,22 @@ services:
     volumes:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 1s 
+      timeout: 3s
+      retries: 5
 
   driver-state-service:
     build:
       context: .
       dockerfile: driver-state/Dockerfile.dev
     depends_on:
-      - redis
-      - api-gateway
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
     deploy:
       mode: replicated
       replicas: 2
@@ -174,8 +185,10 @@ services:
       context: .
       dockerfile: ride-matching/Dockerfile.dev 
     depends_on:
-      - rabbitmq
-      - driver-state-service 
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 2
@@ -193,9 +206,8 @@ services:
       - /app/ride-matching/tmp
 
 
-
   rabbitmq:
-    image: rabbitmq:4.1
+    image: rabbitmq:4.1-management
     container_name: rabbitmq
     ports:
       - 5675:5672
@@ -211,7 +223,9 @@ services:
 volumes:
   postgres_trips_data:
   postgres_users_data:
+    external: true
   web_node_modules:
   redis_data: 
+    external: true
   rabbitmq_data:
 

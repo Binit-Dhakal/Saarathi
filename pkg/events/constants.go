@@ -2,6 +2,6 @@ package events
 
 var (
 	EventTripCreated   = TripEventCreated{}.EventName()
-	EventOfferCreated  = TripOffer{}.EventName()
+	EventOfferRequest  = TripOfferRequest{}.EventName()
 	EventOfferResponse = TripOfferResponse{}.EventName()
 )

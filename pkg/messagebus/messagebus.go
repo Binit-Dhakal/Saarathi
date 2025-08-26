@@ -7,7 +7,7 @@ import (
 )
 
 type Publisher interface {
-	Publish(ctx context.Context, exchange string, routing_key string, message events.Event) error
+	Publish(ctx context.Context, exchange string, routingKey string, message events.Event) error
 }
 
 type Consumer interface {

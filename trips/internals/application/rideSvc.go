@@ -122,7 +122,7 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 	err = f.bus.Publish(
 		context.Background(),
 		messagebus.TripEventsExchange,
-		events.TripCreatedEvent,
+		events.EventTripCreated,
 		createdEvent,
 	)
 	if err != nil {

@@ -65,11 +65,10 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		var event events.TripEventCreated
 		bus.Subscribe(
-			context.Background(),
-			event.EventName(),
-			event.EventName(),
+			ctx,
+			"ride-matching-trip-create",
+			events.EventTripCreated,
 			handler.HandleTripEvent,
 		)
 	}()
@@ -83,17 +82,24 @@ func main() {
 }
 
 func buildRabbitMQEntity(ch *amqp.Channel) {
-	instanceID, err := os.Hostname()
-	if err != nil {
-		log.Fatal("Hostname not set")
-	}
-
 	configs := []setup.QueueConfig{
-		{Name: "ride-matching.trip-create", Exchange: messagebus.TripEventsExchange, RoutingKey: events.EventTripCreated, Type: "topic", Durable: true},
-		{Name: fmt.Sprintf("ride-matching.instance.%s", instanceID), Exchange: messagebus.TripOfferExchange, RoutingKey: events.EventOfferResponse, Type: "topic", Durable: true},
+		{
+			Name:       "ride-matching-trip-create",
+			Exchange:   messagebus.TripEventsExchange,
+			RoutingKey: events.EventTripCreated,
+			Type:       "topic",
+			Durable:    true,
+		},
+		{
+			Name:       "ride-matching-offer-response",
+			Exchange:   messagebus.TripOfferExchange,
+			RoutingKey: events.EventOfferResponse,
+			Type:       "topic",
+			Durable:    true,
+		},
 	}
 
-	err = setup.SetupQueues(ch, configs)
+	err := setup.SetupQueues(ch, configs)
 	if err != nil {
 		log.Fatal(err)
 	}
