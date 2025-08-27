@@ -51,7 +51,8 @@ func main() {
 
 	presenceSvc := application.NewPresenceService(wsRepo)
 	locationSvc := application.NewLocationService(locationRepo)
-	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc)
+	offerSvc := application.NewOfferService(bus)
+	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, offerSvc)
 
 	offerHandler := messaging.NewTripOfferHandler(driverStateHandler)
 
@@ -64,7 +65,6 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		fmt.Println("Subscibing")
 		var event events.TripOfferRequest
 		bus.Subscribe(
 			context.Background(),

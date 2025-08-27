@@ -18,3 +18,7 @@ type OfferRequestDriver struct {
 	DropOff   [2]float64 `json:"dropOff"`
 	ExpiresAt time.Time  `json:"expiresAt"`
 }
+
+type OfferResponseDriver struct {
+	TripID string `json:"tripID"`
+}

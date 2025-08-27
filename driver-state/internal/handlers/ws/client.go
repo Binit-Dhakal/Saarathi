@@ -18,6 +18,7 @@ type Client struct {
 	Send        chan any
 	locationSvc application.LocationService
 	presenceSvc application.PresenceService
+	offerSvc    application.OfferService
 	done        chan struct{}
 	connCleaner chan *Client
 	cleanupOnce sync.Once
@@ -72,12 +73,38 @@ func (c *Client) readPump() {
 				log.Println("Failed to unmarshal location payload: ", err)
 				continue
 			}
-			// How to do this step
+
 			err = c.locationSvc.UpsertDriverLocation(&locationPayload, c.ID)
 			if err != nil {
 				log.Println("Failed to save drivers location: ", err)
 				continue
 			}
+		case "TRIP_ACCEPTED":
+			var tripAssigned dto.OfferResponseDriver
+			if err := json.Unmarshal(baseMessage.Data, &tripAssigned); err != nil {
+				log.Println("Failed to unmarshal assigned response payload: ", err)
+				continue
+			}
+
+			err = c.offerSvc.SendTripAssignedEvent(c.ID, tripAssigned.TripID, "accepted")
+			if err != nil {
+				log.Println("Failed to send event", err)
+				continue
+			}
+
+		case "TRIP_REJECTED":
+			var tripAssigned dto.OfferResponseDriver
+			if err := json.Unmarshal(baseMessage.Data, &tripAssigned); err != nil {
+				log.Println("Failed to unmarshal assigned response payload: ", err)
+				continue
+			}
+
+			err = c.offerSvc.SendTripAssignedEvent(c.ID, tripAssigned.TripID, "rejected")
+			if err != nil {
+				log.Println("Failed to send event", err)
+				continue
+			}
+
 		default:
 			fmt.Println(baseMessage)
 		}

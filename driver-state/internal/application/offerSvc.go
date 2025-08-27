@@ -1,34 +1,44 @@
 package application
 
 import (
-	"fmt"
+	"context"
+	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
-	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
+	"github.com/Binit-Dhakal/Saarathi/pkg/events"
+	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 )
 
 type OfferService interface {
-	SendTripOffer(driverID string, offer any) error
+	SendTripAssignedEvent(driverID string, tripID string, result string) error
 }
 
 type offerService struct {
-	notifier domain.DriverNotifier
+	publisher messagebus.Publisher
 }
 
-func NewOfferService(notifier domain.DriverNotifier) OfferService {
+func NewOfferService(publisher messagebus.Publisher) OfferService {
 	return &offerService{
-		notifier: notifier,
+		publisher: publisher,
 	}
 }
 
-func (o *offerService) SendTripOffer(driverID string, offer any) error {
-	err := o.notifier.NotifyClient(driverID, dto.OfferResponse{
-		Event: "NEW_OFFER",
-		Data:  offer,
-	})
+func (o *offerService) SendTripAssignedEvent(driverID string, tripID string, result string) error {
+	resp := events.TripOfferResponse{
+		TripID:   tripID,
+		DriverID: driverID,
+		Result:   result,
+		AtUnix:   time.Now(),
+	}
+
+	err := o.publisher.Publish(
+		context.Background(),
+		messagebus.TripOfferExchange,
+		events.EventOfferResponse,
+		resp,
+	)
 
 	if err != nil {
-		fmt.Printf("couldn't send to driver %s: %v\n", driverID, err)
+		return err
 	}
 
 	return nil

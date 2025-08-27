@@ -65,6 +65,7 @@ func (h *TripEventHandler) HandleTripEvent(ctx context.Context, evt events.Event
 
 		routingKey := messagebus.DriverRoutingKey(events.EventOfferRequest, instanceID)
 
+		fmt.Println("Publishing ", offerEvent, "to", routingKey)
 		h.publisher.Publish(context.Background(), messagebus.TripOfferExchange, routingKey, offerEvent)
 	}
 
