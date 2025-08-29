@@ -18,30 +18,45 @@ import (
 )
 
 func main() {
-	logger := log.NewStandardLogger()
-	dbpool, err := setup.SetupPostgresDB()
+	err := run()
 	if err != nil {
-		logger.Error("failed to connect to the database", err)
+		fmt.Println("Trips service exitted abnormally: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+func run() (err error) {
+	var cfg TripAppConfig
+	cfg, err = InitConfig()
+	if err != nil {
+		return err
+	}
+
+	logger := log.NewStandardLogger()
+
+	dbpool, err := setup.SetupPostgresDB(cfg.PG.Conn)
+	if err != nil {
+		return err
 	}
 	defer dbpool.Close()
 
-	redisClient, err := setup.SetupRedis()
+	redisClient, err := setup.SetupRedis(cfg.Redis.CacheURL)
 	if err != nil {
-		logger.Error("failed to connect to redis", err)
-		os.Exit(1)
+		return err
 	}
 	defer redisClient.Close()
 
-	rConn, rCh, err := setup.SetupRabbitMQ()
-	if err != nil {
-		logger.Error("failed to connect to rabbitMQ", err)
-		os.Exit(1)
-	}
-	defer rConn.Close()
-	defer rCh.Close()
-
-	bus := messagebus.NewRabbitMQBus(rCh)
+	//
+	// rConn, rCh, err := setup.SetupRabbitMQ()
+	// if err != nil {
+	// 	logger.Error("failed to connect to rabbitMQ", err)
+	// 	os.Exit(1)
+	// }
+	// defer rConn.Close()
+	// defer rCh.Close()
+	//
+	// bus := messagebus.NewRabbitMQBus(rCh)
+	//
 
 	redisRepo := redis.NewRedisFareRepository(redisClient)
 	tripRepo := postgres.NewTripRepository(dbpool)
@@ -59,6 +74,7 @@ func main() {
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)
 	mux.HandleFunc("/api/v1/fare/confirm", tripHandler.ConfirmFare)
+	mux.HandleFunc("/api/v1/trip/updates", tripHandler.TripUpdate)
 
 	server := &http.Server{
 		Addr:         ":8082",

@@ -5,16 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/env"
 	goredis "github.com/redis/go-redis/v9"
 )
 
-func SetupRedis() (*goredis.Client, error) {
-	redisHost := env.GetEnvWithDefault("REDIS_HOST", "localhost")
-	redisPort := env.GetEnvWithDefault("REDIS_PORT", "6379")
-
+func SetupRedis(addr string) (*goredis.Client, error) {
 	client := goredis.NewClient(&goredis.Options{
-		Addr:         fmt.Sprintf("%s:%s", redisHost, redisPort),
+		Addr:         addr,
 		MinIdleConns: 10,
 		PoolSize:     20,
 		PoolTimeout:  time.Second * 5,

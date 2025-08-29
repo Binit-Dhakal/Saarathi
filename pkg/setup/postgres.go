@@ -5,22 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/env"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func SetupPostgresDB() (*pgxpool.Pool, error) {
-	dbHost := env.GetEnvWithDefault("DB_HOST", "localhost")
-	dbPort := env.GetEnvWithDefault("DB_PORT", "5432")
-	dbUser := env.GetEnvWithDefault("DB_USER", "postgres")
-	dbPass := env.GetEnvWithDefault("DB_PASSWORD", "postgres")
-	dbName := env.GetEnvWithDefault("DB_NAME", "saarathi")
-
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		dbUser, dbPass, dbHost, dbPort, dbName)
-
+func SetupPostgresDB(conn string) (*pgxpool.Pool, error) {
 	// Create a connection pool
-	config, err := pgxpool.ParseConfig(dsn)
+	config, err := pgxpool.ParseConfig(conn)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing database config: %w", err)
 	}

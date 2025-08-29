@@ -135,7 +135,6 @@ services:
       DB_PASSWORD: mypassword
       DB_NAME: tripsdb
       PORT: 8080
-      JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
