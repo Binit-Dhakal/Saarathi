@@ -1,0 +1,182 @@
+services:
+  users-db:
+    image: postgres:16
+    container_name: users_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: usersdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+
+  users-migrate:
+    image: migrate/migrate:v4.17.0
+    depends_on:
+      - users-db
+    volumes:
+      - ./users/migrations:/migrations
+    entrypoint: [
+      "migrate",
+      "-path", "/migrations",
+      "-database", "postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable",
+      "up"
+    ]
+    restart: "on-failure"
+
+  users-service:
+    build:
+      context: .
+      dockerfile: users/Dockerfile.dev
+    container_name: users_service
+    depends_on:
+      - users-db
+    environment:
+      ENVIRONMENT: local
+      LOG_LEVEL: DEBUG
+      SHUTDOWN_TIMEOUT: 30s
+      PG_CONN: postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable
+      JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
+    volumes:
+      - ./users:/app/users
+      - /app/users/tmp
+    restart: always
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile.dev
+    container_name: api_gateway
+    depends_on:
+      - users-service
+      - trips-service
+    environment:
+      JWT_PUBLIC_KEY: ${RSA_PUBLIC_KEY}
+      TRUSTED_ORIGINS: "http://saarathi.com:3001,http://driver.saarathi.com:3001"
+    ports:
+      - "8080:8081"
+    volumes:
+      - ./api-gateway:/app/api-gateway
+      - /app/api-gateway/tmp
+    restart: always
+
+  osrm-backend:
+    image: ghcr.io/project-osrm/osrm-backend
+    container_name: osrm_backend
+    command: osrm-routed --algorithm mld /data/nepal-latest.osrm
+    volumes:
+      - ./osrm-data:/data
+    restart: always
+
+  web-app:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    container_name: nextjs_web_app
+    depends_on:
+      - api-gateway
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    restart: "on-failure"
+
+  trips-db:
+    image: postgres:16
+    container_name: trips_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: tripsdb
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_trips_data:/var/lib/postgresql/data
+
+  trips-migrate:
+    image: migrate/migrate:v4.17.0
+    depends_on:
+      - trips-db
+    volumes:
+      - ./trips/migrations:/migrations
+    entrypoint: [
+      "migrate",
+      "-path", "/migrations",
+      "-database", "postgres://myuser:mypassword@trips-db:5432/tripsdb?sslmode=disable",
+      "up"
+    ]
+    restart: "on-failure"
+
+  trips-service:
+    build:
+      context: .
+      dockerfile: trips/Dockerfile.dev
+    container_name: trips_service
+    depends_on:
+      nats:
+        condition: service_healthy
+      trips-db:
+        condition: service_started
+    environment:
+      ENVIRONMENT: local
+      LOG_LEVEL: DEBUG
+      SHUTDOWN_TIMEOUT: 30s
+      PG_CONN: postgres://myuser:mypassword@trips-db:5432/tripsdb?sslmode=disable
+      NATS_URL: nats://nats:4222
+      NATS_STREAM: trips
+      REDIS_CACHEURL: redis://redis:6379/0
+    volumes:
+      - ./trips:/app/trips
+      - /app/trips/tmp
+    restart: always
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 1s 
+      timeout: 3s
+      retries: 5
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: nats
+    restart: unless-stopped
+    ports:
+      - "4222:4222" # client connections
+      - "8222:8222" # monitoring UI
+      - "6222:6222" # clustering (optional)
+    command: [ 
+      "-js",
+      "-m","8222"
+    ]
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+
+volumes:
+  postgres_trips_data:
+  postgres_users_data:
+    external: true
+  web_node_modules:
+  redis_data: 
+    external: true
+  nats_data:
+
+

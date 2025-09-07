@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package trips.v1;
+
+option go_package = "github.com/Binit-Dhakal/Saarathi/tripspb/trips;tripsv1";
+
+message TripCreated {
+  string trip_id = 1;
+  double distance = 2;
+  int32 price = 3;
+  Coordinates pick_up = 4;
+  Coordinates drop_off = 5;
+  string car_type = 6;
+}
+
+message Coordinates {
+  double lat = 1;
+  double lng = 2;
+}

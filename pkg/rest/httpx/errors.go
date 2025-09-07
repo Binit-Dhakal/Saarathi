@@ -3,12 +3,11 @@ package httpx
 import (
 	"fmt"
 	"net/http"
-	"runtime/debug"
 	"strings"
 
-	log "github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	validator "github.com/Binit-Dhakal/Saarathi/pkg/rest/validators"
+	"github.com/rs/zerolog"
 )
 
 type ErrorResponder interface {
@@ -23,12 +22,12 @@ type ErrorResponder interface {
 
 type errorResponderImpl struct {
 	writer *jsonutil.Writer
-	logger log.ILogger
+	logger zerolog.Logger
 }
 
 var _ ErrorResponder = (*errorResponderImpl)(nil)
 
-func NewErrorResponder(jsonWriter *jsonutil.Writer, logger log.ILogger) ErrorResponder {
+func NewErrorResponder(jsonWriter *jsonutil.Writer, logger zerolog.Logger) ErrorResponder {
 	return &errorResponderImpl{
 		writer: jsonWriter,
 		logger: logger,
@@ -37,13 +36,11 @@ func NewErrorResponder(jsonWriter *jsonutil.Writer, logger log.ILogger) ErrorRes
 
 func (e *errorResponderImpl) reportServerError(r *http.Request, err error) {
 	var (
-		message = err.Error()
-		method  = r.Method
-		url     = r.URL.String()
-		trace   = string(debug.Stack())
+		method = r.Method
+		url    = r.URL.String()
 	)
 
-	e.logger.Error(message, err, "method", method, "url", url, "trace", trace)
+	e.logger.Error().Err(err).Stack().Msgf("method: %v, url: %v", method, url)
 }
 
 func (e *errorResponderImpl) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
