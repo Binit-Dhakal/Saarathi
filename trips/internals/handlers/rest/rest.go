@@ -104,3 +104,7 @@ func (t *TripHandler) ConfirmFare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (t *TripHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
+
+}

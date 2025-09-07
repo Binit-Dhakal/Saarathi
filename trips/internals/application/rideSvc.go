@@ -3,10 +3,11 @@ package application
 import (
 	"context"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/events"
-	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
+	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
+	tripsv1 "github.com/Binit-Dhakal/Saarathi/trips/tripspb/proto/trip"
 )
 
 type RideService interface {
@@ -17,10 +18,10 @@ type RideService interface {
 type rideService struct {
 	fareRepo domain.FareRepository
 	tripRepo domain.TripRepository
-	bus      messagebus.Publisher
+	bus      am.EventPublisher
 }
 
-func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, bus messagebus.Publisher) *rideService {
+func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, bus am.EventPublisher) *rideService {
 	return &rideService{
 		fareRepo: fareRepo,
 		tripRepo: tripRepo,
@@ -110,20 +111,20 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	createdEvent := events.TripEventCreated{
-		RideID:   rideId,
+	createdEvent := tripsv1.TripCreated{
+		TripId:   rideId,
 		Distance: ephermalFare.Route.Distance,
-		Price:    fareDetail.TotalPrice,
-		PickUp:   [2]float64{ephermalFare.Route.Source.Lon, ephermalFare.Route.Source.Lat},
-		DropOff:  [2]float64{ephermalFare.Route.Destination.Lon, ephermalFare.Route.Destination.Lat},
+		Price:    int32(fareDetail.TotalPrice),
+		PickUp:   &tripsv1.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
+		DropOff:  &tripsv1.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
 		CarType:  string(fareDetail.Package),
 	}
 
+	event := ddd.NewEvent("trips.created", &createdEvent)
 	err = f.bus.Publish(
 		context.Background(),
-		messagebus.TripEventsExchange,
-		events.EventTripCreated,
-		createdEvent,
+		event.EventName(),
+		event,
 	)
 	if err != nil {
 		return "", err

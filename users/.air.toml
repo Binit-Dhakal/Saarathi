@@ -3,7 +3,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "go build -o ./tmp/users-service ./cmd/main.go"
+cmd = "go build -o ./tmp/users-service ./cmd/*.go"
 bin = "tmp/users-service"
 full_bin = ""
 include_ext = ["go"]

@@ -1,49 +1,65 @@
-package log
+package logger
 
 import (
-	"context"
-	"log/slog"
 	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
 )
 
-type ILogger interface {
-	Debug(msg string, args ...any)
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, err error, args ...any)
+type Level string
+
+type LogConfig struct {
+	Environment string
+	LogLevel    Level
 }
 
-type Logger struct {
-	logger *slog.Logger
-}
+const (
+	TRACE Level = "TRACE"
+	DEBUG Level = "DEBUG"
+	INFO  Level = "INFO"
+	WARN  Level = "WARN"
+	ERROR Level = "ERROR"
+	PANIC Level = "PANIC"
+)
 
-func NewStandardLogger() ILogger {
-	stdoutHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	})
+func New(cfg LogConfig) zerolog.Logger {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-	return &Logger{
-		logger: slog.New(stdoutHandler),
+	switch cfg.Environment {
+	case "production":
+		return zerolog.New(os.Stdout).
+			Level(logLevelToZero(cfg.LogLevel)).
+			With().
+			Timestamp().
+			Logger()
+	default:
+		return zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+			w.TimeFormat = "03:04:05.000PM"
+		})).
+			Level(logLevelToZero(cfg.LogLevel)).
+			With().
+			Timestamp().
+			Logger()
 	}
 }
 
-func (l *Logger) log(level slog.Level, msg string, args ...any) {
-	l.logger.Log(context.TODO(), level, msg, args...)
-}
-
-func (l *Logger) Debug(msg string, args ...any) {
-	l.log(slog.LevelDebug, msg, args...)
-}
-
-func (l *Logger) Info(msg string, args ...any) {
-	l.log(slog.LevelInfo, msg, args...)
-}
-
-func (l *Logger) Warn(msg string, args ...any) {
-	l.log(slog.LevelWarn, msg, args...)
-}
-
-func (l *Logger) Error(msg string, err error, args ...any) {
-	args = append(args, "error", err)
-	l.log(slog.LevelError, msg, args...)
+func logLevelToZero(level Level) zerolog.Level {
+	switch level {
+	case PANIC:
+		return zerolog.PanicLevel
+	case ERROR:
+		return zerolog.ErrorLevel
+	case WARN:
+		return zerolog.WarnLevel
+	case INFO:
+		return zerolog.InfoLevel
+	case DEBUG:
+		return zerolog.DebugLevel
+	case TRACE:
+		return zerolog.TraceLevel
+	default:
+		return zerolog.InfoLevel
+	}
 }

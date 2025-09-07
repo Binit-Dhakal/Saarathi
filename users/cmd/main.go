@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/env"
+	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	log "github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
@@ -16,29 +17,53 @@ import (
 )
 
 func main() {
-	logger := log.NewStandardLogger()
-
-	dbpool, err := setup.SetupPostgresDB()
+	err := run()
 	if err != nil {
-		logger.Error("failed to connect to the database", err)
+		fmt.Printf("Trips service exitted abnormally: %v\n", err)
 		os.Exit(1)
 	}
-	defer dbpool.Close()
+}
 
-	userRepo := postgres.NewUserRepo(dbpool)
-	tokenRepo := postgres.NewTokenRepo(dbpool)
-
-	jwtSecretKey, err := env.GetEnv("JWT_PRIVATE_KEY")
+func infraSetup(app *app) (err error) {
+	app.usersDB, err = setup.SetupPostgresDB(app.cfg.PG.Conn)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	authService := application.NewAuthService(dbpool, userRepo)
-	tokenService := application.NewJWTService(jwtSecretKey, tokenRepo)
+	app.logger = logger.New(log.LogConfig{
+		Environment: app.cfg.Environment,
+		LogLevel:    logger.Level(app.cfg.LogLevel),
+	})
+
+	return nil
+}
+
+func run() (err error) {
+	var cfg UserAppConfig
+	cfg, err = InitConfig()
+	if err != nil {
+		return err
+	}
+
+	app := &app{
+		cfg: cfg,
+	}
+
+	err = infraSetup(app)
+	if err != nil {
+		return
+	}
+	defer app.usersDB.Close()
+
+	userRepo := postgres.NewUserRepo(app.usersDB)
+	tokenRepo := postgres.NewTokenRepo(app.usersDB)
+
+	authService := application.NewAuthService(app.usersDB, userRepo)
+	tokenService := application.NewJWTService(app.cfg.PrivateKey, tokenRepo)
 
 	jsonReader := jsonutil.NewReader()
 	jsonWriter := jsonutil.NewWriter()
-	errorResponder := httpx.NewErrorResponder(jsonWriter, logger)
+	errorResponder := httpx.NewErrorResponder(jsonWriter, app.logger)
 
 	authHandler := rest.NewUserHandler(authService, tokenService, jsonReader, jsonWriter, errorResponder)
 
@@ -56,9 +81,10 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	logger.Info("starting serve on :8080")
+	fmt.Println("starting serve on :8080")
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		logger.Error("server failed", err)
-		os.Exit(1)
+		return err
 	}
+
+	return
 }

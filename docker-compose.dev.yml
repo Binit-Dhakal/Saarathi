@@ -1,4 +1,3 @@
-
 services:
   users-db:
     image: postgres:16
@@ -35,12 +34,10 @@ services:
     depends_on:
       - users-db
     environment:
-      DB_HOST: users-db 
-      DB_PORT: 5432
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
-      DB_NAME: usersdb
-      PORT: 8080
+      ENVIRONMENT: local
+      LOG_LEVEL: DEBUG
+      SHUTDOWN_TIMEOUT: 30s
+      PG_CONN: postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable
       JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
     volumes:
       - ./users:/app/users
@@ -55,8 +52,6 @@ services:
     depends_on:
       - users-service
       - trips-service
-      - ride-matching-service
-      - driver-state-service
     environment:
       JWT_PUBLIC_KEY: ${RSA_PUBLIC_KEY}
       TRUSTED_ORIGINS: "http://saarathi.com:3001,http://driver.saarathi.com:3001"
@@ -122,22 +117,18 @@ services:
       dockerfile: trips/Dockerfile.dev
     container_name: trips_service
     depends_on:
-      rabbitmq:
+      nats:
         condition: service_healthy
       trips-db:
         condition: service_started
-      ride-matching-service:
-        condition: service_started
     environment:
-      DB_HOST:  trips-db
-      DB_PORT: 5432
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
-      DB_NAME: tripsdb
-      PORT: 8080
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
+      ENVIRONMENT: local
+      LOG_LEVEL: DEBUG
+      SHUTDOWN_TIMEOUT: 30s
+      PG_CONN: postgres://myuser:mypassword@trips-db:5432/tripsdb?sslmode=disable
+      NATS_URL: nats://nats:4222
+      NATS_STREAM: trips
+      REDIS_CACHEURL: redis://redis:6379/0
     volumes:
       - ./trips:/app/trips
       - /app/trips/tmp
@@ -157,67 +148,27 @@ services:
       timeout: 3s
       retries: 5
 
-  driver-state-service:
-    build:
-      context: .
-      dockerfile: driver-state/Dockerfile.dev
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-    deploy:
-      mode: replicated
-      replicas: 2
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
-    volumes:
-      - ./driver-state:/app/driver-state
-      - /app/driver-state/tmp
-    restart: always
-
-  ride-matching-service:
-    build:
-      context: .
-      dockerfile: ride-matching/Dockerfile.dev 
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    deploy:
-      mode: replicated
-      replicas: 2
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      AMQP_ADDRESS: "amqp://guest:guest@rabbitmq:5672/"
-      DB_HOST: users-db 
-      DB_PORT: 5432
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
-      DB_NAME: usersdb
-    volumes:
-      - ./ride-matching:/app/ride-matching
-      - /app/ride-matching/tmp
-
-
-  rabbitmq:
-    image: rabbitmq:4.1-management
-    container_name: rabbitmq
+  nats:
+    image: nats:2.10-alpine
+    container_name: nats
+    restart: unless-stopped
     ports:
-      - 5675:5672
-      - 15675:15672
+      - "4222:4222" # client connections
+      - "8222:8222" # monitoring UI
+      - "6222:6222" # clustering (optional)
+    command: [ 
+      "-js",
+      "-m","8222"
+    ]
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - nats_data:/data
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s 
-      timeout: 10s 
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 5s
+
 
 volumes:
   postgres_trips_data:
@@ -226,5 +177,6 @@ volumes:
   web_node_modules:
   redis_data: 
     external: true
-  rabbitmq_data:
+  nats_data:
+
 
