@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  labels:
+    app: api-gateway
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: api-gateway
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8080
+          env:
+            - name: JWT_PUBLIC_KEY
+              valueFrom: 
+                secretKeyRef:
+                  name: api-gateway-secrets
+                  key: JWT_PUBLIC_KEY 
+            - name: TRUSTED_ORIGINS
+              value: "http://saarathi.com:3001,http://driver.saarathi.com:3001"
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /app/api-gateway/tmp
+
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}

@@ -1,0 +1,6 @@
+# Ignore everything
+**
+
+# Allow only OSRM data
+!/osrm-data/
+

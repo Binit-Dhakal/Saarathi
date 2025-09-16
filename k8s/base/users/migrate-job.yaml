@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: users-migrate
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: migrate/migrate:v4.17.0
+          command: ["migrate"]
+          args:
+            - "-path=/migrations"
+            - "-database=$(PG_CONN)"
+            - "up"
+          envFrom:
+            - secretRef:
+                name: users-secrets
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+      volumes:
+        - name: migrations
+          configMap:  
+            name: users-migrations
+

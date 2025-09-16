@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trips 
+  labels:
+    app: trips 
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: trips
+  template:
+    metadata:
+      labels:
+        app: trips
+    spec:
+      containers:
+        - name: trips
+          image: trips-service
+          imagePullPolicy: IfNotPresent
+          ports: 
+            - containerPort: 8081
+          envFrom:
+            - secretRef:
+                name: trips-secrets
+          env:  
+            - name: ENVIRONMENT
+              value: local 
+            - name: LOG_LEVEL
+              value: DEBUG
+            - name: SHUTDOWN_TIMEOUT
+              value: "30s"
+            - name: NATS_STREAM
+              value: trips
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /app/trips/tmp
+
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}

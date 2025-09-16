@@ -99,14 +99,14 @@ func run() (err error) {
 	mux.HandleFunc("/api/v1/trip/updates", tripHandler.TripUpdate)
 
 	server := &http.Server{
-		Addr:         ":8082",
+		Addr:         ":8070",
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
-	fmt.Println("starting server on :8082")
+	fmt.Println("starting server on :8070")
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Fprint(os.Stderr, "server failed", err)
 		os.Exit(1)

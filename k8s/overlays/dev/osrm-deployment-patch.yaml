@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osrm-backend
+spec:
+  template:
+    spec:
+      volumes:
+        - name: osrm-data
+          persistentVolumeClaim:
+            claimName: osrm-pvc
+

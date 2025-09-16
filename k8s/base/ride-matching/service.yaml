@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ride-matching-service
+  labels:
+    app: ride-matching
+spec:
+  type: ClusterIP
+  selector:
+    app: ride-matching
+  ports:
+    - name: http
+      port: 8060
+      targetPort: 8060

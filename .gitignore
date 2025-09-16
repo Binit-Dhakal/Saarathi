@@ -3,3 +3,5 @@ public.key
 
 .env
 osrm-data/
+
+secret.yaml
