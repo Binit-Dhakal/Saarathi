@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package trips.v1;
 
-option go_package = "github.com/Binit-Dhakal/Saarathi/tripspb/trips;tripsv1";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb";
 
 message TripCreated {
   string trip_id = 1;
