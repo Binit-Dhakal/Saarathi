@@ -14,6 +14,8 @@ type tripRepository struct {
 	pool *pgxpool.Pool
 }
 
+var _ domain.TripRepository = (*tripRepository)(nil)
+
 func NewTripRepository(pool *pgxpool.Pool) *tripRepository {
 	return &tripRepository{
 		pool: pool,
@@ -95,4 +97,20 @@ func (t *tripRepository) SaveRideDetail(rideModel domain.RideModel) (string, err
 	rideID = rideUUID.String()
 
 	return rideID, nil
+}
+
+func (t *tripRepository) UpdateTripDetail(tripID string, driverID string) error {
+	query := `
+		UPDATE rides set driver_id=$1 where id=$2 
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := t.pool.Exec(ctx, query, driverID, tripID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -10,27 +10,74 @@ import (
 	"syscall"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/events"
+	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
+	"github.com/nats-io/nats.go"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
+	err := run()
+	if err != nil {
+		fmt.Printf("Trips service exitted abnormally: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func infraSetup(app *app) (err error) {
+	app.usersDB, err = setup.SetupPostgresDB(app.cfg.PG.Conn)
+	if err != nil {
+		return err
+	}
+
+	app.cacheClient, err = setup.SetupRedis(app.cfg.Redis.CacheURL)
+	if err != nil {
+		return err
+	}
+
+	app.nc, err = nats.Connect(app.cfg.Nats.URL)
+	if err != nil {
+		return err
+	}
+
+	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
+	if err != nil {
+		return err
+	}
+
+	app.logger = logger.New(logger.LogConfig{
+		Environment: app.cfg.Environment,
+		LogLevel:    logger.Level(app.cfg.LogLevel),
+	})
+
+	return nil
+}
+
+func run() (err error) {
+	var cfg MatchAppConfig
+	cfg, err = InitConfig()
+	if err != nil {
+		return err
+	}
+
+	app := &app{
+		cfg: cfg,
+	}
+
+	err = infraSetup(app)
+	if err != nil {
+		return
+	}
+	defer app.usersDB.Close()
+	defer app.cacheClient.Close()
+	defer app.nc.Close()
+
 	ctx, cancel := context.WithCancel(context.Background())
-
-	client, err := setup.SetupRedis()
-	if err != nil {
-		log.Fatal("Couldn't setup redis:", err)
-	}
-
-	usersDB, err := setup.SetupPostgresDB()
-	if err != nil {
-		log.Fatal("Couldn't setup users db:", err)
-	}
 
 	conn, ch, err := setup.SetupRabbitMQ()
 	if err != nil {

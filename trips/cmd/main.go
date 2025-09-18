@@ -9,11 +9,11 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
-	log "github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
+	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/redis"
@@ -49,7 +49,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.logger = logger.New(log.LogConfig{
+	app.logger = logger.New(logger.LogConfig{
 		Environment: app.cfg.Environment,
 		LogLevel:    logger.Level(app.cfg.LogLevel),
 	})
@@ -85,13 +85,16 @@ func run() (err error) {
 
 	rideService := application.NewRideService(redisRepo, tripRepo, eventStream)
 	routeService := application.NewRouteService()
+	integrationService := application.NewRideIntegrationService(tripRepo)
 
 	jsonWriter := jsonutil.NewWriter()
 	jsonReader := jsonutil.NewReader()
 	errorResponder := httpx.NewErrorResponder(jsonWriter, app.logger)
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
+	integrationHandler := messaging.NewIntegrationEventHandlers(integrationService)
 
+	messaging.RegisterIntegrationEventHandlers()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)

@@ -106,5 +106,28 @@ func (t *TripHandler) ConfirmFare(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *TripHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	updates := make(chan string)
+
+	notify := r.Context().Done()
+
+	for {
+		select {
+		case <-notify:
+			fmt.Println("Client disconnected")
+			return
+		case msg := <-updates:
+			fmt.Fprintf(w, "data: %s\n\n", msg)
+			flusher.Flush()
+		}
+	}
 }

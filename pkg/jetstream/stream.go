@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"sync"
-	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/nats-io/nats.go"
@@ -21,7 +20,7 @@ type Stream struct {
 	logger     zerolog.Logger
 }
 
-var _ am.MessageStream = (*Stream)(nil)
+var _ am.RawMessageStream = (*Stream)(nil)
 
 func NewStream(streamName string, js nats.JetStreamContext, logger zerolog.Logger) *Stream {
 	return &Stream{
@@ -31,7 +30,7 @@ func NewStream(streamName string, js nats.JetStreamContext, logger zerolog.Logge
 	}
 }
 
-func (s *Stream) Publish(ctx context.Context, topicName string, msg am.Message) (err error) {
+func (s *Stream) Publish(ctx context.Context, topicName string, msg am.RawMessage) (err error) {
 	var data []byte
 
 	data, err = json.Marshal(msg)
@@ -70,7 +69,7 @@ func (s *Stream) Publish(ctx context.Context, topicName string, msg am.Message) 
 	return
 }
 
-func (s *Stream) Subscribe(topicName string, handler am.MessageHandler, options ...am.SubscriberOption) (am.Subscription, error) {
+func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, options ...am.SubscriberOption) (am.Subscription, error) {
 	var err error
 
 	s.mu.Lock()
@@ -139,7 +138,7 @@ func (s *Stream) Unsubscribe() error {
 	return nil
 }
 
-func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.MessageHandler) func(*nats.Msg) {
+func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.RawMessageHandler) func(*nats.Msg) {
 	var filters map[string]struct{}
 	if len(cfg.MessageFilters()) > 0 {
 		filters = make(map[string]struct{})
@@ -149,7 +148,7 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.MessageHandler) f
 	}
 
 	return func(natsMsg *nats.Msg) {
-		var m am.Message
+		var m am.RawMessage
 		err := json.Unmarshal(natsMsg.Data, &m)
 		if err != nil {
 			s.logger.Warn().Err(err).Msg("failed to unmarshal the *nats.Msg")
@@ -168,18 +167,14 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.MessageHandler) f
 		}
 
 		msg := &rawMessage{
-			id:         m.ID(),
-			name:       m.MessageName(),
-			subject:    m.Subject(),
-			data:       m.Data(),
-			metadata:   m.Metadata(),
-			sentAt:     m.SentAt(),
-			receivedAt: time.Now(),
-			acked:      false,
-			ackFn:      func() error { return natsMsg.Ack() },
-			nackFn:     func() error { return natsMsg.Nak() },
-			extendFn:   func() error { return natsMsg.InProgress() },
-			killFn:     func() error { return natsMsg.Term() },
+			id:       m.ID(),
+			name:     m.MessageName(),
+			data:     m.Data(),
+			acked:    false,
+			ackFn:    func() error { return natsMsg.Ack() },
+			nackFn:   func() error { return natsMsg.Nak() },
+			extendFn: func() error { return natsMsg.InProgress() },
+			killFn:   func() error { return natsMsg.Term() },
 		}
 
 		wCtx, cancel := context.WithTimeout(context.Background(), cfg.AckWait())
