@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
+	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
@@ -77,8 +79,15 @@ func run() (err error) {
 	defer app.cacheClient.Close()
 	defer app.nc.Close()
 
+	reg := registry.NewRegistry()
+
+	err = tripspb.Registration(reg)
+	if err != nil {
+		return err
+	}
+
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
-	eventStream := am.NewEventPublisher(stream)
+	eventStream := am.NewEventStream(reg, stream)
 
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
@@ -94,7 +103,7 @@ func run() (err error) {
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
 	integrationHandler := messaging.NewIntegrationEventHandlers(integrationService)
 
-	messaging.RegisterIntegrationEventHandlers()
+	messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)

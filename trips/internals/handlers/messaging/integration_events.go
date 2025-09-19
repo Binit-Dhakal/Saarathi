@@ -8,7 +8,6 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
-	ridematchingv1 "github.com/Binit-Dhakal/Saarathi/trips/tripspb/proto/ride_matching"
 )
 
 type integrationHandlers[T ddd.Event] struct {
@@ -23,8 +22,12 @@ func NewIntegrationEventHandlers(integrationSvc application.RideIntegrationServi
 	}
 }
 
-func RegisterIntegrationEventHandlers(subscriber am.MessageSubsciber, handlers am.MessageHandler) (err error) {
-	_, err = subscriber.Subscribe("TRIPS", handlers, am.MessageFilter{
+func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers ddd.EventHandler[ddd.Event]) (err error) {
+	evtMsgHandler := am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, eventMsg am.IncomingEventMessage) error {
+		return handlers.HandleEvent(ctx, eventMsg)
+	})
+
+	err = subscriber.Subscribe("TRIPS", evtMsgHandler, am.MessageFilter{
 		rmspb.DriverAcceptedEvent,
 	})
 
@@ -44,7 +47,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 }
 
 func (h integrationHandlers[T]) onDriverAccepted(ctx context.Context, event ddd.Event) error {
-	payload := event.Payload().(*ridematchingv1.DriverAccepted)
+	payload := event.Payload().(*rmspb.DriverAccepted)
 
 	acceptedDTO := dto.DriverAccepted{
 		TripID:   payload.TripId,

@@ -69,7 +69,7 @@ func (s *Stream) Publish(ctx context.Context, topicName string, msg am.RawMessag
 	return
 }
 
-func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, options ...am.SubscriberOption) (am.Subscription, error) {
+func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, options ...am.SubscriberOption) error {
 	var err error
 
 	s.mu.Lock()
@@ -109,7 +109,7 @@ func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, optio
 
 	_, err = s.js.AddConsumer(s.streamName, cfg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var sub *nats.Subscription
@@ -122,7 +122,7 @@ func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, optio
 
 	s.subs = append(s.subs, sub)
 
-	return subscription{s: sub}, nil
+	return nil
 }
 
 func (s *Stream) Unsubscribe() error {
@@ -208,6 +208,5 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.RawMessageHandler
 		case <-wCtx.Done():
 			return
 		}
-
 	}
 }

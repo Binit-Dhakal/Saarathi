@@ -106,6 +106,12 @@ func (t *TripHandler) ConfirmFare(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *TripHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
+	tripID := r.URL.Query().Get("tripId")
+	if tripID == "" {
+		http.Error(w, "missing tripId", http.StatusBadRequest)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")

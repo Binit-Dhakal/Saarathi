@@ -20,9 +20,18 @@ type IncomingEventMessage interface {
 	ddd.Event
 }
 
-type EventPublisher = MessagePublisher[ddd.Event]
-type EventSubscriber = MessageSubscriber[IncomingEventMessage]
-type EventStream = MessageStream[ddd.Event, IncomingEventMessage]
+type EventPublisher interface {
+	Publish(ctx context.Context, topicName string, msg ddd.Event) error
+}
+
+type EventSubscriber interface {
+	Subscribe(topicName string, handler MessageHandler[IncomingEventMessage], options ...SubscriberOption) error
+}
+
+type EventStream interface {
+	EventPublisher
+	EventSubscriber
+}
 
 type eventMessage struct {
 	id        string
@@ -34,13 +43,13 @@ type eventMessage struct {
 
 type eventStream struct {
 	reg    registry.Registry
-	stream RawMessageStream
+	stream Transport
 }
 
 var _ EventMessage = (*eventMessage)(nil)
 var _ EventStream = (*eventStream)(nil)
 
-func NewEventStream(reg registry.Registry, stream RawMessageStream) EventStream {
+func NewEventStream(reg registry.Registry, stream Transport) EventStream {
 	return &eventStream{
 		reg:    reg,
 		stream: stream,
