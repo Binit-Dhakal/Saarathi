@@ -6,31 +6,9 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-type CommandMessage interface {
-	Message
-	ddd.Command
-}
-
-type IncomingCommandMessage interface {
-	IncomingMessage
-	ddd.Command
-}
-
-type CommandMessageHandler interface {
-	HandleMessage(ctx context.Context, msg IncomingCommandMessage) (ddd.Reply, error)
-}
-
-type CommandMessageHandlerFunc func(ctx context.Context, msg IncomingCommandMessage) (ddd.Reply, error)
-
-type CommandSender interface {
-	Send(ctx context.Context, topicName string, cmd ddd.Command)
-}
-
-type CommandSubscriber interface {
-	Subscribe(topicName string, handler CommandMessageHandler, options ...SubscriberOption) error
-}
 
 type CommandBus interface {
 	CommandSender
@@ -39,29 +17,110 @@ type CommandBus interface {
 
 type commandBus struct {
 	reg    registry.Registry
-	broker Transport
+	broker RequestTransport
 }
 
-type commandMessage struct {
-	id         string
-	name       string
-	payload    ddd.CommandPayload
-	occurredAt time.Time
-	msg        IncomingMessage
+var _ CommandBus = (*commandBus)(nil)
+
+func NewCommandBus(reg registry.Registry, broker RequestTransport) CommandBus {
+	return &commandBus{
+		reg:    reg,
+		broker: broker,
+	}
 }
 
-func (f CommandMessageHandlerFunc) HandleMessage(ctx context.Context, msg IncomingCommandMessage) (ddd.Reply, error) {
-	return f(ctx, msg)
+func (b *commandBus) Send(ctx context.Context, topicName string, cmd ddd.Command) (RawMessage, error) {
+	payload, err := b.reg.Serialize(cmd.CommandName(), cmd.Payload())
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := proto.Marshal(&CommandMessageData{
+		Payload:   payload,
+		OccuredAt: timestamppb.New(cmd.OccuredAt()),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return b.broker.Request(ctx, topicName, &rawMessage{
+		id:   cmd.ID(),
+		name: cmd.CommandName(),
+		data: data,
+	})
 }
 
-var _ CommandMessage = (*commandMessage)(nil)
+func (b *commandBus) Subscribe(topicName string, handler CommandMessageHandler, options ...SubscriberOption) error {
+	cfg := NewSubscriberConfig(options)
 
-func (c commandMessage) ID() string                  { return c.id }
-func (c commandMessage) CommandName() string         { return c.name }
-func (c commandMessage) Payload() ddd.CommandPayload { return c.payload }
-func (c commandMessage) OccuredAt() time.Time        { return c.occurredAt }
-func (c commandMessage) MessageName() string         { return c.msg.MessageName() }
-func (c commandMessage) Ack() error                  { return c.msg.Ack() }
-func (c commandMessage) NAck() error                 { return c.msg.NAck() }
-func (c commandMessage) Extend() error               { return c.msg.Extend() }
-func (c commandMessage) Kill() error                 { return c.msg.Kill() }
+	var filters map[string]struct{}
+	if len(cfg.MessageFilters()) > 0 {
+		filters := make(map[string]struct{})
+		for _, key := range cfg.MessageFilters() {
+			filters[key] = struct{}{}
+		}
+	}
+
+	replyHandler := func(ctx context.Context, req RawMessage) (RawMessage, error) {
+		var commandData CommandMessageData
+
+		if filters != nil {
+			if _, exists := filters[req.MessageName()]; !exists {
+				return nil, nil
+			}
+		}
+
+		err := proto.Unmarshal(req.Data(), &commandData)
+		if err != nil {
+			return nil, err
+		}
+
+		commandName := req.MessageName()
+
+		payload, err := b.reg.Deserialize(commandName, commandData.GetPayload())
+		if err != nil {
+			return nil, err
+		}
+
+		commandMsg := commandMessage{
+			id:         req.ID(),
+			name:       commandName,
+			payload:    payload,
+			occurredAt: commandData.GetOccuredAt().AsTime(),
+			msg:        nil,
+		}
+
+		resp, err := handler.HandleMessage(ctx, commandMsg)
+		if err != nil {
+			return nil, err
+		}
+
+		respPayload, err := b.reg.Serialize(resp.ReplyName(), resp.Payload())
+		if err != nil {
+			return nil, err
+		}
+
+		replyProto := ReplyMessageData{
+			Payload:    respPayload,
+			OccurredAt: timestamppb.Now(),
+		}
+
+		bts, err := proto.Marshal(&replyProto)
+		if err != nil {
+			return nil, err
+		}
+
+		return rawMessage{
+			id:   resp.ID(),
+			name: resp.ReplyName(),
+			data: bts,
+		}, nil
+	}
+
+	return b.broker.Reply(topicName, replyHandler, options...)
+}
+
+func (b *commandBus) Unsubscribe() error {
+	return b.broker.Close()
+}

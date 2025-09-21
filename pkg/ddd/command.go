@@ -1,6 +1,7 @@
 package ddd
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,12 @@ type Command interface {
 	Payload() CommandPayload
 	OccuredAt() time.Time
 }
+
+type CommandHandler interface {
+	HandleCommand(ctx context.Context, cmd Command) (Reply, error)
+}
+
+type CommandHandlerFunc func(ctx context.Context, cmd Command) (Reply, error)
 
 type command struct {
 	Entity
@@ -36,3 +43,7 @@ func (c command) ID() string              { return c.Entity.ID() }
 func (c command) CommandName() string     { return c.Entity.EntityName() }
 func (c command) Payload() CommandPayload { return c.payload }
 func (c command) OccuredAt() time.Time    { return c.occuredAt }
+
+func (c CommandHandlerFunc) HandleCommand(ctx context.Context, cmd Command) (Reply, error) {
+	return c(ctx, cmd)
+}

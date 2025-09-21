@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
-	tripsv1 "github.com/Binit-Dhakal/Saarathi/trips/tripspb/proto/trip"
 )
 
 type RideService interface {
@@ -111,12 +111,12 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	createdEvent := tripsv1.TripCreated{
+	createdEvent := tripspb.TripCreated{
 		TripId:   rideId,
 		Distance: ephermalFare.Route.Distance,
 		Price:    int32(fareDetail.TotalPrice),
-		PickUp:   &tripsv1.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
-		DropOff:  &tripsv1.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
+		PickUp:   &tripspb.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
+		DropOff:  &tripspb.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
 		CarType:  string(fareDetail.Package),
 	}
 

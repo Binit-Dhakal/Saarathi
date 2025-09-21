@@ -21,7 +21,7 @@ type requestReplyBus struct {
 
 var _ RequestReplyBus = (*requestReplyBus)(nil)
 
-func NewRequestReplyBus(t RequestTransport, reg registry.Registry) RequestReplyBus {
+func NewRequestReplyBus(reg registry.Registry, t RequestTransport) RequestReplyBus {
 	return &requestReplyBus{
 		broker: t,
 		reg:    reg,
@@ -29,10 +29,9 @@ func NewRequestReplyBus(t RequestTransport, reg registry.Registry) RequestReplyB
 }
 
 func (b *requestReplyBus) Request(ctx context.Context, topic string, cmd ddd.Command) (ddd.Reply, error) {
-	emptyReply := ddd.NewReply("", "", "")
 	payload, err := b.reg.Serialize(cmd.CommandName(), cmd.Payload())
 	if err != nil {
-		return emptyReply, err
+		return nil, err
 	}
 
 	data, err := proto.Marshal(&CommandMessageData{
@@ -41,7 +40,7 @@ func (b *requestReplyBus) Request(ctx context.Context, topic string, cmd ddd.Com
 	})
 
 	if err != nil {
-		return emptyReply, err
+		return nil, err
 	}
 
 	msg, err := b.broker.Request(ctx, topic, rawMessage{
@@ -51,12 +50,12 @@ func (b *requestReplyBus) Request(ctx context.Context, topic string, cmd ddd.Com
 	})
 
 	if err != nil {
-		return emptyReply, err
+		return nil, err
 	}
 
 	p, err := b.reg.Deserialize(msg.MessageName(), msg.Data())
 	if err != nil {
-		return emptyReply, err
+		return nil, err
 	}
 
 	return ddd.NewReply(msg.ID(), msg.MessageName(), p), nil

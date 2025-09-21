@@ -10,6 +10,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
+	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
@@ -89,21 +90,27 @@ func run() (err error) {
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 	eventStream := am.NewEventStream(reg, stream)
 
+	commandBus := natscore.NewCommandBus(app.nc, app.logger)
+	commandBroker := am.NewRequestReplyBus(reg, commandBus)
+
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
 
 	rideService := application.NewRideService(redisRepo, tripRepo, eventStream)
 	routeService := application.NewRouteService()
-	integrationService := application.NewRideIntegrationService(tripRepo)
+	commandService := application.NewRideCommandService(tripRepo, eventStream)
+	// integrationService := application.NewRideIntegrationService(tripRepo)
 
 	jsonWriter := jsonutil.NewWriter()
 	jsonReader := jsonutil.NewReader()
 	errorResponder := httpx.NewErrorResponder(jsonWriter, app.logger)
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
-	integrationHandler := messaging.NewIntegrationEventHandlers(integrationService)
+	commandHandler := messaging.NewCommandHandler(commandService)
+	// integrationHandler := messaging.NewIntegrationEventHandlers(integrationService)
 
-	messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
+	// messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
+	messaging.RegisterCommandHandlers(commandBroker, commandHandler)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)

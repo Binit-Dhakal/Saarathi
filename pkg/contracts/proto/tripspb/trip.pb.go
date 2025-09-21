@@ -157,6 +157,195 @@ func (x *Coordinates) GetLng() float64 {
 	return 0
 }
 
+type TripConfirmed struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverId      string                 `protobuf:"bytes,2,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	Price         int32                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	DriverName    string                 `protobuf:"bytes,4,opt,name=driver_name,json=driverName,proto3" json:"driver_name,omitempty"`
+	VehicleNumber string                 `protobuf:"bytes,5,opt,name=vehicle_number,json=vehicleNumber,proto3" json:"vehicle_number,omitempty"`
+	ContactNumber string                 `protobuf:"bytes,6,opt,name=contact_number,json=contactNumber,proto3" json:"contact_number,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripConfirmed) Reset() {
+	*x = TripConfirmed{}
+	mi := &file_proto_tripspb_trip_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripConfirmed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripConfirmed) ProtoMessage() {}
+
+func (x *TripConfirmed) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tripspb_trip_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripConfirmed.ProtoReflect.Descriptor instead.
+func (*TripConfirmed) Descriptor() ([]byte, []int) {
+	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TripConfirmed) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *TripConfirmed) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+func (x *TripConfirmed) GetPrice() int32 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *TripConfirmed) GetDriverName() string {
+	if x != nil {
+		return x.DriverName
+	}
+	return ""
+}
+
+func (x *TripConfirmed) GetVehicleNumber() string {
+	if x != nil {
+		return x.VehicleNumber
+	}
+	return ""
+}
+
+func (x *TripConfirmed) GetContactNumber() string {
+	if x != nil {
+		return x.ContactNumber
+	}
+	return ""
+}
+
+// Command
+type AcceptDriver struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AcceptDriver) Reset() {
+	*x = AcceptDriver{}
+	mi := &file_proto_tripspb_trip_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AcceptDriver) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AcceptDriver) ProtoMessage() {}
+
+func (x *AcceptDriver) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tripspb_trip_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AcceptDriver.ProtoReflect.Descriptor instead.
+func (*AcceptDriver) Descriptor() ([]byte, []int) {
+	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AcceptDriver) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+func (x *AcceptDriver) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+type AcceptDriverResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	ErrorMessage  string                 `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AcceptDriverResponse) Reset() {
+	*x = AcceptDriverResponse{}
+	mi := &file_proto_tripspb_trip_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AcceptDriverResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AcceptDriverResponse) ProtoMessage() {}
+
+func (x *AcceptDriverResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_tripspb_trip_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AcceptDriverResponse.ProtoReflect.Descriptor instead.
+func (*AcceptDriverResponse) Descriptor() ([]byte, []int) {
+	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AcceptDriverResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AcceptDriverResponse) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
 var File_proto_tripspb_trip_proto protoreflect.FileDescriptor
 
 const file_proto_tripspb_trip_proto_rawDesc = "" +
@@ -171,7 +360,21 @@ const file_proto_tripspb_trip_proto_rawDesc = "" +
 	"\bcar_type\x18\x06 \x01(\tR\acarType\"1\n" +
 	"\vCoordinates\x12\x10\n" +
 	"\x03lat\x18\x01 \x01(\x01R\x03lat\x12\x10\n" +
-	"\x03lng\x18\x02 \x01(\x01R\x03lngB>Z<github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspbb\x06proto3"
+	"\x03lng\x18\x02 \x01(\x01R\x03lng\"\xca\x01\n" +
+	"\rTripConfirmed\x12\x17\n" +
+	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
+	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x05R\x05price\x12\x1f\n" +
+	"\vdriver_name\x18\x04 \x01(\tR\n" +
+	"driverName\x12%\n" +
+	"\x0evehicle_number\x18\x05 \x01(\tR\rvehicleNumber\x12%\n" +
+	"\x0econtact_number\x18\x06 \x01(\tR\rcontactNumber\"D\n" +
+	"\fAcceptDriver\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"U\n" +
+	"\x14AcceptDriverResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
+	"\rerror_message\x18\x02 \x01(\tR\ferrorMessageB>Z<github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspbb\x06proto3"
 
 var (
 	file_proto_tripspb_trip_proto_rawDescOnce sync.Once
@@ -185,10 +388,13 @@ func file_proto_tripspb_trip_proto_rawDescGZIP() []byte {
 	return file_proto_tripspb_trip_proto_rawDescData
 }
 
-var file_proto_tripspb_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_tripspb_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_tripspb_trip_proto_goTypes = []any{
-	(*TripCreated)(nil), // 0: trips.v1.TripCreated
-	(*Coordinates)(nil), // 1: trips.v1.Coordinates
+	(*TripCreated)(nil),          // 0: trips.v1.TripCreated
+	(*Coordinates)(nil),          // 1: trips.v1.Coordinates
+	(*TripConfirmed)(nil),        // 2: trips.v1.TripConfirmed
+	(*AcceptDriver)(nil),         // 3: trips.v1.AcceptDriver
+	(*AcceptDriverResponse)(nil), // 4: trips.v1.AcceptDriverResponse
 }
 var file_proto_tripspb_trip_proto_depIdxs = []int32{
 	1, // 0: trips.v1.TripCreated.pick_up:type_name -> trips.v1.Coordinates
@@ -211,7 +417,7 @@ func file_proto_tripspb_trip_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_tripspb_trip_proto_rawDesc), len(file_proto_tripspb_trip_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

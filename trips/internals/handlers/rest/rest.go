@@ -1,9 +1,13 @@
 package rest
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
@@ -16,6 +20,7 @@ type TripHandler struct {
 	routeSvc       application.RouteService
 	jsonReader     *jsonutil.Reader
 	jsonWriter     *jsonutil.Writer
+	subscriber     am.EventSubscriber
 	errorResponder httpx.ErrorResponder
 }
 
@@ -122,7 +127,32 @@ func (t *TripHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updates := make(chan string)
+	updates := make(chan string, 10)
+	t.subscriber.Subscribe(
+		tripspb.AggregateChannel,
+		am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, msg am.IncomingEventMessage) error {
+			evt := msg.Payload().(*tripspb.TripConfirmed)
+
+			data := dto.TripConfirmed{
+				TripID:        evt.GetTripId(),
+				DriverID:      evt.GetDriverId(),
+				DriverName:    evt.GetDriverName(),
+				VehicleNumber: evt.GetVehicleNumber(),
+				ContactNumber: evt.GetVehicleNumber(),
+				Status:        "driver-confirmed",
+			}
+
+			b, err := json.Marshal(data)
+			if err != nil {
+				return err
+			}
+
+			updates <- string(b)
+
+			return msg.Ack()
+		}),
+		am.MessageFilter{fmt.Sprintf("trips.%s.*", tripID)},
+	)
 
 	notify := r.Context().Done()
 

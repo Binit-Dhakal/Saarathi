@@ -17,3 +17,22 @@ message Coordinates {
   double lat = 1;
   double lng = 2;
 }
+
+message TripConfirmed {
+  string trip_id = 1;
+  string driver_id = 2;
+  string driver_name = 3;
+  string vehicle_number = 4;
+  string contact_number = 5;
+}
+
+// Command
+message AcceptDriver {
+  string driver_id = 1;
+  string trip_id = 2;
+}
+
+message AcceptDriverResponse {
+  bool success = 1;
+  string error_message = 2;
+}

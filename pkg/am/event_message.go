@@ -121,7 +121,7 @@ func (s eventStream) Subscribe(topicName string, handler MessageHandler[Incoming
 		return handler.HandleMessage(ctx, eventMsg)
 	})
 
-	return s.stream.Subscribe(topicName, fn, options...)
+	return s.stream.Subscribe(context.Background(), topicName, fn, options...)
 }
 
 func (e eventMessage) ID() string                { return e.id }

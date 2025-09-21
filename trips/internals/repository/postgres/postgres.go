@@ -99,7 +99,7 @@ func (t *tripRepository) SaveRideDetail(rideModel domain.RideModel) (string, err
 	return rideID, nil
 }
 
-func (t *tripRepository) UpdateTripDetail(tripID string, driverID string) error {
+func (t *tripRepository) AssignDriverToTrip(tripID string, driverID string) error {
 	query := `
 		UPDATE rides set driver_id=$1 where id=$2 
 	`

@@ -20,7 +20,7 @@ type Stream struct {
 	logger     zerolog.Logger
 }
 
-var _ am.RawMessageStream = (*Stream)(nil)
+var _ am.Transport = (*Stream)(nil)
 
 func NewStream(streamName string, js nats.JetStreamContext, logger zerolog.Logger) *Stream {
 	return &Stream{
@@ -69,7 +69,7 @@ func (s *Stream) Publish(ctx context.Context, topicName string, msg am.RawMessag
 	return
 }
 
-func (s *Stream) Subscribe(topicName string, handler am.RawMessageHandler, options ...am.SubscriberOption) error {
+func (s *Stream) Subscribe(ctx context.Context, topicName string, handler am.RawMessageHandler, options ...am.SubscriberOption) error {
 	var err error
 
 	s.mu.Lock()
