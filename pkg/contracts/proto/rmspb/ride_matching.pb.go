@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
+	sync "sync"
 	unsafe "unsafe"
 )
 
@@ -20,13 +21,83 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type TripMatched struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverId      string                 `protobuf:"bytes,2,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripMatched) Reset() {
+	*x = TripMatched{}
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripMatched) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripMatched) ProtoMessage() {}
+
+func (x *TripMatched) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripMatched.ProtoReflect.Descriptor instead.
+func (*TripMatched) Descriptor() ([]byte, []int) {
+	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *TripMatched) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *TripMatched) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
 var File_proto_rmspb_ride_matching_proto protoreflect.FileDescriptor
 
 const file_proto_rmspb_ride_matching_proto_rawDesc = "" +
 	"\n" +
-	"\x1fproto/rmspb/ride_matching.proto\x12\x0fridematching.v1B<Z:github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspbb\x06proto3"
+	"\x1fproto/rmspb/ride_matching.proto\x12\x0fridematching.v1\"C\n" +
+	"\vTripMatched\x12\x17\n" +
+	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
+	"\tdriver_id\x18\x02 \x01(\tR\bdriverIdB<Z:github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspbb\x06proto3"
 
-var file_proto_rmspb_ride_matching_proto_goTypes = []any{}
+var (
+	file_proto_rmspb_ride_matching_proto_rawDescOnce sync.Once
+	file_proto_rmspb_ride_matching_proto_rawDescData []byte
+)
+
+func file_proto_rmspb_ride_matching_proto_rawDescGZIP() []byte {
+	file_proto_rmspb_ride_matching_proto_rawDescOnce.Do(func() {
+		file_proto_rmspb_ride_matching_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_rmspb_ride_matching_proto_rawDesc), len(file_proto_rmspb_ride_matching_proto_rawDesc)))
+	})
+	return file_proto_rmspb_ride_matching_proto_rawDescData
+}
+
+var file_proto_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_proto_rmspb_ride_matching_proto_goTypes = []any{
+	(*TripMatched)(nil), // 0: ridematching.v1.TripMatched
+}
 var file_proto_rmspb_ride_matching_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
@@ -46,12 +117,13 @@ func file_proto_rmspb_ride_matching_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_rmspb_ride_matching_proto_rawDesc), len(file_proto_rmspb_ride_matching_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   0,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_proto_rmspb_ride_matching_proto_goTypes,
 		DependencyIndexes: file_proto_rmspb_ride_matching_proto_depIdxs,
+		MessageInfos:      file_proto_rmspb_ride_matching_proto_msgTypes,
 	}.Build()
 	File_proto_rmspb_ride_matching_proto = out.File
 	file_proto_rmspb_ride_matching_proto_goTypes = nil

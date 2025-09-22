@@ -4,28 +4,33 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/dto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type integrationHandlers[T ddd.Event] struct {
 	matchingSvc   application.MatchingService
 	driverInfoSvc application.DriverInfoService
 	presenceSvc   application.PresenceService
+	publisher     am.PublishSender
 }
 
 var _ ddd.EventHandler[ddd.Event] = (*integrationHandlers[ddd.Event])(nil)
 
-func NewIntegrationEventHandlers(matchingSvc application.MatchingService, driverInfoSvc application.DriverInfoService, presenceSvc application.PresenceService) ddd.EventHandler[ddd.Event] {
+func NewIntegrationEventHandlers(matchingSvc application.MatchingService, driverInfoSvc application.DriverInfoService, presenceSvc application.PresenceService, publisher am.PublishSender) ddd.EventHandler[ddd.Event] {
 	return integrationHandlers[ddd.Event]{
 		matchingSvc:   matchingSvc,
 		driverInfoSvc: driverInfoSvc,
 		presenceSvc:   presenceSvc,
+		publisher:     publisher,
 	}
 }
 
@@ -55,7 +60,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 
 func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*tripspb.TripCreated)
-	createdDTO := dto.TripCreated{
+	evt := dto.TripCreated{
 		TripID:   payload.GetTripId(),
 		Distance: payload.GetDistance(),
 		Price:    payload.GetPrice(),
@@ -64,7 +69,7 @@ func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Eve
 		CarType:  payload.GetCarType(),
 	}
 
-	driverCandidates := h.matchingSvc.FindDrivers(createdDTO.PickUp.GetLng(), createdDTO.PickUp.GetLat())
+	driverCandidates := h.matchingSvc.FindDrivers(evt.PickUp.GetLng(), evt.PickUp.GetLat())
 	onlineCandidates := h.driverInfoSvc.GetOnlineDrivers(driverCandidates)
 
 	// fetch metadata
@@ -84,23 +89,26 @@ func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Eve
 		}
 	}
 
-	// for _, driver := range shortlistDrivers {
-	// 	instanceID, _ := h.presenceSvc.GetDriverInstance(driver.DriverID)
-	//
-	// 	offerEvent := events.TripOfferRequest{
-	// 		TripID:    event.RideID,
-	// 		DriverID:  driver.DriverID,
-	// 		PickUp:    event.PickUp,
-	// 		DropOff:   event.DropOff,
-	// 		CarType:   selectedVehicle,
-	// 		ExpiresAt: time.Now().Add(15 * time.Second),
-	// 	}
-	//
-	// 	routingKey := messagebus.DriverRoutingKey(events.EventOfferRequest, instanceID)
-	//
-	// 	fmt.Println("Publishing ", offerEvent, "to", routingKey)
-	// 	h.publisher.Publish(context.Background(), messagebus.TripOfferExchange, routingKey, offerEvent)
-	// }
-	//
+	for _, driver := range shortlistDrivers {
+		instanceID, _ := h.presenceSvc.GetDriverInstance(driver.DriverID)
+
+		offerEvent := driverspb.TripOfferRequest{
+			TripId:    evt.TripID,
+			DriverId:  driver.DriverID,
+			PickUp:    evt.PickUp,
+			DropOff:   evt.DropOff,
+			ExpiresAt: timestamppb.New(time.Now().Add(15 * time.Second)),
+		}
+
+		cmd := ddd.NewCommand(driverspb.TripOfferCommand, offerEvent)
+
+		routingKey := fmt.Sprintf(driverspb.CommandChannel, instanceID)
+
+		err = h.publisher.SendCommand(context.Background(), routingKey, cmd)
+		if err != nil {
+			continue
+		}
+	}
+
 	return nil
 }

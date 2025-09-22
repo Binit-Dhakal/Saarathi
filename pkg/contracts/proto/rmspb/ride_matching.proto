@@ -4,4 +4,7 @@ package ridematching.v1;
 
 option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb";
 
-
+message TripMatched {
+  string trip_id = 1;
+  string driver_id = 2;
+}

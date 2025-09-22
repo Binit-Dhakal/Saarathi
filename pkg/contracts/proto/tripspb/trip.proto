@@ -2,14 +2,16 @@ syntax = "proto3";
 
 package trips.v1;
 
+import "proto/common/geo.proto";
+
 option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb";
 
 message TripCreated {
   string trip_id = 1;
   double distance = 2;
   int32 price = 3;
-  Coordinates pick_up = 4;
-  Coordinates drop_off = 5;
+  common.geo.v1.Coordinates pick_up = 4;
+  common.geo.v1.Coordinates drop_off = 5;
   string car_type = 6;
 }
 

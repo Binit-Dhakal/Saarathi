@@ -3,6 +3,7 @@ package am
 import (
 	"context"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"google.golang.org/protobuf/proto"
@@ -12,6 +13,8 @@ import (
 type CommandBus interface {
 	CommandSender
 	CommandSubscriber
+	PublishSender
+	PublishSubscriber
 }
 
 type commandBus struct {
@@ -44,6 +47,28 @@ func (b *commandBus) Send(ctx context.Context, topicName string, cmd ddd.Command
 	}
 
 	return b.broker.Request(ctx, topicName, &rawMessage{
+		id:   cmd.ID(),
+		name: cmd.CommandName(),
+		data: data,
+	})
+}
+
+func (b *commandBus) SendCommand(ctx context.Context, topic string, cmd ddd.Command) error {
+	payload, err := b.reg.Serialize(cmd.CommandName(), cmd.Payload())
+	if err != nil {
+		return err
+	}
+
+	data, err := proto.Marshal(&CommandMessageData{
+		Payload:   payload,
+		OccuredAt: timestamppb.New(cmd.OccuredAt()),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return b.broker.Publish(ctx, topic, &rawMessage{
 		id:   cmd.ID(),
 		name: cmd.CommandName(),
 		data: data,
@@ -118,6 +143,58 @@ func (b *commandBus) Subscribe(topicName string, handler CommandMessageHandler, 
 	}
 
 	return b.broker.Reply(topicName, replyHandler, options...)
+}
+
+func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Context, msg am.RawMessage) error, options ...SubscriberOption) error {
+	cfg := NewSubscriberConfig(options)
+
+	var filters map[string]struct{}
+	if len(cfg.MessageFilters()) > 0 {
+		filters = make(map[string]struct{})
+		for _, key := range cfg.MessageFilters() {
+			filters[key] = struct{}{}
+		}
+	}
+
+	msgHandler := func(ctx context.Context, req RawMessage) error {
+		var commandData CommandMessageData
+
+		if filters != nil {
+			if _, exists := filters[req.MessageName()]; !exists {
+				return nil
+			}
+		}
+
+		err := proto.Unmarshal(req.Data(), &commandData)
+		if err != nil {
+			return err
+		}
+
+		commandName := req.MessageName()
+
+		payload, err := b.reg.Deserialize(commandName, commandData.GetPayload())
+		if err != nil {
+			return err
+		}
+
+		commandMsg := commandMessage{
+			id:         req.ID(),
+			name:       commandName,
+			payload:    payload,
+			occurredAt: commandData.GetOccuredAt().AsTime(),
+			msg:        nil,
+		}
+
+		err = handler(ctx, commandMsg)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return b.ReceiveCommand(topic, msgHandler, options...)
+
 }
 
 func (b *commandBus) Unsubscribe() error {

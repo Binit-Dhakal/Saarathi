@@ -7,6 +7,7 @@
 package tripspb
 
 import (
+	common "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -26,8 +27,8 @@ type TripCreated struct {
 	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
 	Distance      float64                `protobuf:"fixed64,2,opt,name=distance,proto3" json:"distance,omitempty"`
 	Price         int32                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
-	PickUp        *Coordinates           `protobuf:"bytes,4,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
-	DropOff       *Coordinates           `protobuf:"bytes,5,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
+	PickUp        *common.Coordinates    `protobuf:"bytes,4,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
+	DropOff       *common.Coordinates    `protobuf:"bytes,5,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
 	CarType       string                 `protobuf:"bytes,6,opt,name=car_type,json=carType,proto3" json:"car_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -84,14 +85,14 @@ func (x *TripCreated) GetPrice() int32 {
 	return 0
 }
 
-func (x *TripCreated) GetPickUp() *Coordinates {
+func (x *TripCreated) GetPickUp() *common.Coordinates {
 	if x != nil {
 		return x.PickUp
 	}
 	return nil
 }
 
-func (x *TripCreated) GetDropOff() *Coordinates {
+func (x *TripCreated) GetDropOff() *common.Coordinates {
 	if x != nil {
 		return x.DropOff
 	}
@@ -161,10 +162,9 @@ type TripConfirmed struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
 	DriverId      string                 `protobuf:"bytes,2,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
-	Price         int32                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
-	DriverName    string                 `protobuf:"bytes,4,opt,name=driver_name,json=driverName,proto3" json:"driver_name,omitempty"`
-	VehicleNumber string                 `protobuf:"bytes,5,opt,name=vehicle_number,json=vehicleNumber,proto3" json:"vehicle_number,omitempty"`
-	ContactNumber string                 `protobuf:"bytes,6,opt,name=contact_number,json=contactNumber,proto3" json:"contact_number,omitempty"`
+	DriverName    string                 `protobuf:"bytes,3,opt,name=driver_name,json=driverName,proto3" json:"driver_name,omitempty"`
+	VehicleNumber string                 `protobuf:"bytes,4,opt,name=vehicle_number,json=vehicleNumber,proto3" json:"vehicle_number,omitempty"`
+	ContactNumber string                 `protobuf:"bytes,5,opt,name=contact_number,json=contactNumber,proto3" json:"contact_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -211,13 +211,6 @@ func (x *TripConfirmed) GetDriverId() string {
 		return x.DriverId
 	}
 	return ""
-}
-
-func (x *TripConfirmed) GetPrice() int32 {
-	if x != nil {
-		return x.Price
-	}
-	return 0
 }
 
 func (x *TripConfirmed) GetDriverName() string {
@@ -350,25 +343,24 @@ var File_proto_tripspb_trip_proto protoreflect.FileDescriptor
 
 const file_proto_tripspb_trip_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/tripspb/trip.proto\x12\btrips.v1\"\xd5\x01\n" +
+	"\x18proto/tripspb/trip.proto\x12\btrips.v1\x1a\x16proto/common/geo.proto\"\xdf\x01\n" +
 	"\vTripCreated\x12\x17\n" +
 	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1a\n" +
 	"\bdistance\x18\x02 \x01(\x01R\bdistance\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x05R\x05price\x12.\n" +
-	"\apick_up\x18\x04 \x01(\v2\x15.trips.v1.CoordinatesR\x06pickUp\x120\n" +
-	"\bdrop_off\x18\x05 \x01(\v2\x15.trips.v1.CoordinatesR\adropOff\x12\x19\n" +
+	"\x05price\x18\x03 \x01(\x05R\x05price\x123\n" +
+	"\apick_up\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
+	"\bdrop_off\x18\x05 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
 	"\bcar_type\x18\x06 \x01(\tR\acarType\"1\n" +
 	"\vCoordinates\x12\x10\n" +
 	"\x03lat\x18\x01 \x01(\x01R\x03lat\x12\x10\n" +
-	"\x03lng\x18\x02 \x01(\x01R\x03lng\"\xca\x01\n" +
+	"\x03lng\x18\x02 \x01(\x01R\x03lng\"\xb4\x01\n" +
 	"\rTripConfirmed\x12\x17\n" +
 	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
-	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x05R\x05price\x12\x1f\n" +
-	"\vdriver_name\x18\x04 \x01(\tR\n" +
+	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\x12\x1f\n" +
+	"\vdriver_name\x18\x03 \x01(\tR\n" +
 	"driverName\x12%\n" +
-	"\x0evehicle_number\x18\x05 \x01(\tR\rvehicleNumber\x12%\n" +
-	"\x0econtact_number\x18\x06 \x01(\tR\rcontactNumber\"D\n" +
+	"\x0evehicle_number\x18\x04 \x01(\tR\rvehicleNumber\x12%\n" +
+	"\x0econtact_number\x18\x05 \x01(\tR\rcontactNumber\"D\n" +
 	"\fAcceptDriver\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"U\n" +
@@ -395,10 +387,11 @@ var file_proto_tripspb_trip_proto_goTypes = []any{
 	(*TripConfirmed)(nil),        // 2: trips.v1.TripConfirmed
 	(*AcceptDriver)(nil),         // 3: trips.v1.AcceptDriver
 	(*AcceptDriverResponse)(nil), // 4: trips.v1.AcceptDriverResponse
+	(*common.Coordinates)(nil),   // 5: common.geo.v1.Coordinates
 }
 var file_proto_tripspb_trip_proto_depIdxs = []int32{
-	1, // 0: trips.v1.TripCreated.pick_up:type_name -> trips.v1.Coordinates
-	1, // 1: trips.v1.TripCreated.drop_off:type_name -> trips.v1.Coordinates
+	5, // 0: trips.v1.TripCreated.pick_up:type_name -> common.geo.v1.Coordinates
+	5, // 1: trips.v1.TripCreated.drop_off:type_name -> common.geo.v1.Coordinates
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

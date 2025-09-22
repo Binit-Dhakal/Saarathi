@@ -124,3 +124,42 @@ func (b *Broker) Close() (err error) {
 	b.subs = nil
 	return
 }
+
+func (b *Broker) Publish(ctx context.Context, subject string, msg am.RawMessage) error {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	return b.nc.Publish(subject, data)
+}
+
+func (b *Broker) Subscribe(subject string, handler func(ctx context.Context, msg am.RawMessage) error, options ...am.SubscriberOption) error {
+	subCfg := am.NewSubscriberConfig(options)
+
+	var sub *nats.Subscription
+	var err error
+
+	handleMsg := func(m *nats.Msg) {
+		var req rawMessage
+		if err := json.Unmarshal(m.Data, &req); err != nil {
+			b.logger.Error().Err(err).Msg("failed to unmarshal message")
+			return
+		}
+
+		_ = handler(context.Background(), &req)
+	}
+
+	if group := subCfg.GroupName(); group != "" {
+		sub, err = b.nc.QueueSubscribe(subject, group, handleMsg)
+	} else {
+		sub, err = b.nc.Subscribe(subject, handleMsg)
+	}
+	if err != nil {
+		return err
+	}
+
+	b.subs = append(b.subs, sub)
+
+	return nil
+}

@@ -13,7 +13,6 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/events"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
-	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
@@ -106,6 +105,8 @@ func run() (err error) {
 
 	handler := messaging.NewTripEventHandler(matchingSvc, driverInfoSvc, presenceSvc, bus)
 	fmt.Println("Subscribing to trip created event")
+
+	messaging.NewIntegrationEventHandlers(matchingSvc, driverInfoSvc, presenceSvc, commandBroker)
 
 	var wg sync.WaitGroup
 

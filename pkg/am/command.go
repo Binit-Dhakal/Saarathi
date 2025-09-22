@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
 
@@ -29,6 +30,15 @@ type CommandSender interface {
 
 type CommandSubscriber interface {
 	Subscribe(topicName string, handler CommandMessageHandler, options ...SubscriberOption) error
+	Unsubscribe() error
+}
+
+type PublishSender interface {
+	SendCommand(ctx context.Context, topic string, cmd ddd.Command) error
+}
+
+type PublishSubscriber interface {
+	ReceiveCommand(topic string, handler func(ctx context.Context, msg am.RawMessage) error, options ...SubscriberOption) error
 	Unsubscribe() error
 }
 

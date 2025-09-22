@@ -12,5 +12,9 @@ type Transport interface {
 type RequestTransport interface {
 	Request(ctx context.Context, topic string, msg RawMessage) (RawMessage, error)
 	Reply(subject string, handler func(ctx context.Context, req RawMessage) (RawMessage, error), options ...SubscriberOption) error
+
+	Publish(ctx context.Context, subject string, msg RawMessage) error
+	Subscribe(subject string, handler func(ctx context.Context, msg RawMessage) error, options ...SubscriberOption) error
+
 	Close() error
 }
