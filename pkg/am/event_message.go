@@ -26,6 +26,7 @@ type EventPublisher interface {
 
 type EventSubscriber interface {
 	Subscribe(topicName string, handler MessageHandler[IncomingEventMessage], options ...SubscriberOption) error
+	Unsubscribe() error
 }
 
 type EventStream interface {
@@ -122,6 +123,10 @@ func (s eventStream) Subscribe(topicName string, handler MessageHandler[Incoming
 	})
 
 	return s.stream.Subscribe(context.Background(), topicName, fn, options...)
+}
+
+func (s eventStream) Unsubscribe() error {
+	return s.stream.Unsubscribe()
 }
 
 func (e eventMessage) ID() string                { return e.id }

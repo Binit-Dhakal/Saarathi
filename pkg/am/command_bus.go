@@ -3,7 +3,6 @@ package am
 import (
 	"context"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"google.golang.org/protobuf/proto"
@@ -145,7 +144,7 @@ func (b *commandBus) Subscribe(topicName string, handler CommandMessageHandler, 
 	return b.broker.Reply(topicName, replyHandler, options...)
 }
 
-func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Context, msg am.RawMessage) error, options ...SubscriberOption) error {
+func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Context, msg IncomingCommandMessage) error, options ...SubscriberOption) error {
 	cfg := NewSubscriberConfig(options)
 
 	var filters map[string]struct{}
@@ -156,7 +155,7 @@ func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Conte
 		}
 	}
 
-	msgHandler := func(ctx context.Context, req RawMessage) error {
+	msgHandler := func(ctx context.Context, req IncomingCommandMessage) error {
 		var commandData CommandMessageData
 
 		if filters != nil {
@@ -165,7 +164,7 @@ func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Conte
 			}
 		}
 
-		err := proto.Unmarshal(req.Data(), &commandData)
+		err := proto.Unmarshal(req.Payload().([]byte), &commandData)
 		if err != nil {
 			return err
 		}

@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
-	"github.com/Binit-Dhakal/Saarathi/pkg/events"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
@@ -91,7 +89,7 @@ func run() (err error) {
 	commandBus := natscore.NewCoreBroker(app.nc, app.logger)
 	commandBroker := am.NewCommandBus(reg, commandBus)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	_, cancel := context.WithCancel(context.Background())
 
 	rideRepo := redis.NewRideMatchingRepository(app.cacheClient)
 	redisMetaRepo := redis.NewCacheDriverMetaRepo(app.cacheClient)
@@ -103,31 +101,22 @@ func run() (err error) {
 	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, pgMetaRepo, availabilityRepo)
 	presenceSvc := application.NewPresenceService(presenceRepo)
 
-	handler := messaging.NewTripEventHandler(matchingSvc, driverInfoSvc, presenceSvc, bus)
-	fmt.Println("Subscribing to trip created event")
+	integrationHandler := messaging.NewIntegrationEventHandlers(matchingSvc, driverInfoSvc, presenceSvc, commandBroker)
 
-	messaging.NewIntegrationEventHandlers(matchingSvc, driverInfoSvc, presenceSvc, commandBroker)
+	messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
 
-	var wg sync.WaitGroup
-
+	// Wait for shutdown signal
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		bus.Subscribe(
-			ctx,
-			"ride-matching-trip-create",
-			events.EventTripCreated,
-			handler.HandleTripEvent,
-		)
-	}()
 
 	<-sigs
 	fmt.Println("Shutdown signal received")
 	cancel()
 
-	wg.Wait()
+	eventStream.Unsubscribe()
+	commandBroker.Unsubscribe()
+
 	fmt.Println("Graceful shutdown")
+
+	return nil
 }

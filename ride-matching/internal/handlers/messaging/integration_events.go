@@ -100,7 +100,7 @@ func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Eve
 			ExpiresAt: timestamppb.New(time.Now().Add(15 * time.Second)),
 		}
 
-		cmd := ddd.NewCommand(driverspb.TripOfferCommand, offerEvent)
+		cmd := ddd.NewCommand(driverspb.TripOfferCommand, &offerEvent)
 
 		routingKey := fmt.Sprintf(driverspb.CommandChannel, instanceID)
 
