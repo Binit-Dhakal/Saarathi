@@ -21,7 +21,7 @@ func NewCommandHandler(svc application.RideCommandService) ddd.CommandHandler {
 	}
 }
 
-func RegisterCommandHandlers(subscriber am.RequestTransport, handlers ddd.CommandHandler) error {
+func RegisterCommandHandlers(subscriber am.CommandSubscriber, handlers ddd.CommandHandler) error {
 	cmdHandler := am.CommandMessageHandlerFunc(func(ctx context.Context, cmd am.IncomingCommandMessage) (ddd.Reply, error) {
 		return handlers.HandleCommand(ctx, cmd)
 	})

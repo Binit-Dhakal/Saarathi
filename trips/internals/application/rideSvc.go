@@ -18,14 +18,14 @@ type RideService interface {
 type rideService struct {
 	fareRepo domain.FareRepository
 	tripRepo domain.TripRepository
-	bus      am.EventPublisher
+	stream   am.EventPublisher
 }
 
-func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, bus am.EventPublisher) *rideService {
+func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, stream am.EventPublisher) *rideService {
 	return &rideService{
 		fareRepo: fareRepo,
 		tripRepo: tripRepo,
-		bus:      bus,
+		stream:   stream,
 	}
 }
 
@@ -100,10 +100,10 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	rideModel := domain.RideModel{
+	rideModel := domain.TripModel{
 		RiderID: userID,
 		FareID:  fareID,
-		Status:  domain.RideStatusPending,
+		Status:  domain.TripStatusPending,
 	}
 
 	rideId, err := f.tripRepo.SaveRideDetail(rideModel)
@@ -120,14 +120,15 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		CarType:  string(fareDetail.Package),
 	}
 
-	event := ddd.NewEvent("trips.created", &createdEvent)
-	err = f.bus.Publish(
+	event := ddd.NewEvent(tripspb.TripCreatedEvent, &createdEvent)
+	err = f.stream.Publish(
 		context.Background(),
-		event.EventName(),
+		tripspb.TripAggregateChannel,
 		event,
 	)
 	if err != nil {
 		return "", err
 	}
+
 	return rideId, nil
 }

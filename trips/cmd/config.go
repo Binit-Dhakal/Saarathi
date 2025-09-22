@@ -15,7 +15,7 @@ type (
 
 	NatsConfig struct {
 		URL    string `required:"true"`
-		Stream string `default:"trips"`
+		Stream string `default:"saarathi"`
 	}
 
 	CacheConfig struct {

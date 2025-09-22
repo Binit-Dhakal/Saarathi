@@ -77,7 +77,7 @@ func (t *tripRepository) SaveFareDetail(fareModel domain.FareRecord) (string, er
 	return fareID, nil
 }
 
-func (t *tripRepository) SaveRideDetail(rideModel domain.RideModel) (string, error) {
+func (t *tripRepository) SaveRideDetail(rideModel domain.TripModel) (string, error) {
 	query := `
 		INSERT into rides(rider_id,  fare_id, status) 
 		values($1,$2,$3)

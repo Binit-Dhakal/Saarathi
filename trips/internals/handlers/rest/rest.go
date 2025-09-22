@@ -129,7 +129,7 @@ func (t *TripHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
 
 	updates := make(chan string, 10)
 	t.subscriber.Subscribe(
-		tripspb.AggregateChannel,
+		tripspb.TripAggregateChannel,
 		am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, msg am.IncomingEventMessage) error {
 			evt := msg.Payload().(*tripspb.TripConfirmed)
 

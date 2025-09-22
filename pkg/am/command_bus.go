@@ -2,7 +2,6 @@ package am
 
 import (
 	"context"
-	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
@@ -56,7 +55,7 @@ func (b *commandBus) Subscribe(topicName string, handler CommandMessageHandler, 
 
 	var filters map[string]struct{}
 	if len(cfg.MessageFilters()) > 0 {
-		filters := make(map[string]struct{})
+		filters = make(map[string]struct{})
 		for _, key := range cfg.MessageFilters() {
 			filters[key] = struct{}{}
 		}

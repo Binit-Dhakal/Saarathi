@@ -21,7 +21,7 @@ type Broker struct {
 
 var _ am.RequestTransport = (*Broker)(nil)
 
-func NewCommandBus(nc *nats.Conn, logger zerolog.Logger) *Broker {
+func NewCoreBroker(nc *nats.Conn, logger zerolog.Logger) *Broker {
 	timeout := 5 * time.Second
 	return &Broker{
 		nc:      nc,

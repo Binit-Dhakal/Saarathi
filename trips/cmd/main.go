@@ -90,8 +90,8 @@ func run() (err error) {
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 	eventStream := am.NewEventStream(reg, stream)
 
-	commandBus := natscore.NewCommandBus(app.nc, app.logger)
-	commandBroker := am.NewRequestReplyBus(reg, commandBus)
+	commandBus := natscore.NewCoreBroker(app.nc, app.logger)
+	commandBroker := am.NewCommandBus(reg, commandBus)
 
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
@@ -99,7 +99,6 @@ func run() (err error) {
 	rideService := application.NewRideService(redisRepo, tripRepo, eventStream)
 	routeService := application.NewRouteService()
 	commandService := application.NewRideCommandService(tripRepo, eventStream)
-	// integrationService := application.NewRideIntegrationService(tripRepo)
 
 	jsonWriter := jsonutil.NewWriter()
 	jsonReader := jsonutil.NewReader()
@@ -107,9 +106,7 @@ func run() (err error) {
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
 	commandHandler := messaging.NewCommandHandler(commandService)
-	// integrationHandler := messaging.NewIntegrationEventHandlers(integrationService)
 
-	// messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
 	messaging.RegisterCommandHandlers(commandBroker, commandHandler)
 	mux := http.NewServeMux()
 

@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
 )
@@ -10,12 +11,12 @@ type MatchingService interface {
 }
 
 type matchingService struct {
-	publisher messagebus.Publisher
+	publisher am.EventPublisher
 	matchRepo domain.RedisRideMatchingRepository
 	consumer  messagebus.Consumer
 }
 
-func NewMatchingService(publisher messagebus.Publisher, matchRepo domain.RedisRideMatchingRepository) MatchingService {
+func NewMatchingService(publisher am.EventPublisher, matchRepo domain.RedisRideMatchingRepository) MatchingService {
 	return &matchingService{
 		publisher: publisher,
 		matchRepo: matchRepo,

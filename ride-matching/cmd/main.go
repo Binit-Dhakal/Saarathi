@@ -3,22 +3,25 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/events"
+	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/messagebus"
+	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
+	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
 	"github.com/nats-io/nats.go"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
@@ -77,27 +80,27 @@ func run() (err error) {
 	defer app.cacheClient.Close()
 	defer app.nc.Close()
 
+	reg := registry.NewRegistry()
+
+	if err := tripspb.Registration(reg); err != nil {
+		return err
+	}
+
+	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
+	eventStream := am.NewEventStream(reg, stream)
+
+	commandBus := natscore.NewCoreBroker(app.nc, app.logger)
+	commandBroker := am.NewCommandBus(reg, commandBus)
+
 	ctx, cancel := context.WithCancel(context.Background())
 
-	conn, ch, err := setup.SetupRabbitMQ()
-	if err != nil {
-		log.Println("RabbitMQ error: ", err)
-		os.Exit(1)
-	}
-	defer conn.Close()
-	defer ch.Close()
+	rideRepo := redis.NewRideMatchingRepository(app.cacheClient)
+	redisMetaRepo := redis.NewCacheDriverMetaRepo(app.cacheClient)
+	pgMetaRepo := postgres.NewPGMetaRepo(app.usersDB)
+	availabilityRepo := redis.NewDriverAvailableRepo(app.cacheClient)
+	presenceRepo := redis.NewPresenceRepo(app.cacheClient)
 
-	buildRabbitMQEntity(ch)
-
-	rideRepo := redis.NewRideMatchingRepository(client)
-	redisMetaRepo := redis.NewCacheDriverMetaRepo(client)
-	pgMetaRepo := postgres.NewPGMetaRepo(usersDB)
-	availabilityRepo := redis.NewDriverAvailableRepo(client)
-	presenceRepo := redis.NewPresenceRepo(client)
-
-	bus := messagebus.NewRabbitMQBus(ch)
-
-	matchingSvc := application.NewMatchingService(bus, rideRepo)
+	matchingSvc := application.NewMatchingService(eventStream, rideRepo)
 	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, pgMetaRepo, availabilityRepo)
 	presenceSvc := application.NewPresenceService(presenceRepo)
 
@@ -126,28 +129,4 @@ func run() (err error) {
 
 	wg.Wait()
 	fmt.Println("Graceful shutdown")
-}
-
-func buildRabbitMQEntity(ch *amqp.Channel) {
-	configs := []setup.QueueConfig{
-		{
-			Name:       "ride-matching-trip-create",
-			Exchange:   messagebus.TripEventsExchange,
-			RoutingKey: events.EventTripCreated,
-			Type:       "topic",
-			Durable:    true,
-		},
-		{
-			Name:       "ride-matching-offer-response",
-			Exchange:   messagebus.TripOfferExchange,
-			RoutingKey: events.EventOfferResponse,
-			Type:       "topic",
-			Durable:    true,
-		},
-	}
-
-	err := setup.SetupQueues(ch, configs)
-	if err != nil {
-		log.Fatal(err)
-	}
 }

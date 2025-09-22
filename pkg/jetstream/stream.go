@@ -43,6 +43,10 @@ func (s *Stream) Publish(ctx context.Context, topicName string, msg am.RawMessag
 		Subject: topicName,
 		Data:    data,
 	}, nats.MsgId(msg.ID()))
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to publish message")
+		return
+	}
 
 	go func(future nats.PubAckFuture, tries int) {
 		var err error

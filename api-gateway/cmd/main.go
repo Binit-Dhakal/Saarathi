@@ -29,7 +29,7 @@ func main() {
 	userServiceURL, _ := url.Parse("http://users-service:8080")
 	userServiceProxy := httputil.NewSingleHostReverseProxy(userServiceURL)
 
-	tripServiceURL, _ := url.Parse("http://trips-service:8082")
+	tripServiceURL, _ := url.Parse("http://trips-service:8070")
 	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
 
 	driverStateURL, _ := url.Parse("http://driver-state-service:8084")

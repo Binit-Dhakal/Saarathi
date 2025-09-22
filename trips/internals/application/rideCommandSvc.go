@@ -35,7 +35,7 @@ func (c *rideCommandService) AcceptDriverToTrip(ctx context.Context, input dto.A
 	}
 
 	// TODO: populate driver info:
-	// Later after building driver cache repository in trips service
+	// Later after building driver cache repository in trips service(with GRPC fallback)
 	// TODO: Outbox transactional pattern
 	// remove inconsistency between event publish and database change
 	evt := ddd.NewEvent(tripspb.TripConfirmedEvent, &tripspb.TripConfirmed{
@@ -43,7 +43,7 @@ func (c *rideCommandService) AcceptDriverToTrip(ctx context.Context, input dto.A
 		DriverId: input.DriverID,
 	})
 
-	err = c.evtPublisher.Publish(ctx, tripspb.TripConfirmedEvent, evt)
+	err = c.evtPublisher.Publish(ctx, tripspb.TripAggregateChannel, evt)
 	if err != nil {
 		return err
 	}

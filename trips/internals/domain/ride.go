@@ -2,19 +2,11 @@ package domain
 
 import "github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 
-type RideStatus string
-
-var (
-	RideStatusPending   RideStatus = "pending"
-	RideStatusApproved  RideStatus = "approved"
-	RideStatusCancelled RideStatus = "cancelled"
-)
-
-type RideModel struct {
+type TripModel struct {
 	ddd.Aggregate
-	RideID   string
+	TripID   string
 	RiderID  string
 	DriverID string
 	FareID   string
-	Status   RideStatus
+	Status   TripStatus
 }

@@ -7,9 +7,9 @@ import (
 
 const (
 	// Events
-	AggregateChannel   = "saarathi.trips.events"
-	TripCreatedEvent   = "tripsapi.TripCreated"
-	TripConfirmedEvent = "tripsapi.TripConfirmed"
+	TripAggregateChannel = "saarathi.trips.events"
+	TripCreatedEvent     = "trips.TripCreated"
+	TripConfirmedEvent   = "trips.TripConfirmed"
 
 	// Commands
 	CommandChannel      = "saarthi.trips.commands"
