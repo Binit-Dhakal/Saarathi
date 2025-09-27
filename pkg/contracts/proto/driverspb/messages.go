@@ -12,9 +12,11 @@ const (
 	CommandChannel   = "saarathi.drivers.command.%s"
 	TripOfferCommand = "driversapi.trip.offer"
 
-	ReplyChannel        = "saarahi.drivers.reply"
-	DriverAcceptedReply = "driversapi.driver.accepted"
-	RMSTimeoutReply     = "driversapi.rms.timeout"
+	ReplyChannel       = "saarahi.drivers.reply"
+	OfferAcceptedReply = "driversapi.offer.accepted"
+	OfferRejectedReply = "driversapi.offer.rejected"
+	OfferTimedoutReply = "driversapi.offer.timedout"
+	OfferAckReply      = "driversapi.offer.ack"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -24,11 +26,19 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
-	if err = serde.Register(&DriverAccepted{}); err != nil {
+	if err = serde.Register(&OfferAccepted{}); err != nil {
 		return err
 	}
 
-	if err = serde.Register(&RMSTimeout{}); err != nil {
+	if err = serde.Register(&OfferRejected{}); err != nil {
+		return err
+	}
+
+	if err = serde.Register(&OfferTimedout{}); err != nil {
+		return err
+	}
+
+	if err = serde.Register(&OfferAck{}); err != nil {
 		return err
 	}
 
@@ -36,5 +46,7 @@ func Registration(reg registry.Registry) (err error) {
 }
 
 func (*TripOfferRequest) Key() string { return TripOfferCommand }
-func (*DriverAccepted) Key() string   { return DriverAcceptedReply }
-func (*RMSTimeout) Key() string       { return RMSTimeoutReply }
+func (*OfferAccepted) Key() string    { return OfferAcceptedReply }
+func (*OfferRejected) Key() string    { return OfferRejectedReply }
+func (*OfferTimedout) Key() string    { return OfferTimedoutReply }
+func (*OfferAck) Key() string         { return OfferAckReply }

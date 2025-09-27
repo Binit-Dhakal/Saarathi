@@ -1,9 +1,12 @@
 package domain
 
+import "time"
+
 // driver location
 type Location struct {
-	Lat float64
-	Lon float64
+	Lat       float64
+	Lng       float64
+	UpdatedAt time.Time
 }
 
 type DriverLocation struct {

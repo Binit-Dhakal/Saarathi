@@ -3,7 +3,7 @@ FROM golang:1.24.5
 WORKDIR /app
 
 # Install Air for hot reload
-RUN go install github.com/air-verse/air@latest
+RUN go install github.com/air-verse/air@v1.62.0
 ENV PATH=$PATH:/go/bin
 
 # Copy go.mod and go.sum first (for caching)
@@ -15,6 +15,8 @@ COPY . .
 
 WORKDIR /app/driver-state
 RUN mkdir -p tmp
+
+RUN go clean -cache -modcache -i -r
 
 CMD ["air", "-c", ".air.toml"]
 

@@ -108,6 +108,9 @@ func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Eve
 		if err != nil {
 			continue
 		}
+
+		// Temporary
+		break
 	}
 
 	return nil

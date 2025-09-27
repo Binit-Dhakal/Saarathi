@@ -107,7 +107,7 @@ func (b *Broker) handleRequest(cfg am.SubscriberConfig, handler func(ctx context
 	}
 }
 
-func (b *Broker) Close() (err error) {
+func (b *Broker) Unsubscribe() (err error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -134,7 +134,7 @@ func (b *Broker) Publish(ctx context.Context, subject string, msg am.RawMessage)
 	return b.nc.Publish(subject, data)
 }
 
-func (b *Broker) Subscribe(subject string, handler func(ctx context.Context, msg am.RawMessage) error, options ...am.SubscriberOption) error {
+func (b *Broker) Subscribe(ctx context.Context, subject string, handler am.MessageHandler[am.IncomingRawMessage], options ...am.SubscriberOption) error {
 	subCfg := am.NewSubscriberConfig(options)
 
 	var sub *nats.Subscription
@@ -147,7 +147,7 @@ func (b *Broker) Subscribe(subject string, handler func(ctx context.Context, msg
 			return
 		}
 
-		_ = handler(context.Background(), &req)
+		_ = handler.HandleMessage(context.Background(), &req)
 	}
 
 	if group := subCfg.GroupName(); group != "" {

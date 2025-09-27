@@ -155,7 +155,7 @@ func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Conte
 		}
 	}
 
-	msgHandler := func(ctx context.Context, req IncomingCommandMessage) error {
+	msgHandler := MessageHandlerFunc[IncomingRawMessage](func(ctx context.Context, req IncomingRawMessage) error {
 		var commandData CommandMessageData
 
 		if filters != nil {
@@ -164,7 +164,7 @@ func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Conte
 			}
 		}
 
-		err := proto.Unmarshal(req.Payload().([]byte), &commandData)
+		err := proto.Unmarshal(req.Data(), &commandData)
 		if err != nil {
 			return err
 		}
@@ -190,12 +190,12 @@ func (b *commandBus) ReceiveCommand(topic string, handler func(ctx context.Conte
 		}
 
 		return nil
-	}
+	})
 
-	return b.ReceiveCommand(topic, msgHandler, options...)
+	return b.broker.Subscribe(context.Background(), topic, msgHandler, options...)
 
 }
 
 func (b *commandBus) Unsubscribe() error {
-	return b.broker.Close()
+	return b.broker.Unsubscribe()
 }

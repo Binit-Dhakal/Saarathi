@@ -13,6 +13,7 @@ type EventSend struct {
 }
 
 type OfferRequestDriver struct {
+	OfferID   string     `json:"offerID"`
 	TripID    string     `json:"tripId"`
 	PickUp    [2]float64 `json:"pickUp"`
 	DropOff   [2]float64 `json:"dropOff"`
@@ -20,5 +21,6 @@ type OfferRequestDriver struct {
 }
 
 type OfferResponseDriver struct {
-	TripID string `json:"tripID"`
+	TripID  string `json:"tripID"`
+	OfferID string `json:"offerID"`
 }

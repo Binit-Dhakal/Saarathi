@@ -2,6 +2,8 @@ package ddd
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ReplyPayload any
@@ -21,9 +23,9 @@ type reply struct {
 
 var _ Reply = (*reply)(nil)
 
-func NewReply(id string, name string, payload ReplyPayload) Reply {
+func NewReply(name string, payload ReplyPayload) Reply {
 	reply := &reply{
-		Entity:    NewEntity(id, name),
+		Entity:    NewEntity(uuid.NewString(), name),
 		payload:   payload,
 		occuredAt: time.Now(),
 	}

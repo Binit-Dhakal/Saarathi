@@ -55,7 +55,7 @@ func (c *commandHandler) doAcceptDriver(ctx context.Context, cmd ddd.Command) (d
 		return nil, err
 	}
 
-	return ddd.NewReply(cmd.ID(), cmd.CommandName(), tripspb.AcceptDriverResponse{
+	return ddd.NewReply(cmd.CommandName(), tripspb.AcceptDriverResponse{
 		Success: true,
 	}), nil
 }

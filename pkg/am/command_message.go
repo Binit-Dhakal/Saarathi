@@ -54,6 +54,7 @@ func (f CommandMessageHandlerFunc) HandleMessage(ctx context.Context, msg Incomi
 }
 
 var _ CommandMessage = (*commandMessage)(nil)
+var _ IncomingCommandMessage = (*commandMessage)(nil)
 
 func (c commandMessage) ID() string                  { return c.id }
 func (c commandMessage) CommandName() string         { return c.name }

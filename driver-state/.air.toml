@@ -3,7 +3,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "go build -o ./tmp/driver-state-service ./cmd/main.go"
+cmd = "go build -o ./tmp/driver-state-service ./cmd/*.go"
 bin = "tmp/driver-state-service"
 full_bin = ""
 include_ext = ["go"]

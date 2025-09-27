@@ -14,7 +14,7 @@ type RequestTransport interface {
 	Reply(subject string, handler func(ctx context.Context, req RawMessage) (RawMessage, error), options ...SubscriberOption) error
 
 	Publish(ctx context.Context, subject string, msg RawMessage) error
-	Subscribe(subject string, handler func(ctx context.Context, msg RawMessage) error, options ...SubscriberOption) error
+	Subscribe(ctx context.Context, subject string, handler RawMessageHandler, options ...SubscriberOption) error
 
-	Close() error
+	Unsubscribe() error
 }

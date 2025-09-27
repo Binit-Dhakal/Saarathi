@@ -129,7 +129,7 @@ services:
       NATS_URL: nats://nats:4222
       REDIS_CACHEURL: redis://redis:6379/0
     volumes:
-      - ./trips:/app/trips
+      - ./:/app
       - /app/trips/tmp
     restart: always
 
@@ -185,10 +185,28 @@ services:
       REDIS_CACHEURL: redis://redis:6379/0
       PG_CONN: postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable
     volumes:
-      - ./ride-matching:/app/ride-matching
+      - ./:/app
       - /app/ride-matching/tmp
 
-
+  driver-state-service:
+    build:
+      context: .
+      dockerfile: driver-state/Dockerfile.dev
+    depends_on:
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      NATS_URL: nats://nats:4222
+      REDIS_CACHEURL: redis://redis:6379/0
+    volumes:
+      - ./:/app
+      - /app/driver-state/tmp
+    restart: always
 
 volumes:
   postgres_trips_data:

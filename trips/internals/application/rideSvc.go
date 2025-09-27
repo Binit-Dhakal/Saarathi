@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
@@ -115,8 +116,8 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		TripId:   rideId,
 		Distance: ephermalFare.Route.Distance,
 		Price:    int32(fareDetail.TotalPrice),
-		PickUp:   &tripspb.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
-		DropOff:  &tripspb.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
+		PickUp:   &common.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
+		DropOff:  &common.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
 		CarType:  string(fareDetail.Package),
 	}
 
