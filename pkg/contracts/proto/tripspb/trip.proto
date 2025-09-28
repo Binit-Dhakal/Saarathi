@@ -15,11 +15,6 @@ message TripCreated {
   string car_type = 6;
 }
 
-message Coordinates {
-  double lat = 1;
-  double lng = 2;
-}
-
 message TripConfirmed {
   string trip_id = 1;
   string driver_id = 2;

@@ -2,12 +2,12 @@ package jetstream
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+	"google.golang.org/protobuf/proto"
 )
 
 const maxRetries = 5
@@ -33,7 +33,11 @@ func NewStream(streamName string, js nats.JetStreamContext, logger zerolog.Logge
 func (s *Stream) Publish(ctx context.Context, topicName string, msg am.RawMessage) (err error) {
 	var data []byte
 
-	data, err = json.Marshal(msg)
+	data, err = proto.Marshal(&StreamMessage{
+		Id:   msg.ID(),
+		Name: msg.MessageName(),
+		Data: msg.Data(),
+	})
 	if err != nil {
 		return err
 	}
@@ -143,37 +147,21 @@ func (s *Stream) Unsubscribe() error {
 }
 
 func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.RawMessageHandler) func(*nats.Msg) {
-	var filters map[string]struct{}
-	if len(cfg.MessageFilters()) > 0 {
-		filters = make(map[string]struct{})
-		for _, key := range cfg.MessageFilters() {
-			filters[key] = struct{}{}
-		}
-	}
-
 	return func(natsMsg *nats.Msg) {
-		var m am.RawMessage
-		err := json.Unmarshal(natsMsg.Data, &m)
+		var err error
+
+		m := &StreamMessage{}
+
+		err = proto.Unmarshal(natsMsg.Data, m)
 		if err != nil {
 			s.logger.Warn().Err(err).Msg("failed to unmarshal the *nats.Msg")
 			return
 		}
 
-		if filters != nil {
-			if _, exist := filters[m.MessageName()]; !exist {
-				err = natsMsg.Ack()
-				if err != nil {
-					s.logger.Warn().Err(err).Msg("failed to Ack a filtered message")
-				}
-				return
-			}
-
-		}
-
 		msg := &rawMessage{
-			id:       m.ID(),
-			name:     m.MessageName(),
-			data:     m.Data(),
+			id:       m.GetId(),
+			name:     m.GetName(),
+			data:     m.GetData(),
 			acked:    false,
 			ackFn:    func() error { return natsMsg.Ack() },
 			nackFn:   func() error { return natsMsg.Nak() },

@@ -45,6 +45,7 @@ func (c *commandHandler) HandleCommand(ctx context.Context, cmd ddd.Command) (dd
 
 func (c *commandHandler) doSendTripOffer(ctx context.Context, cmd ddd.Command) (ddd.Reply, error) {
 	payload := cmd.Payload().(*driverspb.TripOfferRequest)
+	fmt.Printf("New trip offer consumed by Driver service: %v\n", payload)
 
 	offer := domain.NewOffer(payload.TripId, payload.DriverId, 15*time.Second, "")
 	err := c.offerSvc.SendOffer(&offer)

@@ -32,7 +32,7 @@ func main() {
 	tripServiceURL, _ := url.Parse("http://trips-service:8070")
 	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
 
-	driverStateURL, _ := url.Parse("http://driver-state-service:8084")
+	driverStateURL, _ := url.Parse("http://driver-state-service:8050")
 	driverStateProxy := httputil.NewSingleHostReverseProxy(driverStateURL)
 	driverStateProxy.Director = func(req *http.Request) {
 		req.URL.Scheme = driverStateURL.Scheme
