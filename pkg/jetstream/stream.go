@@ -187,16 +187,19 @@ func (s *Stream) handleMsg(cfg am.SubscriberConfig, handler am.RawMessageHandler
 		select {
 		case err = <-errc:
 			if err != nil {
-				if ackErr := msg.Ack(); ackErr != nil {
-					s.logger.Warn().Err(err).Msg("failed to ack a message")
+				s.logger.Error().Err(err).Msg("error while handling message")
+				if nakErr := msg.NAck(); nakErr != nil {
+					s.logger.Warn().Err(err).Msg("failed to nack a message")
 				}
 				return
 			}
 
-			s.logger.Error().Err(err).Msg("error while handling message")
-			if nakErr := msg.NAck(); nakErr != nil {
-				s.logger.Warn().Err(err).Msg("failed to nack a message")
+			if cfg.AckType() != am.AckTypeAuto {
+				if ackErr := msg.Ack(); ackErr != nil {
+					s.logger.Warn().Err(err).Msg("failed to ack a message")
+				}
 			}
+
 		case <-wCtx.Done():
 			return
 		}

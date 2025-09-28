@@ -24,7 +24,7 @@ import (
 func main() {
 	err := run()
 	if err != nil {
-		fmt.Printf("Trips service exitted abnormally: %v\n", err)
+		fmt.Printf("RMS service exitted abnormally: %v\n", err)
 		os.Exit(1)
 	}
 }

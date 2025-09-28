@@ -41,7 +41,7 @@ func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers dd
 
 	err = subscriber.Subscribe(tripspb.TripAggregateChannel, evtMsgHandler, am.MessageFilter{
 		tripspb.TripCreatedEvent,
-	})
+	}, am.GroupName("RMS-Service"))
 
 	if err != nil {
 		return err
