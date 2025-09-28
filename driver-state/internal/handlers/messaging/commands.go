@@ -22,12 +22,13 @@ func NewCommandHandler(offerSvc application.OfferService) ddd.CommandHandler {
 	}
 }
 
-func RegisterCommandHandlers(subscriber am.CommandSubscriber, handlers ddd.CommandHandler) error {
-	cmdHandler := am.CommandMessageHandlerFunc(func(ctx context.Context, cmd am.IncomingCommandMessage) (ddd.Reply, error) {
-		return handlers.HandleCommand(ctx, cmd)
-	})
+func RegisterCommandHandlers(subscriber am.PublishSubscriber, handlers ddd.CommandHandler) error {
+	cmdHandler := func(ctx context.Context, cmd am.IncomingCommandMessage) error {
+		_, err := handlers.HandleCommand(ctx, cmd)
+		return err
+	}
 
-	return subscriber.Subscribe(
+	return subscriber.ReceiveCommand(
 		driverspb.CommandChannel,
 		cmdHandler,
 		am.MessageFilter{driverspb.TripOfferCommand},
