@@ -12,7 +12,7 @@ const (
 	CommandChannel   = "saarathi.drivers.command.%s"
 	TripOfferCommand = "driversapi.trip.offer"
 
-	ReplyChannel       = "saarahi.drivers.reply"
+	ReplyChannel       = "saarathi.drivers.reply"
 	OfferAcceptedReply = "driversapi.offer.accepted"
 	OfferRejectedReply = "driversapi.offer.rejected"
 	OfferTimedoutReply = "driversapi.offer.timedout"

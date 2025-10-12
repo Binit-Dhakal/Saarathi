@@ -37,7 +37,7 @@ func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) (err error)
 
 func (h domainHandlers[T]) onOfferResponded(ctx context.Context, event T) error {
 	var err error
-	payload := event.Payload().(*domain.DriverOfferResponded)
+	payload := event.Payload().(*domain.Offer)
 	switch payload.Status {
 	case domain.OfferAccepted:
 		replyPayload := ddd.NewReply(driverspb.OfferAcceptedReply, driverspb.OfferAccepted{
@@ -64,7 +64,7 @@ func (h domainHandlers[T]) onOfferResponded(ctx context.Context, event T) error 
 }
 
 func (h domainHandlers[T]) onOfferTimedOut(ctx context.Context, event T) error {
-	payload := event.Payload().(*domain.DriverOfferTimeout)
+	payload := event.Payload().(domain.DriverOfferTimeout)
 
 	switch payload.Status {
 	case domain.OfferTimedOut:

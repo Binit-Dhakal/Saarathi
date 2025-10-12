@@ -57,14 +57,6 @@ func (c *commandHandler) doSendTripOffer(ctx context.Context, cmd ddd.Command) (
 		return ddd.NewReply(driverspb.OfferAckReply, driverspb.OfferAck{
 			Accepted: false,
 		}), nil
-
-	}
-
-	err = c.offerSvc.SendOffer(&offer)
-	if err != nil {
-		return ddd.NewReply(driverspb.OfferAckReply, driverspb.OfferAck{
-			Accepted: false,
-		}), nil
 	}
 
 	return ddd.NewReply(driverspb.OfferAckReply, driverspb.OfferAck{

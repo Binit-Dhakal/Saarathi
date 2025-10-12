@@ -36,12 +36,11 @@ func (h offerIntentHandler[T]) HandleEvent(ctx context.Context, event T) (err er
 }
 
 func (h offerIntentHandler[T]) onOfferAccepted(ctx context.Context, event T) error {
-	payload := event.Payload().(*domain.AcceptOffer)
+	payload := event.Payload().(domain.AcceptOffer)
 	return h.offerSvc.ProcessTripOffer(payload.OfferID, payload.DriverID, payload.TripID, "accepted")
 }
 
 func (h offerIntentHandler[T]) onOfferRejected(ctx context.Context, event T) error {
-	payload := event.Payload().(*domain.RejectOffer)
+	payload := event.Payload().(domain.RejectOffer)
 	return h.offerSvc.ProcessTripOffer(payload.OfferID, payload.DriverID, payload.TripID, "rejected")
 }
-
