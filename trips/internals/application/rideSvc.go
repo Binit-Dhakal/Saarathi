@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
-	tripsv1 "github.com/Binit-Dhakal/Saarathi/trips/tripspb/proto/trip"
 )
 
 type RideService interface {
@@ -18,14 +19,14 @@ type RideService interface {
 type rideService struct {
 	fareRepo domain.FareRepository
 	tripRepo domain.TripRepository
-	bus      am.EventPublisher
+	stream   am.EventPublisher
 }
 
-func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, bus am.EventPublisher) *rideService {
+func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, stream am.EventPublisher) *rideService {
 	return &rideService{
 		fareRepo: fareRepo,
 		tripRepo: tripRepo,
-		bus:      bus,
+		stream:   stream,
 	}
 }
 
@@ -100,10 +101,10 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	rideModel := domain.RideModel{
+	rideModel := domain.TripModel{
 		RiderID: userID,
 		FareID:  fareID,
-		Status:  domain.RideStatusPending,
+		Status:  domain.TripStatusPending,
 	}
 
 	rideId, err := f.tripRepo.SaveRideDetail(rideModel)
@@ -111,23 +112,24 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	createdEvent := tripsv1.TripCreated{
+	createdEvent := tripspb.TripCreated{
 		TripId:   rideId,
 		Distance: ephermalFare.Route.Distance,
 		Price:    int32(fareDetail.TotalPrice),
-		PickUp:   &tripsv1.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
-		DropOff:  &tripsv1.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
+		PickUp:   &common.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
+		DropOff:  &common.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
 		CarType:  string(fareDetail.Package),
 	}
 
-	event := ddd.NewEvent("trips.created", &createdEvent)
-	err = f.bus.Publish(
+	event := ddd.NewEvent(tripspb.TripCreatedEvent, &createdEvent)
+	err = f.stream.Publish(
 		context.Background(),
-		event.EventName(),
+		tripspb.TripAggregateChannel,
 		event,
 	)
 	if err != nil {
 		return "", err
 	}
+
 	return rideId, nil
 }

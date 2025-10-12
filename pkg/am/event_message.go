@@ -2,28 +2,36 @@ package am
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type EventMessage interface {
-	MessageBase
+	Message
 	ddd.Event
 }
 
 type IncomingEventMessage interface {
-	IncomingMessageBase
+	IncomingMessage
 	ddd.Event
 }
 
 type EventPublisher interface {
-	Publish(ctx context.Context, topicName string, event ddd.Event) error
+	Publish(ctx context.Context, topicName string, msg ddd.Event) error
 }
 
-type eventPublisher struct {
-	publisher MessagePublisher
+type EventSubscriber interface {
+	Subscribe(topicName string, handler MessageHandler[IncomingEventMessage], options ...SubscriberOption) error
+	Unsubscribe() error
+}
+
+type EventStream interface {
+	EventPublisher
+	EventSubscriber
 }
 
 type eventMessage struct {
@@ -31,43 +39,102 @@ type eventMessage struct {
 	name      string
 	payload   ddd.EventPayload
 	occuredAt time.Time
-	msg       IncomingMessageBase
+	msg       IncomingMessage
+}
+
+type eventStream struct {
+	reg    registry.Registry
+	stream Transport
 }
 
 var _ EventMessage = (*eventMessage)(nil)
-var _ EventPublisher = (*eventPublisher)(nil)
+var _ EventStream = (*eventStream)(nil)
 
-func NewEventPublisher(msgPublisher MessagePublisher) EventPublisher {
-	return eventPublisher{
-		publisher: msgPublisher,
+func NewEventStream(reg registry.Registry, stream Transport) EventStream {
+	return &eventStream{
+		reg:    reg,
+		stream: stream,
 	}
 }
 
-func (s eventPublisher) Publish(ctx context.Context, topicName string, event ddd.Event) error {
-	data, err := json.Marshal(event)
+func (s eventStream) Publish(ctx context.Context, topicName string, event ddd.Event) error {
+	payload, err := s.reg.Serialize(event.EventName(), event.Payload())
 	if err != nil {
 		return err
 	}
 
-	return s.publisher.Publish(ctx, topicName, message{
-		id:       event.ID(),
-		name:     event.EventName(),
-		subject:  topicName,
-		data:     data,
-		metadata: event.Metadata(),
-		sentAt:   time.Now(),
+	data, err := proto.Marshal(&EventMessageData{
+		Payload:   payload,
+		OccuredAt: timestamppb.New(event.OccuredAt()),
 	})
+
+	if err != nil {
+		return err
+	}
+
+	return s.stream.Publish(ctx, topicName, rawMessage{
+		id:   event.ID(),
+		name: event.EventName(),
+		data: data,
+	})
+}
+
+func (s eventStream) Subscribe(topicName string, handler MessageHandler[IncomingEventMessage], options ...SubscriberOption) error {
+	cfg := NewSubscriberConfig(options)
+
+	var filters map[string]struct{}
+	if len(cfg.MessageFilters()) > 0 {
+		filters = make(map[string]struct{})
+		for _, key := range cfg.MessageFilters() {
+			filters[key] = struct{}{}
+		}
+	}
+
+	fn := MessageHandlerFunc[IncomingRawMessage](func(ctx context.Context, msg IncomingRawMessage) error {
+		var eventData EventMessageData
+
+		if filters != nil {
+			if _, exists := filters[msg.MessageName()]; !exists {
+				return nil
+			}
+		}
+
+		err := proto.Unmarshal(msg.Data(), &eventData)
+		if err != nil {
+			return err
+		}
+
+		eventName := msg.MessageName()
+
+		payload, err := s.reg.Deserialize(eventName, eventData.GetPayload())
+		if err != nil {
+			return err
+		}
+
+		eventMsg := eventMessage{
+			id:        msg.ID(),
+			name:      eventName,
+			payload:   payload,
+			occuredAt: eventData.GetOccuredAt().AsTime(),
+			msg:       msg,
+		}
+
+		return handler.HandleMessage(ctx, eventMsg)
+	})
+
+	return s.stream.Subscribe(context.Background(), topicName, fn, options...)
+}
+
+func (s eventStream) Unsubscribe() error {
+	return s.stream.Unsubscribe()
 }
 
 func (e eventMessage) ID() string                { return e.id }
 func (e eventMessage) EventName() string         { return e.name }
 func (e eventMessage) Payload() ddd.EventPayload { return e.payload }
-func (e eventMessage) Metadata() ddd.Metadata    { return e.msg.Metadata() }
+func (e eventMessage) Metadata() ddd.Metadata    { return ddd.Metadata{} } // temp
 func (e eventMessage) OccuredAt() time.Time      { return e.occuredAt }
-func (e eventMessage) Subject() string           { return e.msg.Subject() }
 func (e eventMessage) MessageName() string       { return e.msg.MessageName() }
-func (e eventMessage) SentAt() time.Time         { return e.msg.SentAt() }
-func (e eventMessage) ReceivedAt() time.Time     { return e.msg.ReceivedAt() }
 func (e eventMessage) Ack() error                { return e.msg.Ack() }
 func (e eventMessage) NAck() error               { return e.msg.NAck() }
 func (e eventMessage) Extend() error             { return e.msg.Extend() }

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osrm-backend
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: osrm-backend
+  template:
+    metadata:
+      labels:
+        app: osrm-backend
+    spec:
+      containers:
+        - name: osrm-backend
+          image: ghcr.io/project-osrm/osrm-backend
+          args: ["osrm-routed","--algorithm","mld", "/data/nepal-latest.osrm"]
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: osrm-data
+              mountPath: /data 
+      volumes:
+        - name: osrm-data
+          persistentVolumeClaim:
+            claimName: osrm-pvc

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+message EventMessageData {
+  bytes payload = 1;
+  google.protobuf.Timestamp occured_at = 2;
+}
+
+message CommandMessageData {
+  bytes payload = 1;
+  google.protobuf.Timestamp occured_at = 2;
+}
+
+message ReplyMessageData {
+  bytes payload = 1;
+  google.protobuf.Timestamp occurred_at = 2;
+}

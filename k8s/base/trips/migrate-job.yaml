@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trips-migrate
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: migrate/migrate:v4.17.0
+          command: ["migrate"]
+          args:
+            - "-path=/migrations"
+            - "-database=$(PG_CONN)"
+            - "up"
+          envFrom:
+            - secretRef:
+                name: trips-secrets
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+      volumes:
+        - name: migrations
+          configMap:  
+            name: trips-migrations
+

@@ -27,7 +27,7 @@ func NewLocationHandler(locationSvc application.LocationService, jsonReader *jso
 }
 
 func (l *LocationHandler) UpdateDriverLocation(w http.ResponseWriter, r *http.Request) {
-	var req dto.UpdateDriverLocationRequest
+	var req dto.DriverLocationMessage
 	err := l.jsonReader.DecodeJSON(w, r, &req)
 	if err != nil {
 		l.errorResponder.BadRequest(w, r, err)

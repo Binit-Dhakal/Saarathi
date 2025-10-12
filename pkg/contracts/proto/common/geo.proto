@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package common.geo.v1;
+
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common";
+
+message Coordinates {
+  double lat = 1;
+  double lng = 2;
+}

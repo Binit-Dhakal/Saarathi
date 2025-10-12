@@ -1,0 +1,32 @@
+apiVersion: v1
+data:
+  000001_create_fare_table.down.sql: |
+    drop table if exists fares;
+    drop table if exists routes;
+  000001_create_fare_table.up.sql: "\ncreate table if not exists routes (\n    id
+    uuid primary key default gen_random_uuid(),\n    rider_id uuid not null,\n    source
+    point not null,\n    destination point not null,\n    distance float not null,\n
+    \   duration float not null,\n    geometry jsonb not null\n);\n\n-- confirmed
+    fares \ncreate table if not exists fares (\n    id uuid primary key default gen_random_uuid(),\n
+    \   route_id uuid references routes(id) not null,\n    car_package text not null,\n
+    \   price int not null\n);\n\n"
+  000002_create_rides_table.down.sql: |
+    drop table if exists rides;
+    drop type  status_enum;
+  000002_create_rides_table.up.sql: |2+
+
+    create type status_enum  as enum ('pending', 'approved', 'cancelled');
+
+    -- confirmed rides
+    create table if not exists rides (
+        id uuid primary key default gen_random_uuid(),
+        rider_id uuid not null,
+        driver_id uuid,
+        fare_id uuid references fares(id) not null,
+        status status_enum not null default 'pending'
+    );
+
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: trips-migrations

@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,7 +9,9 @@ import (
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
+	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/gorilla/websocket"
 )
 
@@ -16,9 +19,9 @@ type Client struct {
 	ID          string
 	Conn        *websocket.Conn
 	Send        chan any
+	publisher   ddd.EventPublisher[ddd.Event]
 	locationSvc application.LocationService
 	presenceSvc application.PresenceService
-	offerSvc    application.OfferService
 	done        chan struct{}
 	connCleaner chan *Client
 	cleanupOnce sync.Once
@@ -86,7 +89,15 @@ func (c *Client) readPump() {
 				continue
 			}
 
-			err = c.offerSvc.SendTripAssignedEvent(c.ID, tripAssigned.TripID, "accepted")
+			acceptedIntent := domain.AcceptOffer{
+				OfferID:  tripAssigned.OfferID,
+				DriverID: c.ID,
+				TripID:   tripAssigned.TripID,
+				Ts:       time.Now(),
+			}
+
+			evt := ddd.NewEvent(domain.AcceptOfferIntent, acceptedIntent)
+			err = c.publisher.Publish(context.Background(), evt)
 			if err != nil {
 				log.Println("Failed to send event", err)
 				continue
@@ -99,7 +110,15 @@ func (c *Client) readPump() {
 				continue
 			}
 
-			err = c.offerSvc.SendTripAssignedEvent(c.ID, tripAssigned.TripID, "rejected")
+			rejectedIntent := domain.RejectOffer{
+				OfferID:  tripAssigned.OfferID,
+				DriverID: c.ID,
+				TripID:   tripAssigned.TripID,
+				Ts:       time.Now(),
+			}
+
+			evt := ddd.NewEvent(domain.AcceptOfferIntent, rejectedIntent)
+			err = c.publisher.Publish(context.Background(), evt)
 			if err != nil {
 				log.Println("Failed to send event", err)
 				continue

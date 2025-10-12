@@ -10,5 +10,6 @@ type FareRepository interface {
 type TripRepository interface {
 	SaveRouteDetail(route *Route, riderID string) (string, error)
 	SaveFareDetail(fareModel FareRecord) (string, error)
-	SaveRideDetail(rideModel RideModel) (string, error)
+	SaveRideDetail(rideModel TripModel) (string, error)
+	AssignDriverToTrip(tripID string, driverID string) error
 }

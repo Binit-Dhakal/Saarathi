@@ -29,10 +29,10 @@ func main() {
 	userServiceURL, _ := url.Parse("http://users-service:8080")
 	userServiceProxy := httputil.NewSingleHostReverseProxy(userServiceURL)
 
-	tripServiceURL, _ := url.Parse("http://trips-service:8082")
+	tripServiceURL, _ := url.Parse("http://trips-service:8070")
 	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
 
-	driverStateURL, _ := url.Parse("http://driver-state-service:8084")
+	driverStateURL, _ := url.Parse("http://driver-state-service:8050")
 	driverStateProxy := httputil.NewSingleHostReverseProxy(driverStateURL)
 	driverStateProxy.Director = func(req *http.Request) {
 		req.URL.Scheme = driverStateURL.Scheme
@@ -56,14 +56,14 @@ func main() {
 	mux.Handle("/ws/driver", authMiddleware(proxyHandler(driverStateProxy)))
 
 	server := &http.Server{
-		Addr:         ":8081",
+		Addr:         ":8080",
 		Handler:      rest.CorsMiddleware(mux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
-	fmt.Println("starting server on :8081")
+	fmt.Println("starting server on :8080")
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Fprint(os.Stderr, "server failed", err)
 		os.Exit(1)

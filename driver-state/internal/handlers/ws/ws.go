@@ -7,20 +7,22 @@ import (
 	"sync"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/gorilla/websocket"
 )
 
 type WebsocketHandler struct {
-	clients     map[string]*Client
+	connections map[string]*Client
 	upgrader    websocket.Upgrader
 	locationSvc application.LocationService
 	presenceSvc application.PresenceService
-	offerSvc    application.OfferService
+	publisher   ddd.EventPublisher[ddd.Event]
 	connCleaner chan *Client
 	mu          sync.Mutex
 }
 
-func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc application.PresenceService, offerSvc application.OfferService) *WebsocketHandler {
+func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc application.PresenceService, publisher ddd.EventPublisher[ddd.Event]) *WebsocketHandler {
+
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -30,13 +32,13 @@ func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc ap
 		},
 	}
 
-	var clients = make(map[string]*Client)
+	var connections = make(map[string]*Client)
 	ws := &WebsocketHandler{
-		clients:     clients,
+		connections: connections,
 		upgrader:    upgrader,
 		locationSvc: locationSvc,
 		presenceSvc: presenceSvc,
-		offerSvc:    offerSvc,
+		publisher:   publisher,
 		connCleaner: make(chan *Client, 100),
 	}
 
@@ -48,7 +50,7 @@ func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc ap
 func (ws *WebsocketHandler) CleanCloseConnection() {
 	for client := range ws.connCleaner {
 		ws.mu.Lock()
-		delete(ws.clients, client.ID)
+		delete(ws.connections, client.ID)
 		ws.mu.Unlock()
 		ws.locationSvc.DeleteDriverLocation(client.ID)
 	}
@@ -73,12 +75,12 @@ func (ws *WebsocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
 		Send:        make(chan any, 32),
 		locationSvc: ws.locationSvc,
 		presenceSvc: ws.presenceSvc,
-		offerSvc:    ws.offerSvc,
+		publisher:   ws.publisher,
 		connCleaner: ws.connCleaner,
 	}
 
 	ws.mu.Lock()
-	ws.clients[driverID] = client
+	ws.connections[driverID] = client
 	ws.mu.Unlock()
 
 	log.Printf("Driver %s connected from %s", driverID, r.RemoteAddr)
@@ -88,7 +90,7 @@ func (ws *WebsocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (ws *WebsocketHandler) NotifyClient(driverID string, payload any) error {
 	ws.mu.Lock()
-	client, ok := ws.clients[driverID]
+	client, ok := ws.connections[driverID]
 	ws.mu.Unlock()
 
 	if !ok {
