@@ -9,6 +9,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+	"google.golang.org/protobuf/proto"
 )
 
 type Broker struct {
@@ -125,8 +126,14 @@ func (b *Broker) Unsubscribe() (err error) {
 	return
 }
 
-func (b *Broker) Publish(ctx context.Context, subject string, msg am.RawMessage) error {
-	data, err := json.Marshal(msg)
+func (b *Broker) Publish(ctx context.Context, subject string, msg am.RawMessage) (err error) {
+	var data []byte
+
+	data, err = proto.Marshal(&CoreMessage{
+		Id:   msg.ID(),
+		Name: msg.MessageName(),
+		Data: msg.Data(),
+	})
 	if err != nil {
 		return err
 	}
@@ -140,14 +147,23 @@ func (b *Broker) Subscribe(ctx context.Context, subject string, handler am.Messa
 	var sub *nats.Subscription
 	var err error
 
-	handleMsg := func(m *nats.Msg) {
-		var req rawMessage
-		if err := json.Unmarshal(m.Data, &req); err != nil {
+	handleMsg := func(natsMsg *nats.Msg) {
+		m := &CoreMessage{}
+		err = proto.Unmarshal(natsMsg.Data, m)
+		if err != nil {
 			b.logger.Error().Err(err).Msg("failed to unmarshal message")
 			return
 		}
 
-		_ = handler.HandleMessage(context.Background(), &req)
+		msg := &rawMessage{
+			id:   m.GetId(),
+			name: m.GetName(),
+			data: m.GetData(),
+			ack:  true,
+		}
+
+		_ = handler.HandleMessage(context.Background(), msg)
+
 	}
 
 	if group := subCfg.GroupName(); group != "" {

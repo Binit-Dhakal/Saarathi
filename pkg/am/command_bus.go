@@ -2,6 +2,7 @@ package am
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
@@ -58,10 +59,14 @@ func (b *commandBus) SendCommand(ctx context.Context, topic string, cmd ddd.Comm
 		return err
 	}
 
+	fmt.Println(payload)
+
 	data, err := proto.Marshal(&CommandMessageData{
 		Payload:   payload,
 		OccuredAt: timestamppb.New(cmd.OccuredAt()),
 	})
+
+	fmt.Println(data)
 
 	if err != nil {
 		return err

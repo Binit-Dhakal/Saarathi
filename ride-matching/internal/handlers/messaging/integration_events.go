@@ -88,6 +88,7 @@ func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Eve
 			shortlistDrivers = append(shortlistDrivers, metadata)
 		}
 	}
+	fmt.Println(shortlistDrivers)
 
 	for _, driver := range shortlistDrivers {
 		instanceID, _ := h.presenceSvc.GetDriverInstance(driver.DriverID)
@@ -106,6 +107,7 @@ func (h integrationHandlers[T]) onTripCreated(ctx context.Context, event ddd.Eve
 
 		err = h.publisher.SendCommand(context.Background(), routingKey, cmd)
 		if err != nil {
+			fmt.Println("Error:", err)
 			continue
 		}
 

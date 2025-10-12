@@ -3,6 +3,7 @@ package messaging
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
@@ -23,13 +24,15 @@ func NewCommandHandler(offerSvc application.OfferService) ddd.CommandHandler {
 }
 
 func RegisterCommandHandlers(subscriber am.PublishSubscriber, handlers ddd.CommandHandler) error {
+	hostName, _ := os.Hostname()
 	cmdHandler := func(ctx context.Context, cmd am.IncomingCommandMessage) error {
 		_, err := handlers.HandleCommand(ctx, cmd)
 		return err
 	}
 
+	fmt.Println("Listening on ", fmt.Sprintf(driverspb.CommandChannel, hostName))
 	return subscriber.ReceiveCommand(
-		driverspb.CommandChannel,
+		fmt.Sprintf(driverspb.CommandChannel, hostName),
 		cmdHandler,
 		am.MessageFilter{driverspb.TripOfferCommand},
 	)

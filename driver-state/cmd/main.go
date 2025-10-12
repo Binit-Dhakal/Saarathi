@@ -22,7 +22,7 @@ import (
 func main() {
 	err := run()
 	if err != nil {
-		fmt.Printf("Drivers-State service exitted abnormally: %v\n", err)
+		fmt.Printf("Drivers-State service exitted abnormally:%v\n", err)
 		os.Exit(1)
 	}
 }

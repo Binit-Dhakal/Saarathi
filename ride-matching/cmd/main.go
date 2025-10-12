@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
@@ -83,11 +84,15 @@ func run() (err error) {
 		return err
 	}
 
+	if err := driverspb.Registration(reg); err != nil {
+		return err
+	}
+
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 	eventStream := am.NewEventStream(reg, stream)
 
-	commandBus := natscore.NewCoreBroker(app.nc, app.logger)
-	commandBroker := am.NewCommandBus(reg, commandBus)
+	coreBroker := natscore.NewCoreBroker(app.nc, app.logger)
+	commandBus := am.NewCommandBus(reg, coreBroker)
 
 	_, cancel := context.WithCancel(context.Background())
 
@@ -101,7 +106,7 @@ func run() (err error) {
 	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, pgMetaRepo, availabilityRepo)
 	presenceSvc := application.NewPresenceService(presenceRepo)
 
-	integrationHandler := messaging.NewIntegrationEventHandlers(matchingSvc, driverInfoSvc, presenceSvc, commandBroker)
+	integrationHandler := messaging.NewIntegrationEventHandlers(matchingSvc, driverInfoSvc, presenceSvc, commandBus)
 
 	messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
 
@@ -114,7 +119,7 @@ func run() (err error) {
 	cancel()
 
 	eventStream.Unsubscribe()
-	commandBroker.Unsubscribe()
+	commandBus.Unsubscribe()
 
 	fmt.Println("Graceful shutdown")
 
