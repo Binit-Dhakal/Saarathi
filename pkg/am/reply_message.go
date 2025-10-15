@@ -10,6 +10,10 @@ import (
 const (
 	FailureReply = "am.Failure"
 	SuccessReply = "am.Success"
+
+	ReplyHdrPrefix  = "REPLY_"
+	ReplyNameHdr    = ReplyHdrPrefix + "NAME"
+	ReplyOutcomeHdr = ReplyHdrPrefix + "OUTCOME"
 )
 
 type IncomingReplyMessage interface {

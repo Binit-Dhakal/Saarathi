@@ -10,13 +10,11 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
-	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
-	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/redis"
@@ -47,7 +45,12 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
+	app.js, err = setup.SetupJetStream(app.nc)
+	if err != nil {
+		return err
+	}
+
+	err = setup.SetupStreams(app.js, app.cfg.Nats.TripStream, app.cfg.Nats.SagaStream)
 	if err != nil {
 		return err
 	}
@@ -87,27 +90,26 @@ func run() (err error) {
 		return err
 	}
 
-	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
-	eventStream := am.NewEventStream(reg, stream)
+	tripStream := jetstream.NewStream(cfg.Nats.TripStream, app.js, app.logger)
 
-	commandBus := natscore.NewCoreBroker(app.nc, app.logger)
-	commandBroker := am.NewCommandBus(reg, commandBus)
+	// sagaStream, err := jetstream.NewStream(cfg.Nats.SagaStream, []string{"trips.>", "offers.>", "rms.>"}, app.js, app.logger)
+	// if err != nil{
+	// 	return err
+	// }
+	eventStream := am.NewEventStream(reg, tripStream)
 
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
 
 	rideService := application.NewRideService(redisRepo, tripRepo, eventStream)
 	routeService := application.NewRouteService()
-	commandService := application.NewRideCommandService(tripRepo, eventStream)
 
 	jsonWriter := jsonutil.NewWriter()
 	jsonReader := jsonutil.NewReader()
 	errorResponder := httpx.NewErrorResponder(jsonWriter, app.logger)
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
-	commandHandler := messaging.NewCommandHandler(commandService)
 
-	messaging.RegisterCommandHandlers(commandBroker, commandHandler)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)

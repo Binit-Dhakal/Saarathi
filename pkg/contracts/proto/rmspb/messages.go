@@ -9,6 +9,13 @@ const (
 	// Events
 	RMSAggregateChannel = "saarathi.rms.events"
 	RMSTripMatched      = "rms.TripMatched"
+
+	// Commands
+	RMSCommandChannel           = "saarathi.rms.commands"
+	FindEligibleDriversCommands = "rmsapi.drivers.search"
+
+	// Reply
+	EligibleDriversListReply = "rmsapi.replies.drivers.search"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -18,7 +25,17 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
+	if err = serde.Register(&FindEligibleDrivers{}); err != nil {
+		return err
+	}
+
+	if err = serde.Register(&FindEligibleDriversReply{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (r *TripMatched) Key() string { return RMSTripMatched }
+func (*TripMatched) Key() string              { return RMSTripMatched }
+func (*FindEligibleDrivers) Key() string      { return FindEligibleDriversCommands }
+func (*FindEligibleDriversReply) Key() string { return EligibleDriversListReply }

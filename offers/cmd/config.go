@@ -9,10 +9,6 @@ import (
 )
 
 type (
-	PGTripsConfig struct {
-		Conn string `required:"true"`
-	}
-
 	NatsConfig struct {
 		URL        string `required:"true"`
 		TripStream string `default:"saarathi"`
@@ -23,17 +19,16 @@ type (
 		CacheURL string `required:"true"`
 	}
 
-	TripAppConfig struct {
+	OfferSvcConfig struct {
 		Environment     string
 		LogLevel        string `envconfig:"LOG_LEVEL" default:"DEBUG"`
-		PG              PGTripsConfig
 		Nats            NatsConfig
 		Redis           CacheConfig
 		ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
 	}
 )
 
-func InitConfig() (cfg TripAppConfig, err error) {
+func InitConfig() (cfg OfferSvcConfig, err error) {
 	if err = dotenv.Load(dotenv.EnvironmentFiles(os.Getenv("ENVIRONMENT"))); err != nil {
 		return
 	}

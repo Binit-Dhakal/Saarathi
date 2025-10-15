@@ -7,6 +7,7 @@
 package rmspb
 
 import (
+	common "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -73,14 +74,136 @@ func (x *TripMatched) GetDriverId() string {
 	return ""
 }
 
+// Command
+type FindEligibleDrivers struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	PickUp        *common.Coordinates    `protobuf:"bytes,4,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
+	DropOff       *common.Coordinates    `protobuf:"bytes,5,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FindEligibleDrivers) Reset() {
+	*x = FindEligibleDrivers{}
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FindEligibleDrivers) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindEligibleDrivers) ProtoMessage() {}
+
+func (x *FindEligibleDrivers) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindEligibleDrivers.ProtoReflect.Descriptor instead.
+func (*FindEligibleDrivers) Descriptor() ([]byte, []int) {
+	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *FindEligibleDrivers) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *FindEligibleDrivers) GetPickUp() *common.Coordinates {
+	if x != nil {
+		return x.PickUp
+	}
+	return nil
+}
+
+func (x *FindEligibleDrivers) GetDropOff() *common.Coordinates {
+	if x != nil {
+		return x.DropOff
+	}
+	return nil
+}
+
+// Reply
+type FindEligibleDriversReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverIds     []string               `protobuf:"bytes,2,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FindEligibleDriversReply) Reset() {
+	*x = FindEligibleDriversReply{}
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FindEligibleDriversReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindEligibleDriversReply) ProtoMessage() {}
+
+func (x *FindEligibleDriversReply) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindEligibleDriversReply.ProtoReflect.Descriptor instead.
+func (*FindEligibleDriversReply) Descriptor() ([]byte, []int) {
+	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *FindEligibleDriversReply) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *FindEligibleDriversReply) GetDriverIds() []string {
+	if x != nil {
+		return x.DriverIds
+	}
+	return nil
+}
+
 var File_proto_rmspb_ride_matching_proto protoreflect.FileDescriptor
 
 const file_proto_rmspb_ride_matching_proto_rawDesc = "" +
 	"\n" +
-	"\x1fproto/rmspb/ride_matching.proto\x12\x0fridematching.v1\"C\n" +
+	"\x1fproto/rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x16proto/common/geo.proto\"C\n" +
 	"\vTripMatched\x12\x17\n" +
 	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
-	"\tdriver_id\x18\x02 \x01(\tR\bdriverIdB<Z:github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspbb\x06proto3"
+	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\"\x9a\x01\n" +
+	"\x13FindEligibleDrivers\x12\x17\n" +
+	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x123\n" +
+	"\apick_up\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
+	"\bdrop_off\x18\x05 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\"R\n" +
+	"\x18FindEligibleDriversReply\x12\x17\n" +
+	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1d\n" +
+	"\n" +
+	"driver_ids\x18\x02 \x03(\tR\tdriverIdsB<Z:github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspbb\x06proto3"
 
 var (
 	file_proto_rmspb_ride_matching_proto_rawDescOnce sync.Once
@@ -94,16 +217,21 @@ func file_proto_rmspb_ride_matching_proto_rawDescGZIP() []byte {
 	return file_proto_rmspb_ride_matching_proto_rawDescData
 }
 
-var file_proto_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_proto_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_rmspb_ride_matching_proto_goTypes = []any{
-	(*TripMatched)(nil), // 0: ridematching.v1.TripMatched
+	(*TripMatched)(nil),              // 0: ridematching.v1.TripMatched
+	(*FindEligibleDrivers)(nil),      // 1: ridematching.v1.FindEligibleDrivers
+	(*FindEligibleDriversReply)(nil), // 2: ridematching.v1.FindEligibleDriversReply
+	(*common.Coordinates)(nil),       // 3: common.geo.v1.Coordinates
 }
 var file_proto_rmspb_ride_matching_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: ridematching.v1.FindEligibleDrivers.pick_up:type_name -> common.geo.v1.Coordinates
+	3, // 1: ridematching.v1.FindEligibleDrivers.drop_off:type_name -> common.geo.v1.Coordinates
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_rmspb_ride_matching_proto_init() }
@@ -117,7 +245,7 @@ func file_proto_rmspb_ride_matching_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_rmspb_ride_matching_proto_rawDesc), len(file_proto_rmspb_ride_matching_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -9,6 +9,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
+	"github.com/google/uuid"
 )
 
 type RideService interface {
@@ -112,7 +113,8 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	createdEvent := tripspb.TripCreated{
+	createdEvent := tripspb.TripRequested{
+		SagaId:   uuid.NewString(),
 		TripId:   rideId,
 		Distance: ephermalFare.Route.Distance,
 		Price:    int32(fareDetail.TotalPrice),
@@ -121,7 +123,7 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		CarType:  string(fareDetail.Package),
 	}
 
-	event := ddd.NewEvent(tripspb.TripCreatedEvent, &createdEvent)
+	event := ddd.NewEvent(tripspb.TripRequestedEvent, &createdEvent)
 	err = f.stream.Publish(
 		context.Background(),
 		tripspb.TripAggregateChannel,
