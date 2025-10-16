@@ -7,10 +7,10 @@
 package driverspb
 
 import (
-	common "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
+	_ "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -23,84 +23,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// command
-type TripOfferRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverId      string                 `protobuf:"bytes,2,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
-	PickUp        *common.Coordinates    `protobuf:"bytes,3,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
-	DropOff       *common.Coordinates    `protobuf:"bytes,4,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
-	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TripOfferRequest) Reset() {
-	*x = TripOfferRequest{}
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TripOfferRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TripOfferRequest) ProtoMessage() {}
-
-func (x *TripOfferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TripOfferRequest.ProtoReflect.Descriptor instead.
-func (*TripOfferRequest) Descriptor() ([]byte, []int) {
-	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *TripOfferRequest) GetTripId() string {
-	if x != nil {
-		return x.TripId
-	}
-	return ""
-}
-
-func (x *TripOfferRequest) GetDriverId() string {
-	if x != nil {
-		return x.DriverId
-	}
-	return ""
-}
-
-func (x *TripOfferRequest) GetPickUp() *common.Coordinates {
-	if x != nil {
-		return x.PickUp
-	}
-	return nil
-}
-
-func (x *TripOfferRequest) GetDropOff() *common.Coordinates {
-	if x != nil {
-		return x.DropOff
-	}
-	return nil
-}
-
-func (x *TripOfferRequest) GetExpiresAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ExpiresAt
-	}
-	return nil
-}
-
-// Reply
 type OfferAccepted struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
@@ -111,7 +33,7 @@ type OfferAccepted struct {
 
 func (x *OfferAccepted) Reset() {
 	*x = OfferAccepted{}
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[1]
+	mi := &file_proto_driverspb_driver_state_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -123,7 +45,7 @@ func (x *OfferAccepted) String() string {
 func (*OfferAccepted) ProtoMessage() {}
 
 func (x *OfferAccepted) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[1]
+	mi := &file_proto_driverspb_driver_state_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -136,7 +58,7 @@ func (x *OfferAccepted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfferAccepted.ProtoReflect.Descriptor instead.
 func (*OfferAccepted) Descriptor() ([]byte, []int) {
-	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{1}
+	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *OfferAccepted) GetDriverId() string {
@@ -163,7 +85,7 @@ type OfferRejected struct {
 
 func (x *OfferRejected) Reset() {
 	*x = OfferRejected{}
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[2]
+	mi := &file_proto_driverspb_driver_state_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +97,7 @@ func (x *OfferRejected) String() string {
 func (*OfferRejected) ProtoMessage() {}
 
 func (x *OfferRejected) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[2]
+	mi := &file_proto_driverspb_driver_state_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,7 +110,7 @@ func (x *OfferRejected) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfferRejected.ProtoReflect.Descriptor instead.
 func (*OfferRejected) Descriptor() ([]byte, []int) {
-	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{2}
+	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *OfferRejected) GetDriverId() string {
@@ -214,7 +136,7 @@ type OfferTimedout struct {
 
 func (x *OfferTimedout) Reset() {
 	*x = OfferTimedout{}
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[3]
+	mi := &file_proto_driverspb_driver_state_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -226,7 +148,7 @@ func (x *OfferTimedout) String() string {
 func (*OfferTimedout) ProtoMessage() {}
 
 func (x *OfferTimedout) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[3]
+	mi := &file_proto_driverspb_driver_state_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -239,7 +161,7 @@ func (x *OfferTimedout) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OfferTimedout.ProtoReflect.Descriptor instead.
 func (*OfferTimedout) Descriptor() ([]byte, []int) {
-	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{3}
+	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *OfferTimedout) GetTripId() string {
@@ -249,62 +171,11 @@ func (x *OfferTimedout) GetTripId() string {
 	return ""
 }
 
-type OfferAck struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Accepted      bool                   `protobuf:"varint,1,opt,name=accepted,proto3" json:"accepted,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OfferAck) Reset() {
-	*x = OfferAck{}
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OfferAck) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OfferAck) ProtoMessage() {}
-
-func (x *OfferAck) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_driverspb_driver_state_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OfferAck.ProtoReflect.Descriptor instead.
-func (*OfferAck) Descriptor() ([]byte, []int) {
-	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *OfferAck) GetAccepted() bool {
-	if x != nil {
-		return x.Accepted
-	}
-	return false
-}
-
 var File_proto_driverspb_driver_state_proto protoreflect.FileDescriptor
 
 const file_proto_driverspb_driver_state_proto_rawDesc = "" +
 	"\n" +
-	"\"proto/driverspb/driver_state.proto\x12\x0fdriversstate.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16proto/common/geo.proto\"\xef\x01\n" +
-	"\x10TripOfferRequest\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
-	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\x123\n" +
-	"\apick_up\x18\x03 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
-	"\bdrop_off\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x129\n" +
-	"\n" +
-	"expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"E\n" +
+	"\"proto/driverspb/driver_state.proto\x12\x0fdriversstate.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16proto/common/geo.proto\"E\n" +
 	"\rOfferAccepted\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"E\n" +
@@ -312,9 +183,7 @@ const file_proto_driverspb_driver_state_proto_rawDesc = "" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"(\n" +
 	"\rOfferTimedout\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\"&\n" +
-	"\bOfferAck\x12\x1a\n" +
-	"\baccepted\x18\x01 \x01(\bR\bacceptedB@Z>github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspbb\x06proto3"
+	"\atrip_id\x18\x01 \x01(\tR\x06tripIdB@Z>github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspbb\x06proto3"
 
 var (
 	file_proto_driverspb_driver_state_proto_rawDescOnce sync.Once
@@ -328,25 +197,18 @@ func file_proto_driverspb_driver_state_proto_rawDescGZIP() []byte {
 	return file_proto_driverspb_driver_state_proto_rawDescData
 }
 
-var file_proto_driverspb_driver_state_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_driverspb_driver_state_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_driverspb_driver_state_proto_goTypes = []any{
-	(*TripOfferRequest)(nil),      // 0: driversstate.v1.TripOfferRequest
-	(*OfferAccepted)(nil),         // 1: driversstate.v1.OfferAccepted
-	(*OfferRejected)(nil),         // 2: driversstate.v1.OfferRejected
-	(*OfferTimedout)(nil),         // 3: driversstate.v1.OfferTimedout
-	(*OfferAck)(nil),              // 4: driversstate.v1.OfferAck
-	(*common.Coordinates)(nil),    // 5: common.geo.v1.Coordinates
-	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
+	(*OfferAccepted)(nil), // 0: driversstate.v1.OfferAccepted
+	(*OfferRejected)(nil), // 1: driversstate.v1.OfferRejected
+	(*OfferTimedout)(nil), // 2: driversstate.v1.OfferTimedout
 }
 var file_proto_driverspb_driver_state_proto_depIdxs = []int32{
-	5, // 0: driversstate.v1.TripOfferRequest.pick_up:type_name -> common.geo.v1.Coordinates
-	5, // 1: driversstate.v1.TripOfferRequest.drop_off:type_name -> common.geo.v1.Coordinates
-	6, // 2: driversstate.v1.TripOfferRequest.expires_at:type_name -> google.protobuf.Timestamp
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0, // [0:0] is the sub-list for method output_type
+	0, // [0:0] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_proto_driverspb_driver_state_proto_init() }
@@ -360,7 +222,7 @@ func file_proto_driverspb_driver_state_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_driverspb_driver_state_proto_rawDesc), len(file_proto_driverspb_driver_state_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

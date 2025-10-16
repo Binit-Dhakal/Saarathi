@@ -110,8 +110,9 @@ type TripOfferRequested struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
 	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	Price         int32                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
-	Distance      float64                `protobuf:"fixed64,4,opt,name=distance,proto3" json:"distance,omitempty"`
+	DriverId      string                 `protobuf:"bytes,3,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	Price         int32                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	Distance      float64                `protobuf:"fixed64,5,opt,name=distance,proto3" json:"distance,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -160,6 +161,13 @@ func (x *TripOfferRequested) GetTripId() string {
 	return ""
 }
 
+func (x *TripOfferRequested) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
 func (x *TripOfferRequested) GetPrice() int32 {
 	if x != nil {
 		return x.Price
@@ -185,12 +193,13 @@ const file_proto_offerspb_offer_proto_rawDesc = "" +
 	"\apick_up\x18\x03 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
 	"\bdrop_off\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
 	"\bcar_type\x18\x05 \x01(\tR\acarType\x12/\n" +
-	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKm\"x\n" +
+	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKm\"\x95\x01\n" +
 	"\x12TripOfferRequested\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
-	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x05R\x05price\x12\x1a\n" +
-	"\bdistance\x18\x04 \x01(\x01R\bdistanceB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1b\n" +
+	"\tdriver_id\x18\x03 \x01(\tR\bdriverId\x12\x14\n" +
+	"\x05price\x18\x04 \x01(\x05R\x05price\x12\x1a\n" +
+	"\bdistance\x18\x05 \x01(\x01R\bdistanceB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
 
 var (
 	file_proto_offerspb_offer_proto_rawDescOnce sync.Once

@@ -3,9 +3,9 @@ package domain
 import "time"
 
 const (
-	AcceptOfferIntent  = "offer.intent.accept"
-	RejectOfferIntent  = "offer.intent.reject"
-	TimeoutOfferIntent = "offer.intent.timeout"
+	AcceptOfferEvent  = "offer.response.accept"
+	RejectOfferEvent  = "offer.response.reject"
+	TimeoutOfferEvent = "offer.response.timeout"
 )
 
 type AcceptOffer struct {
@@ -15,7 +15,7 @@ type AcceptOffer struct {
 	Ts       time.Time
 }
 
-func (AcceptOffer) Key() string { return AcceptOfferIntent }
+func (AcceptOffer) Key() string { return AcceptOfferEvent }
 
 type RejectOffer struct {
 	OfferID  string
@@ -24,7 +24,7 @@ type RejectOffer struct {
 	Ts       time.Time
 }
 
-func (RejectOffer) Key() string { return RejectOfferIntent }
+func (RejectOffer) Key() string { return RejectOfferEvent }
 
 type TimeoutOffer struct {
 	OfferID  string
@@ -33,5 +33,4 @@ type TimeoutOffer struct {
 	Ts       time.Time
 }
 
-func (TimeoutOffer) Key() string { return TimeoutOfferIntent }
-
+func (TimeoutOffer) Key() string { return TimeoutOfferEvent }

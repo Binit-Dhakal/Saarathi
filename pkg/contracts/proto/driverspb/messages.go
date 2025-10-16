@@ -9,24 +9,13 @@ const (
 	DriverAggregateChannel = "saarathi.drivers.events"
 
 	DriverOfferEventsChannel = "drivers.events.offers.%s"
-
-	// command to specific instance
-	CommandChannel   = "saarathi.drivers.command.%s"
-	TripOfferCommand = "driversapi.trip.offer"
-
-	ReplyChannel       = "saarathi.drivers.reply"
-	OfferAcceptedReply = "driversapi.offer.accepted"
-	OfferRejectedReply = "driversapi.offer.rejected"
-	OfferTimedoutReply = "driversapi.offer.timedout"
-	OfferAckReply      = "driversapi.offer.ack"
+	OfferAcceptedEvent       = "driversapi.offer.accepted"
+	OfferRejectedEvent       = "driversapi.offer.rejected"
+	OfferTimedoutEvent       = "driversapi.offer.timedout"
 )
 
 func Registration(reg registry.Registry) (err error) {
 	serde := serdes.NewJsonSerde(reg)
-
-	if err = serde.Register(&TripOfferRequest{}); err != nil {
-		return err
-	}
 
 	if err = serde.Register(&OfferAccepted{}); err != nil {
 		return err
@@ -40,15 +29,9 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
-	if err = serde.Register(&OfferAck{}); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (*TripOfferRequest) Key() string { return TripOfferCommand }
-func (*OfferAccepted) Key() string    { return OfferAcceptedReply }
-func (*OfferRejected) Key() string    { return OfferRejectedReply }
-func (*OfferTimedout) Key() string    { return OfferTimedoutReply }
-func (*OfferAck) Key() string         { return OfferAckReply }
+func (*OfferAccepted) Key() string { return OfferAcceptedEvent }
+func (*OfferRejected) Key() string { return OfferRejectedEvent }
+func (*OfferTimedout) Key() string { return OfferTimedoutEvent }

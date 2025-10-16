@@ -12,8 +12,8 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
-	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/nats-io/nats.go"
@@ -38,7 +38,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
+	app.js, err = setup.SetupJetStream(app.nc)
 	if err != nil {
 		return err
 	}
@@ -76,30 +76,28 @@ func run() (err error) {
 		return err
 	}
 
-	broker := natscore.NewCoreBroker(app.nc, app.logger)
+	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
 
-	replyBus := am.NewReplyBus(reg, broker)
-	commandBus := am.NewCommandBus(reg, broker)
+	eventStream := am.NewEventStream(reg, sagaStream)
 	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 
 	locationRepo := redis.NewLocationRepo(app.cacheClient)
 	wsRepo := redis.NewWSRepo(app.cacheClient)
+	offerRepo := redis.NewOfferRepository(app.cacheClient)
 
 	presenceSvc := application.NewPresenceService(wsRepo)
 	locationSvc := application.NewLocationService(locationRepo)
-	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, domainDispatcher)
-	offerSvc := application.NewOfferService(domainDispatcher, driverStateHandler)
 
-	offerHandler := messaging.NewOfferIntentHandler(offerSvc)
-	commandHandler := messaging.NewCommandHandler(offerSvc)
-	domainHandler := messaging.NewDomainHandlers(replyBus)
+	// Solving circular dependency
+	offerSvc := application.NewOfferService(domainDispatcher, nil, offerRepo)
+	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, offerSvc, domainDispatcher)
+	offerSvc.SetNotifier(driverStateHandler)
 
-	messaging.RegisterOfferIntentHandlers(domainDispatcher, offerHandler)
+	domainHandler := messaging.NewDomainHandlers(eventStream)
 	messaging.RegisterDomainEventHandlers(domainDispatcher, domainHandler)
 
-	if err := messaging.RegisterCommandHandlers(commandBus, commandHandler); err != nil {
-		return err
-	}
+	integrationHandler := messaging.NewIntegrationEventHandlers(offerSvc)
+	messaging.RegisterIntegrationHandlers(eventStream, integrationHandler)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", driverStateHandler.WsHandler)

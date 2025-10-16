@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
-	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/gorilla/websocket"
@@ -22,6 +21,7 @@ type Client struct {
 	publisher   ddd.EventPublisher[ddd.Event]
 	locationSvc application.LocationService
 	presenceSvc application.PresenceService
+	offerSvc    application.OfferService
 	done        chan struct{}
 	connCleaner chan *Client
 	cleanupOnce sync.Once
@@ -83,45 +83,27 @@ func (c *Client) readPump() {
 				continue
 			}
 		case "TRIP_ACCEPTED":
-			var tripAssigned dto.OfferResponseDriver
-			if err := json.Unmarshal(baseMessage.Data, &tripAssigned); err != nil {
+			var tripResponse dto.OfferResponseDriver
+			if err := json.Unmarshal(baseMessage.Data, &tripResponse); err != nil {
 				log.Println("Failed to unmarshal assigned response payload: ", err)
 				continue
 			}
 
-			acceptedIntent := domain.AcceptOffer{
-				OfferID:  tripAssigned.OfferID,
-				DriverID: c.ID,
-				TripID:   tripAssigned.TripID,
-				Ts:       time.Now(),
-			}
-
-			evt := ddd.NewEvent(domain.AcceptOfferIntent, acceptedIntent)
-			err = c.publisher.Publish(context.Background(), evt)
+			err = c.offerSvc.ProcessTripOffer(context.Background(), tripResponse.OfferID, "accepted")
 			if err != nil {
-				log.Println("Failed to send event", err)
-				continue
+				fmt.Printf("CRITICAL: Failed to process accepted offer %s for driver %s: %v\n", tripResponse.OfferID, c.ID, err)
 			}
 
 		case "TRIP_REJECTED":
-			var tripAssigned dto.OfferResponseDriver
-			if err := json.Unmarshal(baseMessage.Data, &tripAssigned); err != nil {
+			var tripResponse dto.OfferResponseDriver
+			if err := json.Unmarshal(baseMessage.Data, &tripResponse); err != nil {
 				log.Println("Failed to unmarshal assigned response payload: ", err)
 				continue
 			}
 
-			rejectedIntent := domain.RejectOffer{
-				OfferID:  tripAssigned.OfferID,
-				DriverID: c.ID,
-				TripID:   tripAssigned.TripID,
-				Ts:       time.Now(),
-			}
-
-			evt := ddd.NewEvent(domain.AcceptOfferIntent, rejectedIntent)
-			err = c.publisher.Publish(context.Background(), evt)
+			err = c.offerSvc.ProcessTripOffer(context.Background(), tripResponse.OfferID, "rejected")
 			if err != nil {
-				log.Println("Failed to send event", err)
-				continue
+				fmt.Printf("CRITICAL: Failed to process rejected offer %s for driver %s: %v\n", tripResponse.OfferID, c.ID, err)
 			}
 
 		default:

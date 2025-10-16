@@ -7,16 +7,6 @@ import "proto/common/geo.proto";
 
 option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb";
 
-// command
-message TripOfferRequest {
-  string trip_id = 1;
-  string driver_id = 2;
-  common.geo.v1.Coordinates pick_up = 3;
-  common.geo.v1.Coordinates drop_off = 4;
-  google.protobuf.Timestamp expires_at = 5;
-}
-
-// Reply
 message OfferAccepted {
   string driver_id = 1;
   string trip_id = 2;
@@ -29,8 +19,4 @@ message OfferRejected {
 
 message OfferTimedout {
   string trip_id = 1;
-}
-
-message OfferAck {
-  bool accepted = 1;
 }

@@ -2,11 +2,14 @@ package messaging
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
+	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
 
@@ -21,16 +24,13 @@ func NewIntegrationEventHandlers(offerSvc application.OfferService) ddd.EventHan
 }
 
 func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.EventHandler[ddd.Event]) error {
+	hostName, _ := os.Hostname()
+
 	evtMsgHandler := am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, eventMsg am.IncomingEventMessage) error {
 		return handlers.HandleEvent(ctx, eventMsg)
 	})
 
-	err := subscriber.Subscribe(tripspb.TripRequestedEvent, evtMsgHandler)
-	if err != nil {
-		return err
-	}
-
-	err = subscriber.Subscribe(rmspb.RMSMatchingCandidatesEvent, evtMsgHandler)
+	err := subscriber.Subscribe(fmt.Sprintf(driverspb.DriverOfferEventsChannel, hostName), evtMsgHandler)
 	if err != nil {
 		return err
 	}
@@ -40,38 +40,22 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 
 func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 	switch event.EventName() {
-	case tripspb.TripRequestedEvent:
-		return h.onTripRequested(ctx, event)
-	case rmspb.RMSMatchingCandidatesEvent:
-		return h.onCandidatesList(ctx, event)
+	case offerspb.TripOfferRequestedEvent:
+		return h.onOfferRequested(ctx, event)
 	}
 	return nil
 }
 
-func (h integrationHandlers[T]) onTripRequested(ctx context.Context, event T) error {
-	payload := event.Payload().(*tripspb.TripRequested)
+func (h integrationHandlers[T]) onOfferRequested(ctx context.Context, event T) error {
+	payload := event.Payload().(*offerspb.TripOfferRequested)
 
-	readDTO := domain.TripReadModelDTO{
-		SagaID:   payload.GetSagaId(),
-		TripID:   payload.GetTripId(),
-		PickUp:   [2]float64{payload.GetPickUp().GetLng(), payload.GetPickUp().GetLat()},
-		DropOff:  [2]float64{payload.GetDropOff().GetLng(), payload.GetDropOff().GetLat()},
-		CarType:  payload.GetCarType(),
-		Price:    payload.GetPrice(),
-		Distance: payload.GetDistance(),
+	offerRequestedDTO := &dto.OfferRequestedDTO{
+		TripID:   payload.TripId,
+		SagaID:   payload.SagaId,
+		Distance: payload.Distance,
+		Price:    payload.Price,
+		DriverID: payload.DriverId,
 	}
 
-	return h.offerSvc.CreateTripReadModel(ctx, readDTO)
-}
-
-func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) error {
-	payload := event.Payload().(*rmspb.MatchingCandidates)
-
-	candidatesDTO := domain.MatchedDriversDTO{
-		SagaID:             payload.SagaId,
-		TripID:             payload.SagaId,
-		CandidateDriversID: payload.DriverIds,
-	}
-
-	return h.offerSvc.ProcessCandidatesList(ctx, candidatesDTO)
+	return h.offerSvc.CreateAndSendOffer(ctx, offerRequestedDTO)
 }

@@ -9,12 +9,12 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
 
-type domainHandlers[T ddd.Event] struct {
-	publisher am.ReplyPublisher
+type domainHandlers struct {
+	publisher am.EventPublisher
 }
 
-func NewDomainHandlers(publisher am.ReplyPublisher) ddd.EventHandler[ddd.Event] {
-	return domainHandlers[ddd.Event]{publisher: publisher}
+func NewDomainHandlers(publisher am.EventPublisher) ddd.EventHandler[ddd.Event] {
+	return domainHandlers{publisher: publisher}
 }
 
 func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], handlers ddd.EventHandler[ddd.Event]) {
@@ -24,7 +24,7 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 	)
 }
 
-func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) (err error) {
+func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) (err error) {
 	switch event.EventName() {
 	case domain.DriverOfferRespondedEvent:
 		err = h.onOfferResponded(ctx, event)
@@ -35,25 +35,25 @@ func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) (err error)
 	return err
 }
 
-func (h domainHandlers[T]) onOfferResponded(ctx context.Context, event T) error {
+func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) error {
 	var err error
 	payload := event.Payload().(*domain.Offer)
 	switch payload.Status {
 	case domain.OfferAccepted:
-		replyPayload := ddd.NewReply(driverspb.OfferAcceptedReply, driverspb.OfferAccepted{
+		replyPayload := ddd.NewEvent(driverspb.OfferAcceptedEvent, driverspb.OfferAccepted{
 			DriverId: payload.DriverID,
 			TripId:   payload.TripID,
 		})
 
-		err = h.publisher.Publish(ctx, driverspb.ReplyChannel, replyPayload)
+		err = h.publisher.Publish(ctx, driverspb.OfferAcceptedEvent, replyPayload)
 
 	case domain.OfferRejected:
-		replyPayload := ddd.NewReply(driverspb.OfferRejectedReply, driverspb.OfferRejected{
+		replyPayload := ddd.NewEvent(driverspb.OfferRejectedEvent, driverspb.OfferRejected{
 			DriverId: payload.DriverID,
 			TripId:   payload.TripID,
 		})
 
-		err = h.publisher.Publish(ctx, driverspb.ReplyChannel, replyPayload)
+		err = h.publisher.Publish(ctx, driverspb.OfferRejectedEvent, replyPayload)
 	}
 
 	if err != nil {
@@ -63,16 +63,16 @@ func (h domainHandlers[T]) onOfferResponded(ctx context.Context, event T) error 
 	return nil
 }
 
-func (h domainHandlers[T]) onOfferTimedOut(ctx context.Context, event T) error {
+func (h domainHandlers) onOfferTimedOut(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(domain.DriverOfferTimeout)
 
 	switch payload.Status {
 	case domain.OfferTimedOut:
-		replyPayload := ddd.NewReply(driverspb.OfferTimedoutReply, driverspb.OfferTimedout{
+		replyPayload := ddd.NewEvent(driverspb.OfferTimedoutEvent, driverspb.OfferTimedout{
 			TripId: payload.TripID,
 		})
 
-		err := h.publisher.Publish(ctx, driverspb.ReplyChannel, replyPayload)
+		err := h.publisher.Publish(ctx, driverspb.OfferTimedoutEvent, replyPayload)
 		if err != nil {
 			return err
 		}

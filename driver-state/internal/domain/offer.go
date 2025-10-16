@@ -12,27 +12,45 @@ var (
 	ErrAlreadyProcessed = errors.New("Offer Already Processed")
 )
 
+type OfferStatus string
+
+const (
+	OfferPending   OfferStatus = "pending"
+	OfferDelivered OfferStatus = "delivered"
+	OfferAccepted  OfferStatus = "accepted"
+	OfferRejected  OfferStatus = "rejected"
+	OfferTimedOut  OfferStatus = "timed_out"
+	OfferCancelled OfferStatus = "cancelled"
+)
+
 type Offer struct {
 	ddd.Aggregate
-	TripID      string
-	DriverID    string
-	ExpiresAt   time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Status      OfferStatus
-	Correlation string
+	TripID   string
+	SagaID   string
+	DriverID string
+	Price    int32
+	Distance float64
+
+	ExpiresAt time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Status    OfferStatus
 }
 
-func NewOffer(tripID string, driverID string, ttl time.Duration, correlation string) Offer {
+func NewOffer(tripID string, sagaID string, driverID string, price int32, distance float64) Offer {
+	ttl := 15 * time.Second
 	return Offer{
-		Aggregate:   ddd.NewAggregate(uuid.NewString(), "drivers.Offer"),
-		TripID:      tripID,
-		DriverID:    driverID,
-		CreatedAt:   time.Now().UTC(),
-		UpdatedAt:   time.Now().UTC(),
-		ExpiresAt:   time.Now().UTC().Add(ttl),
-		Status:      OfferPending,
-		Correlation: correlation,
+		Aggregate: ddd.NewAggregate(uuid.NewString(), "drivers.Offer"),
+		TripID:    tripID,
+		DriverID:  driverID,
+		SagaID:    sagaID,
+		Price:     price,
+		Distance:  distance,
+
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		ExpiresAt: time.Now().UTC().Add(ttl),
+		Status:    OfferPending,
 	}
 }
 
