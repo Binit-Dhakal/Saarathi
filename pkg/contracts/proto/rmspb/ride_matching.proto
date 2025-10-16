@@ -11,6 +11,12 @@ message TripMatched {
   string driver_id = 2;
 }
 
+message MatchingCandidates {
+  string saga_id = 1;
+  string trip_id = 2;
+  repeated string driver_ids = 3;
+}
+
 // Command
 message FindEligibleDrivers {
   string trip_id = 1;

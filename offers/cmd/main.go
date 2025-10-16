@@ -7,6 +7,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
@@ -76,15 +77,16 @@ func run() (err error) {
 		return err
 	}
 
-	tripStream := jetstream.NewStream(cfg.Nats.TripStream, app.js, app.logger)
 	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
+	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 
-	tripEvtStream := am.NewEventStream(reg, tripStream)
 	sagaEvtStream := am.NewEventStream(reg, sagaStream)
 
-	integrationHandlers := messaging.NewIntegrationEventHandlers(sagaEvtStream)
-	err = messaging.RegisterIntegrationHandlers(tripEvtStream, integrationHandlers)
+	integrationHandlers := messaging.NewIntegrationEventHandlers(domainDispatcher)
+	err = messaging.RegisterIntegrationHandlers(sagaEvtStream, integrationHandlers)
 	if err != nil {
 		return err
 	}
+
+	return nil
 }

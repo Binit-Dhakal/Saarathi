@@ -18,16 +18,18 @@ type RideService interface {
 }
 
 type rideService struct {
-	fareRepo domain.FareRepository
-	tripRepo domain.TripRepository
-	stream   am.EventPublisher
+	fareRepo   domain.FareRepository
+	tripRepo   domain.TripRepository
+	tripStream am.EventPublisher
+	sagaStream am.EventPublisher
 }
 
-func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, stream am.EventPublisher) *rideService {
+func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, tripStream am.EventPublisher, sagaStream am.EventPublisher) *rideService {
 	return &rideService{
-		fareRepo: fareRepo,
-		tripRepo: tripRepo,
-		stream:   stream,
+		fareRepo:   fareRepo,
+		tripRepo:   tripRepo,
+		tripStream: tripStream,
+		sagaStream: sagaStream,
 	}
 }
 
@@ -124,9 +126,18 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 	}
 
 	event := ddd.NewEvent(tripspb.TripRequestedEvent, &createdEvent)
-	err = f.stream.Publish(
+	err = f.tripStream.Publish(
 		context.Background(),
-		tripspb.TripAggregateChannel,
+		tripspb.TripRequestedEvent,
+		event,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	err = f.sagaStream.Publish(
+		context.Background(),
+		tripspb.TripRequestedEvent,
 		event,
 	)
 	if err != nil {

@@ -91,18 +91,16 @@ func run() (err error) {
 	}
 
 	tripStream := jetstream.NewStream(cfg.Nats.TripStream, app.js, app.logger)
+	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
 
-	// sagaStream, err := jetstream.NewStream(cfg.Nats.SagaStream, []string{"trips.>", "offers.>", "rms.>"}, app.js, app.logger)
-	// if err != nil{
-	// 	return err
-	// }
-	eventStream := am.NewEventStream(reg, tripStream)
+	tripEvtStream := am.NewEventStream(reg, tripStream)
+	sagaEvtStream := am.NewEventStream(reg, sagaStream)
 
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
 
-	rideService := application.NewRideService(redisRepo, tripRepo, eventStream)
 	routeService := application.NewRouteService()
+	rideService := application.NewRideService(redisRepo, tripRepo, tripEvtStream, sagaEvtStream)
 
 	jsonWriter := jsonutil.NewWriter()
 	jsonReader := jsonutil.NewReader()

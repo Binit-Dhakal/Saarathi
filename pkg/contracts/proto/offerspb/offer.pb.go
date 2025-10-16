@@ -26,11 +26,10 @@ type RideMatchingRequested struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	SagaId            string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
 	TripId            string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	Distance          float64                `protobuf:"fixed64,3,opt,name=distance,proto3" json:"distance,omitempty"`
-	PickUp            *common.Coordinates    `protobuf:"bytes,4,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
-	DropOff           *common.Coordinates    `protobuf:"bytes,5,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
-	CarType           string                 `protobuf:"bytes,6,opt,name=car_type,json=carType,proto3" json:"car_type,omitempty"`
-	MaxSearchRadiusKm float64                `protobuf:"fixed64,7,opt,name=max_search_radius_km,json=maxSearchRadiusKm,proto3" json:"max_search_radius_km,omitempty"`
+	PickUp            *common.Coordinates    `protobuf:"bytes,3,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
+	DropOff           *common.Coordinates    `protobuf:"bytes,4,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
+	CarType           string                 `protobuf:"bytes,5,opt,name=car_type,json=carType,proto3" json:"car_type,omitempty"`
+	MaxSearchRadiusKm float64                `protobuf:"fixed64,6,opt,name=max_search_radius_km,json=maxSearchRadiusKm,proto3" json:"max_search_radius_km,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -79,13 +78,6 @@ func (x *RideMatchingRequested) GetTripId() string {
 	return ""
 }
 
-func (x *RideMatchingRequested) GetDistance() float64 {
-	if x != nil {
-		return x.Distance
-	}
-	return 0
-}
-
 func (x *RideMatchingRequested) GetPickUp() *common.Coordinates {
 	if x != nil {
 		return x.PickUp
@@ -118,15 +110,14 @@ var File_proto_offerspb_offer_proto protoreflect.FileDescriptor
 
 const file_proto_offerspb_offer_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/offerspb/offer.proto\x12\toffers.v1\x1a\x16proto/common/geo.proto\"\x9d\x02\n" +
+	"\x1aproto/offerspb/offer.proto\x12\toffers.v1\x1a\x16proto/common/geo.proto\"\x81\x02\n" +
 	"\x15RideMatchingRequested\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
-	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1a\n" +
-	"\bdistance\x18\x03 \x01(\x01R\bdistance\x123\n" +
-	"\apick_up\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
-	"\bdrop_off\x18\x05 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
-	"\bcar_type\x18\x06 \x01(\tR\acarType\x12/\n" +
-	"\x14max_search_radius_km\x18\a \x01(\x01R\x11maxSearchRadiusKmB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x123\n" +
+	"\apick_up\x18\x03 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
+	"\bdrop_off\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
+	"\bcar_type\x18\x05 \x01(\tR\acarType\x12/\n" +
+	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKmB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
 
 var (
 	file_proto_offerspb_offer_proto_rawDescOnce sync.Once

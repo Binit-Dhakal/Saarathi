@@ -5,10 +5,10 @@ import (
 )
 
 type TripCreated struct {
-	TripID   string
-	Distance float64
-	Price    int32
-	PickUp   *common.Coordinates
-	DropOff  *common.Coordinates
-	CarType  string
+	SagaID       string
+	TripID       string
+	PickUp       *common.Coordinates
+	DropOff      *common.Coordinates
+	CarType      string
+	SearchRadius float64
 }
