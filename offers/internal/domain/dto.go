@@ -15,3 +15,9 @@ type MatchedDriversDTO struct {
 	SagaID             string
 	CandidateDriversID []string
 }
+
+type OfferAcceptedReplyDTO struct {
+	SagaID   string
+	TripID   string
+	DriverID string
+}

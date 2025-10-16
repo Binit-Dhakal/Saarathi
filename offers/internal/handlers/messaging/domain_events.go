@@ -26,6 +26,7 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 	subscriber.Subscribe(handlers,
 		domain.RideMatchingInitializedEvent,
 		domain.TripOfferEvent,
+		domain.TripOfferAcceptedEvent,
 	)
 }
 
@@ -35,6 +36,8 @@ func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error 
 		h.onRideMatchingInitialized(ctx, event)
 	case domain.TripOfferEvent:
 		h.onTripOffer(ctx, event)
+	case domain.TripOfferAcceptedEvent:
+		h.onTripOfferAccepted(ctx, event)
 	}
 
 	return nil
@@ -71,4 +74,17 @@ func (h domainHandlers) onTripOffer(ctx context.Context, event ddd.Event) error 
 
 	evt := ddd.NewEvent(offerspb.TripOfferRequestedEvent, p)
 	return h.publisher.Publish(ctx, routingKey, evt)
+}
+
+func (h domainHandlers) onTripOfferAccepted(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.TripOfferAccepted)
+
+	p := &offerspb.TripOfferAccepted{
+		SagaId:   payload.SagaID,
+		DriverId: payload.DriverID,
+		TripId:   payload.TripID,
+	}
+
+	evt := ddd.NewEvent(offerspb.TripOfferAcceptedEvent, p)
+	return h.publisher.Publish(ctx, offerspb.TripOfferAcceptedEvent, evt)
 }

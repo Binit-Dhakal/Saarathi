@@ -182,6 +182,66 @@ func (x *TripOfferRequested) GetDistance() float64 {
 	return 0
 }
 
+type TripOfferAccepted struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	SagaId        string                 `protobuf:"bytes,3,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripOfferAccepted) Reset() {
+	*x = TripOfferAccepted{}
+	mi := &file_proto_offerspb_offer_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripOfferAccepted) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripOfferAccepted) ProtoMessage() {}
+
+func (x *TripOfferAccepted) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_offerspb_offer_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripOfferAccepted.ProtoReflect.Descriptor instead.
+func (*TripOfferAccepted) Descriptor() ([]byte, []int) {
+	return file_proto_offerspb_offer_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TripOfferAccepted) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+func (x *TripOfferAccepted) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *TripOfferAccepted) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
+	}
+	return ""
+}
+
 var File_proto_offerspb_offer_proto protoreflect.FileDescriptor
 
 const file_proto_offerspb_offer_proto_rawDesc = "" +
@@ -199,7 +259,11 @@ const file_proto_offerspb_offer_proto_rawDesc = "" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1b\n" +
 	"\tdriver_id\x18\x03 \x01(\tR\bdriverId\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x05R\x05price\x12\x1a\n" +
-	"\bdistance\x18\x05 \x01(\x01R\bdistanceB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
+	"\bdistance\x18\x05 \x01(\x01R\bdistance\"b\n" +
+	"\x11TripOfferAccepted\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x17\n" +
+	"\asaga_id\x18\x03 \x01(\tR\x06sagaIdB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
 
 var (
 	file_proto_offerspb_offer_proto_rawDescOnce sync.Once
@@ -213,15 +277,16 @@ func file_proto_offerspb_offer_proto_rawDescGZIP() []byte {
 	return file_proto_offerspb_offer_proto_rawDescData
 }
 
-var file_proto_offerspb_offer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_offerspb_offer_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_offerspb_offer_proto_goTypes = []any{
 	(*RideMatchingRequested)(nil), // 0: offers.v1.RideMatchingRequested
 	(*TripOfferRequested)(nil),    // 1: offers.v1.TripOfferRequested
-	(*common.Coordinates)(nil),    // 2: common.geo.v1.Coordinates
+	(*TripOfferAccepted)(nil),     // 2: offers.v1.TripOfferAccepted
+	(*common.Coordinates)(nil),    // 3: common.geo.v1.Coordinates
 }
 var file_proto_offerspb_offer_proto_depIdxs = []int32{
-	2, // 0: offers.v1.RideMatchingRequested.pick_up:type_name -> common.geo.v1.Coordinates
-	2, // 1: offers.v1.RideMatchingRequested.drop_off:type_name -> common.geo.v1.Coordinates
+	3, // 0: offers.v1.RideMatchingRequested.pick_up:type_name -> common.geo.v1.Coordinates
+	3, // 1: offers.v1.RideMatchingRequested.drop_off:type_name -> common.geo.v1.Coordinates
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -240,7 +305,7 @@ func file_proto_offerspb_offer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_offerspb_offer_proto_rawDesc), len(file_proto_offerspb_offer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

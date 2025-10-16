@@ -27,6 +27,7 @@ type OfferAccepted struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
 	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	SagaId        string                 `protobuf:"bytes,3,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,10 +76,18 @@ func (x *OfferAccepted) GetTripId() string {
 	return ""
 }
 
+func (x *OfferAccepted) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
+	}
+	return ""
+}
+
 type OfferRejected struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
 	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	SagaId        string                 `protobuf:"bytes,3,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,27 +136,36 @@ func (x *OfferRejected) GetTripId() string {
 	return ""
 }
 
-type OfferTimedout struct {
+func (x *OfferRejected) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
+	}
+	return ""
+}
+
+type OfferTimedOut struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	SagaId        string                 `protobuf:"bytes,3,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *OfferTimedout) Reset() {
-	*x = OfferTimedout{}
+func (x *OfferTimedOut) Reset() {
+	*x = OfferTimedOut{}
 	mi := &file_proto_driverspb_driver_state_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *OfferTimedout) String() string {
+func (x *OfferTimedOut) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*OfferTimedout) ProtoMessage() {}
+func (*OfferTimedOut) ProtoMessage() {}
 
-func (x *OfferTimedout) ProtoReflect() protoreflect.Message {
+func (x *OfferTimedOut) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_driverspb_driver_state_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -159,14 +177,28 @@ func (x *OfferTimedout) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use OfferTimedout.ProtoReflect.Descriptor instead.
-func (*OfferTimedout) Descriptor() ([]byte, []int) {
+// Deprecated: Use OfferTimedOut.ProtoReflect.Descriptor instead.
+func (*OfferTimedOut) Descriptor() ([]byte, []int) {
 	return file_proto_driverspb_driver_state_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *OfferTimedout) GetTripId() string {
+func (x *OfferTimedOut) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+func (x *OfferTimedOut) GetTripId() string {
 	if x != nil {
 		return x.TripId
+	}
+	return ""
+}
+
+func (x *OfferTimedOut) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
 	}
 	return ""
 }
@@ -175,15 +207,19 @@ var File_proto_driverspb_driver_state_proto protoreflect.FileDescriptor
 
 const file_proto_driverspb_driver_state_proto_rawDesc = "" +
 	"\n" +
-	"\"proto/driverspb/driver_state.proto\x12\x0fdriversstate.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16proto/common/geo.proto\"E\n" +
+	"\"proto/driverspb/driver_state.proto\x12\x0fdriversstate.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16proto/common/geo.proto\"^\n" +
 	"\rOfferAccepted\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
-	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"E\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x17\n" +
+	"\asaga_id\x18\x03 \x01(\tR\x06sagaId\"^\n" +
 	"\rOfferRejected\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
-	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"(\n" +
-	"\rOfferTimedout\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripIdB@Z>github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspbb\x06proto3"
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x17\n" +
+	"\asaga_id\x18\x03 \x01(\tR\x06sagaId\"^\n" +
+	"\rOfferTimedOut\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x17\n" +
+	"\asaga_id\x18\x03 \x01(\tR\x06sagaIdB@Z>github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspbb\x06proto3"
 
 var (
 	file_proto_driverspb_driver_state_proto_rawDescOnce sync.Once
@@ -201,7 +237,7 @@ var file_proto_driverspb_driver_state_proto_msgTypes = make([]protoimpl.MessageI
 var file_proto_driverspb_driver_state_proto_goTypes = []any{
 	(*OfferAccepted)(nil), // 0: driversstate.v1.OfferAccepted
 	(*OfferRejected)(nil), // 1: driversstate.v1.OfferRejected
-	(*OfferTimedout)(nil), // 2: driversstate.v1.OfferTimedout
+	(*OfferTimedOut)(nil), // 2: driversstate.v1.OfferTimedOut
 }
 var file_proto_driverspb_driver_state_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type

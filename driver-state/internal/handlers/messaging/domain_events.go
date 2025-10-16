@@ -43,6 +43,7 @@ func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) e
 		replyPayload := ddd.NewEvent(driverspb.OfferAcceptedEvent, driverspb.OfferAccepted{
 			DriverId: payload.DriverID,
 			TripId:   payload.TripID,
+			SagaId:   payload.SagaID,
 		})
 
 		err = h.publisher.Publish(ctx, driverspb.OfferAcceptedEvent, replyPayload)
@@ -51,6 +52,7 @@ func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) e
 		replyPayload := ddd.NewEvent(driverspb.OfferRejectedEvent, driverspb.OfferRejected{
 			DriverId: payload.DriverID,
 			TripId:   payload.TripID,
+			SagaId:   payload.SagaID,
 		})
 
 		err = h.publisher.Publish(ctx, driverspb.OfferRejectedEvent, replyPayload)
@@ -64,12 +66,14 @@ func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) e
 }
 
 func (h domainHandlers) onOfferTimedOut(ctx context.Context, event ddd.Event) error {
-	payload := event.Payload().(domain.DriverOfferTimeout)
+	payload := event.Payload().(*domain.Offer)
 
 	switch payload.Status {
 	case domain.OfferTimedOut:
-		replyPayload := ddd.NewEvent(driverspb.OfferTimedoutEvent, driverspb.OfferTimedout{
-			TripId: payload.TripID,
+		replyPayload := ddd.NewEvent(driverspb.OfferTimedoutEvent, driverspb.OfferTimedOut{
+			TripId:   payload.TripID,
+			DriverId: payload.DriverID,
+			SagaId:   payload.SagaID,
 		})
 
 		err := h.publisher.Publish(ctx, driverspb.OfferTimedoutEvent, replyPayload)

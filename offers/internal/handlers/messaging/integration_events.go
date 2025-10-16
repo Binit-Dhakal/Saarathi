@@ -6,6 +6,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
@@ -36,6 +37,21 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		return err
 	}
 
+	err = subscriber.Subscribe(driverspb.OfferAcceptedEvent, evtMsgHandler)
+	if err != nil {
+		return err
+	}
+
+	err = subscriber.Subscribe(driverspb.OfferRejectedEvent, evtMsgHandler)
+	if err != nil {
+		return err
+	}
+
+	err = subscriber.Subscribe(driverspb.OfferTimedoutEvent, evtMsgHandler)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -45,6 +61,8 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 		return h.onTripRequested(ctx, event)
 	case rmspb.RMSMatchingCandidatesEvent:
 		return h.onCandidatesList(ctx, event)
+	case driverspb.OfferAcceptedEvent:
+		return h.onOfferAccepted(ctx, event)
 	}
 	return nil
 }
@@ -75,4 +93,16 @@ func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) e
 	}
 
 	return h.offerSvc.ProcessCandidatesList(ctx, candidatesDTO)
+}
+
+func (h integrationHandlers[T]) onOfferAccepted(ctx context.Context, event T) error {
+	payload := event.Payload().(*driverspb.OfferAccepted)
+
+	replyDTO := domain.OfferAcceptedReplyDTO{
+		SagaID:   payload.SagaId,
+		TripID:   payload.TripId,
+		DriverID: payload.DriverId,
+	}
+
+	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
 }

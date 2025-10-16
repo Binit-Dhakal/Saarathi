@@ -3,6 +3,7 @@ package domain
 const (
 	RideMatchingInitializedEvent = "offers.rms.initialized"
 	TripOfferEvent               = "offers.drivers.request"
+	TripOfferAcceptedEvent       = "offers.request.accepted"
 )
 
 type RideMatchingInitialized struct {
@@ -19,4 +20,10 @@ type TripOffer struct {
 	Price            int32
 	Distance         float64
 	PresenceServerID string
+}
+
+type TripOfferAccepted struct {
+	SagaID   string
+	TripID   string
+	DriverID string
 }

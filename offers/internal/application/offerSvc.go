@@ -11,6 +11,7 @@ import (
 type OfferService interface {
 	CreateTripReadModel(ctx context.Context, payload domain.TripReadModelDTO) error
 	ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error
+	ProcessAcceptedOffer(ctx context.Context, event domain.OfferAcceptedReplyDTO) error
 }
 
 type offerSvc struct {
@@ -100,4 +101,15 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 	}
 
 	return fmt.Errorf("Temp: Not matched")
+}
+
+func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyPayload domain.OfferAcceptedReplyDTO) error {
+	evtPayload := domain.TripOfferAccepted{
+		SagaID:   replyPayload.SagaID,
+		TripID:   replyPayload.TripID,
+		DriverID: replyPayload.DriverID,
+	}
+	acceptEvt := ddd.NewEvent(domain.TripOfferAcceptedEvent, evtPayload)
+
+	return o.publisher.Publish(ctx, acceptEvt)
 }
