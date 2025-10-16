@@ -3,8 +3,7 @@ package messaging
 import (
 	"context"
 
-	"github.com/Binit-Dhakal/Saarathi/offers/internal/application"
-	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
+	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"

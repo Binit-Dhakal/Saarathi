@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Binit-Dhakal/Saarathi/offers/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/handlers/messaging"
+	"github.com/Binit-Dhakal/Saarathi/offers/internal/repository/postgres"
+	"github.com/Binit-Dhakal/Saarathi/offers/internal/repository/redis"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
@@ -24,6 +27,10 @@ func main() {
 }
 
 func infraSetup(app *app) (err error) {
+	app.DB, err = setup.SetupPostgresDB(app.cfg.PG.Conn)
+	if err != nil {
+		return err
+	}
 	app.cacheClient, err = setup.SetupRedis(app.cfg.Redis.CacheURL)
 	if err != nil {
 		return err
@@ -82,7 +89,13 @@ func run() (err error) {
 
 	sagaEvtStream := am.NewEventStream(reg, sagaStream)
 
-	integrationHandlers := messaging.NewIntegrationEventHandlers(domainDispatcher)
+	tripReadRepo := postgres.NewTripReadModelRepo(app.DB)
+	candidatesRepo := redis.NewTripCandidatesRepo(app.cacheClient)
+	driverRepo := redis.NewDriverAvailabilityRepo(app.cacheClient)
+
+	offerSvc := application.NewService(candidatesRepo, driverRepo, tripReadRepo, domainDispatcher)
+
+	integrationHandlers := messaging.NewIntegrationEventHandlers(offerSvc)
 	err = messaging.RegisterIntegrationHandlers(sagaEvtStream, integrationHandlers)
 	if err != nil {
 		return err

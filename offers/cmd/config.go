@@ -9,6 +9,10 @@ import (
 )
 
 type (
+	PGConfig struct {
+		Conn string `required:"true"`
+	}
+
 	NatsConfig struct {
 		URL        string `required:"true"`
 		TripStream string `default:"saarathi"`
@@ -22,6 +26,7 @@ type (
 	OfferSvcConfig struct {
 		Environment     string
 		LogLevel        string `envconfig:"LOG_LEVEL" default:"DEBUG"`
+		PG              PGConfig
 		Nats            NatsConfig
 		Redis           CacheConfig
 		ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
