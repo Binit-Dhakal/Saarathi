@@ -2,15 +2,15 @@ package application
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
 
 type OfferService interface {
 	CreateTripReadModel(ctx context.Context, payload domain.TripReadModelDTO) error
-	ProcessCandidatesList(ctx context.Context, candidates *rmspb.MatchingCandidates) error
+	ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error
 }
 
 type offerSvc struct {
@@ -48,14 +48,19 @@ func (o *offerSvc) CreateTripReadModel(ctx context.Context, payload domain.TripR
 	return o.publisher.Publish(ctx, evt)
 }
 
-func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates *rmspb.MatchingCandidates) error {
-	tripID := candidates.GetTripId()
+func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error {
+	tripID := candidates.TripID
 
-	if err := o.candidateRepo.SaveCandidates(ctx, tripID, candidates.GetDriverIds()); err != nil {
+	if err := o.candidateRepo.SaveCandidates(ctx, tripID, candidates.CandidateDriversID); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(candidates.GetDriverIds()); i++ {
+	tripDetail, err := o.tripRepo.GetTripDetails(ctx, tripID)
+	if err != nil {
+		return err
+	}
+
+	for i := range candidates.CandidateDriversID {
 		driverID, err := o.candidateRepo.GetNextCandidates(ctx, tripID, i)
 		if err != nil {
 			continue
@@ -75,5 +80,24 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates *rmspb.
 			continue
 		}
 
+		payload := domain.TripOffer{
+			SagaID:           tripDetail.SagaID,
+			TripID:           tripID,
+			Price:            tripDetail.Price,
+			Distance:         tripDetail.Distance,
+			PresenceServerID: presenceServer,
+		}
+
+		evt := ddd.NewEvent(domain.TripOfferEvent, payload)
+
+		err = o.publisher.Publish(ctx, evt)
+		if err != nil {
+			o.driverGateway.ReleaseLock(ctx, driverID, tripID)
+			continue
+		}
+
+		return nil
 	}
+
+	return fmt.Errorf("Temp: Not matched")
 }

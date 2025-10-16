@@ -94,31 +94,5 @@ func (h integrationHandlers[T]) onMatchingRequest(ctx context.Context, event ddd
 	if err != nil {
 		return err
 	}
-	//
-	// for _, driver := range shortlistDrivers {
-	// 	instanceID, _ := h.presenceSvc.GetDriverInstance(driver.DriverID)
-	//
-	// 	offerEvent := driverspb.TripOfferRequest{
-	// 		TripId:    evt.TripID,
-	// 		DriverId:  driver.DriverID,
-	// 		PickUp:    evt.PickUp,
-	// 		DropOff:   evt.DropOff,
-	// 		ExpiresAt: timestamppb.New(time.Now().Add(15 * time.Second)),
-	// 	}
-	//
-	// 	cmd := ddd.NewCommand(driverspb.TripOfferCommand, &offerEvent)
-	//
-	// 	routingKey := fmt.Sprintf(driverspb.CommandChannel, instanceID)
-	//
-	// 	err = h.publisher.SendCommand(context.Background(), routingKey, cmd)
-	// 	if err != nil {
-	// 		fmt.Println("Error:", err)
-	// 		continue
-	// 	}
-	//
-	// 	// Temporary
-	// 	break
-	// }
-	//
 	return nil
 }

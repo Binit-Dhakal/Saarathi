@@ -9,3 +9,9 @@ type TripReadModelDTO struct {
 	Price    int32
 	Distance float64
 }
+
+type MatchedDriversDTO struct {
+	TripID             string
+	SagaID             string
+	CandidateDriversID []string
+}

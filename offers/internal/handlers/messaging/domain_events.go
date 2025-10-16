@@ -2,10 +2,12 @@ package messaging
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
@@ -22,13 +24,17 @@ func NewDomainEventHandlers(publisher am.EventPublisher) ddd.EventHandler[ddd.Ev
 
 func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], handlers ddd.EventHandler[ddd.Event]) {
 	subscriber.Subscribe(handlers,
-		domain.RideMatchingInitializedEvent)
+		domain.RideMatchingInitializedEvent,
+		domain.TripOfferEvent,
+	)
 }
 
 func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error {
 	switch event.EventName() {
 	case domain.RideMatchingInitializedEvent:
 		h.onRideMatchingInitialized(ctx, event)
+	case domain.TripOfferEvent:
+		h.onTripOffer(ctx, event)
 	}
 
 	return nil
@@ -49,4 +55,20 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
 
 	return h.publisher.Publish(ctx, offerspb.RideMatchingRequestedEvent, matchDriverEvt)
+}
+
+func (h domainHandlers) onTripOffer(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.TripOffer)
+
+	routingKey := fmt.Sprintf(driverspb.DriverOfferEventsChannel, payload.PresenceServerID)
+
+	p := &offerspb.TripOfferRequested{
+		SagaId:   payload.SagaID,
+		TripId:   payload.TripID,
+		Price:    payload.Price,
+		Distance: payload.Distance,
+	}
+
+	evt := ddd.NewEvent(offerspb.TripOfferRequestedEvent, p)
+	return h.publisher.Publish(ctx, routingKey, evt)
 }

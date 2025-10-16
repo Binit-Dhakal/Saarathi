@@ -70,4 +70,11 @@ func (h integrationHandlers[T]) onTripRequested(ctx context.Context, event T) er
 func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) error {
 	payload := event.Payload().(*rmspb.MatchingCandidates)
 
+	candidatesDTO := domain.MatchedDriversDTO{
+		SagaID:             payload.SagaId,
+		TripID:             payload.SagaId,
+		CandidateDriversID: payload.DriverIds,
+	}
+
+	return h.offerSvc.ProcessCandidatesList(ctx, candidatesDTO)
 }

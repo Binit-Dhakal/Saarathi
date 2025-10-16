@@ -8,6 +8,8 @@ import (
 const (
 	DriverAggregateChannel = "saarathi.drivers.events"
 
+	DriverOfferEventsChannel = "drivers.events.offers.%s"
+
 	// command to specific instance
 	CommandChannel   = "saarathi.drivers.command.%s"
 	TripOfferCommand = "driversapi.trip.offer"

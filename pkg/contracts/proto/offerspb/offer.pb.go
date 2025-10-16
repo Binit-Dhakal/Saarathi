@@ -106,6 +106,74 @@ func (x *RideMatchingRequested) GetMaxSearchRadiusKm() float64 {
 	return 0
 }
 
+type TripOfferRequested struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	Price         int32                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	Distance      float64                `protobuf:"fixed64,4,opt,name=distance,proto3" json:"distance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripOfferRequested) Reset() {
+	*x = TripOfferRequested{}
+	mi := &file_proto_offerspb_offer_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripOfferRequested) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripOfferRequested) ProtoMessage() {}
+
+func (x *TripOfferRequested) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_offerspb_offer_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripOfferRequested.ProtoReflect.Descriptor instead.
+func (*TripOfferRequested) Descriptor() ([]byte, []int) {
+	return file_proto_offerspb_offer_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TripOfferRequested) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
+	}
+	return ""
+}
+
+func (x *TripOfferRequested) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *TripOfferRequested) GetPrice() int32 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *TripOfferRequested) GetDistance() float64 {
+	if x != nil {
+		return x.Distance
+	}
+	return 0
+}
+
 var File_proto_offerspb_offer_proto protoreflect.FileDescriptor
 
 const file_proto_offerspb_offer_proto_rawDesc = "" +
@@ -117,7 +185,12 @@ const file_proto_offerspb_offer_proto_rawDesc = "" +
 	"\apick_up\x18\x03 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
 	"\bdrop_off\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
 	"\bcar_type\x18\x05 \x01(\tR\acarType\x12/\n" +
-	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKmB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
+	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKm\"x\n" +
+	"\x12TripOfferRequested\x12\x17\n" +
+	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x05R\x05price\x12\x1a\n" +
+	"\bdistance\x18\x04 \x01(\x01R\bdistanceB?Z=github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspbb\x06proto3"
 
 var (
 	file_proto_offerspb_offer_proto_rawDescOnce sync.Once
@@ -131,14 +204,15 @@ func file_proto_offerspb_offer_proto_rawDescGZIP() []byte {
 	return file_proto_offerspb_offer_proto_rawDescData
 }
 
-var file_proto_offerspb_offer_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_proto_offerspb_offer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_offerspb_offer_proto_goTypes = []any{
 	(*RideMatchingRequested)(nil), // 0: offers.v1.RideMatchingRequested
-	(*common.Coordinates)(nil),    // 1: common.geo.v1.Coordinates
+	(*TripOfferRequested)(nil),    // 1: offers.v1.TripOfferRequested
+	(*common.Coordinates)(nil),    // 2: common.geo.v1.Coordinates
 }
 var file_proto_offerspb_offer_proto_depIdxs = []int32{
-	1, // 0: offers.v1.RideMatchingRequested.pick_up:type_name -> common.geo.v1.Coordinates
-	1, // 1: offers.v1.RideMatchingRequested.drop_off:type_name -> common.geo.v1.Coordinates
+	2, // 0: offers.v1.RideMatchingRequested.pick_up:type_name -> common.geo.v1.Coordinates
+	2, // 1: offers.v1.RideMatchingRequested.drop_off:type_name -> common.geo.v1.Coordinates
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -157,7 +231,7 @@ func file_proto_offerspb_offer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_offerspb_offer_proto_rawDesc), len(file_proto_offerspb_offer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

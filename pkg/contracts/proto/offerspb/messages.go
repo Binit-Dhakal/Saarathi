@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	RideMatchingRequestedEvent = "offers.request_matching"
+	RideMatchingRequestedEvent = "offers.rms.request_matching"
+	TripOfferRequestedEvent    = "offers.drivers.requested"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -16,7 +17,12 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
+	if err = serde.Register(&TripOfferRequested{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (*RideMatchingRequested) Key() string { return RideMatchingRequestedEvent }
+func (*TripOfferRequested) Key() string    { return TripOfferRequestedEvent }
