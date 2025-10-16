@@ -1,7 +1,9 @@
 package domain
 
+import "context"
+
 type RedisRideMatchingRepository interface {
-	FindNearestDriver(lon, lat float64) []string
+	FindNearestDriver(ctx context.Context, lon, lat float64) []string
 }
 
 type RedisMetaRepository interface {
@@ -17,8 +19,4 @@ type DriverAvailabilityRepository interface {
 	IsDriverFree(driverID string) bool
 	DeleteUnavailableDrivers(expiredDrivers []string)
 	BulkCheckDriversOnline(driversID []string) ([]string, []string)
-}
-
-type PresenceRepository interface {
-	GetDriverInstanceLocation(driverID string) (string, error)
 }

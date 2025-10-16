@@ -1,14 +1,15 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
 )
 
 type DriverInfoService interface {
-	GetDriversMetadata(candidates []string) ([]domain.DriverVehicleMetadata, error)
-	GetOnlineDrivers(candidates []string) []string
+	GetDriversMetadata(ctx context.Context, candidates []string) ([]domain.DriverVehicleMetadata, error)
+	GetOnlineDrivers(ctx context.Context, candidates []string) []string
 }
 
 type driverInfoService struct {
@@ -25,7 +26,7 @@ func NewDriverInfoService(redisMetaRepo domain.RedisMetaRepository, pgMetaRepo d
 	}
 }
 
-func (d *driverInfoService) GetDriversMetadata(candidates []string) ([]domain.DriverVehicleMetadata, error) {
+func (d *driverInfoService) GetDriversMetadata(ctx context.Context, candidates []string) ([]domain.DriverVehicleMetadata, error) {
 	metadatas, err := d.redisMetaRepo.BulkSearchDriverMeta(candidates)
 	if err != nil {
 		return nil, err
@@ -58,7 +59,7 @@ func (d *driverInfoService) repopulateMetadataCache(missingCandidates []string) 
 	}
 }
 
-func (d *driverInfoService) GetOnlineDrivers(candidates []string) []string {
+func (d *driverInfoService) GetOnlineDrivers(ctx context.Context, candidates []string) []string {
 	valid, expired := d.availabilityRepo.BulkCheckDriversOnline(candidates)
 
 	d.availabilityRepo.DeleteUnavailableDrivers(expired)

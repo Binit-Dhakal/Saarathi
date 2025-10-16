@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
 	"github.com/redis/go-redis/v9"
@@ -17,10 +16,7 @@ func NewRideMatchingRepository(client *redis.Client) domain.RedisRideMatchingRep
 		client: client,
 	}
 }
-func (r *rideMatchingRepository) FindNearestDriver(lon, lat float64) []string {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-
+func (r *rideMatchingRepository) FindNearestDriver(ctx context.Context, lon, lat float64) []string {
 	candidates := r.client.GeoSearch(ctx, "geo:drivers:available", &redis.GeoSearchQuery{
 		Latitude:  lat,
 		Longitude: lon,

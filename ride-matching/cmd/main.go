@@ -10,6 +10,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
@@ -17,6 +18,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/messaging"
+	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/infrastructure"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
 	"github.com/nats-io/nats.go"
@@ -46,7 +48,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
+	app.js, err = setup.SetupJetStream(app.nc)
 	if err != nil {
 		return err
 	}
@@ -88,6 +90,8 @@ func run() (err error) {
 		return err
 	}
 
+	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
+
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 	eventStream := am.NewEventStream(reg, stream)
 
@@ -100,14 +104,17 @@ func run() (err error) {
 	redisMetaRepo := redis.NewCacheDriverMetaRepo(app.cacheClient)
 	pgMetaRepo := postgres.NewPGMetaRepo(app.usersDB)
 	availabilityRepo := redis.NewDriverAvailableRepo(app.cacheClient)
-	presenceRepo := redis.NewPresenceRepo(app.cacheClient)
 
-	matchingSvc := application.NewMatchingService(eventStream, rideRepo)
 	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, pgMetaRepo, availabilityRepo)
-	presenceSvc := application.NewPresenceService(presenceRepo)
 
-	integrationHandler := messaging.NewIntegrationEventHandlers(matchingSvc, driverInfoSvc, presenceSvc, commandBus)
+	driverInfoAdapter := infrastructure.NewDriverInfoAdapter(driverInfoSvc)
 
+	matchingSvc := application.NewMatchingService(domainDispatcher, rideRepo, driverInfoAdapter, driverInfoAdapter)
+
+	domainHandler := messaging.NewDomainEventHandlers(eventStream)
+	messaging.RegisterDomainEventHandlers(domainDispatcher, domainHandler)
+
+	integrationHandler := messaging.NewIntegrationEventHandlers(matchingSvc)
 	messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
 
 	// Wait for shutdown signal
