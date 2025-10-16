@@ -3,9 +3,6 @@ package application
 import (
 	"context"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
@@ -20,16 +17,14 @@ type RideService interface {
 type rideService struct {
 	fareRepo   domain.FareRepository
 	tripRepo   domain.TripRepository
-	tripStream am.EventPublisher
-	sagaStream am.EventPublisher
+	dispatcher ddd.EventPublisher[ddd.Event]
 }
 
-func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, tripStream am.EventPublisher, sagaStream am.EventPublisher) *rideService {
+func NewRideService(fareRepo domain.FareRepository, tripRepo domain.TripRepository, dispatcher ddd.EventPublisher[ddd.Event]) *rideService {
 	return &rideService{
 		fareRepo:   fareRepo,
 		tripRepo:   tripRepo,
-		tripStream: tripStream,
-		sagaStream: sagaStream,
+		dispatcher: dispatcher,
 	}
 }
 
@@ -115,29 +110,19 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 		return "", err
 	}
 
-	createdEvent := tripspb.TripRequested{
-		SagaId:   uuid.NewString(),
-		TripId:   rideId,
+	createdEvent := domain.TripCreated{
+		SagaID:   uuid.NewString(),
+		TripID:   rideId,
 		Distance: ephermalFare.Route.Distance,
-		Price:    int32(fareDetail.TotalPrice),
-		PickUp:   &common.Coordinates{Lng: ephermalFare.Route.Source.Lon, Lat: ephermalFare.Route.Source.Lat},
-		DropOff:  &common.Coordinates{Lng: ephermalFare.Route.Destination.Lon, Lat: ephermalFare.Route.Destination.Lat},
-		CarType:  string(fareDetail.Package),
+		Price:    fareDetail.TotalPrice,
+		Pickup:   [2]float64{ephermalFare.Route.Source.Lon, ephermalFare.Route.Source.Lat},
+		DropOff:  [2]float64{ephermalFare.Route.Destination.Lon, ephermalFare.Route.Destination.Lat},
+		CarType:  fareDetail.Package,
 	}
 
-	event := ddd.NewEvent(tripspb.TripRequestedEvent, &createdEvent)
-	err = f.tripStream.Publish(
+	event := ddd.NewEvent(domain.TripCreatedEvent, &createdEvent)
+	err = f.dispatcher.Publish(
 		context.Background(),
-		tripspb.TripRequestedEvent,
-		event,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	err = f.sagaStream.Publish(
-		context.Background(),
-		tripspb.TripRequestedEvent,
 		event,
 	)
 	if err != nil {

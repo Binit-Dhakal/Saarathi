@@ -8,6 +8,7 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
@@ -15,6 +16,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
+	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/redis"
@@ -90,6 +92,7 @@ func run() (err error) {
 		return err
 	}
 
+	eventDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 	tripStream := jetstream.NewStream(cfg.Nats.TripStream, app.js, app.logger)
 	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
 
@@ -100,13 +103,16 @@ func run() (err error) {
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
 
 	routeService := application.NewRouteService()
-	rideService := application.NewRideService(redisRepo, tripRepo, tripEvtStream, sagaEvtStream)
+	rideService := application.NewRideService(redisRepo, tripRepo, eventDispatcher)
 
 	jsonWriter := jsonutil.NewWriter()
 	jsonReader := jsonutil.NewReader()
 	errorResponder := httpx.NewErrorResponder(jsonWriter, app.logger)
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
+
+	domainHandler := messaging.NewDomainEventHandlers(tripEvtStream, sagaEvtStream)
+	messaging.RegisterDomainEventHandlers(eventDispatcher, domainHandler)
 
 	mux := http.NewServeMux()
 

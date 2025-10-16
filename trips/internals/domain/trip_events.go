@@ -1,11 +1,15 @@
 package domain
 
-import "time"
+const (
+	TripCreatedEvent = "trips.created"
+)
 
 type TripCreated struct {
-	TripID     string
-	RiderID    string
-	Pickup     Coordinate
-	DropOff    Coordinate
-	OccurredAt time.Time
+	SagaID   string
+	TripID   string
+	Pickup   [2]float64 // Lng, Lat
+	DropOff  [2]float64
+	Distance float64
+	Price    int
+	CarType  CarPackage
 }
