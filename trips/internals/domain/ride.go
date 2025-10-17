@@ -10,3 +10,11 @@ type TripModel struct {
 	FareID   string
 	Status   TripStatus
 }
+
+type TripProjectionDetail struct {
+	TripID    string
+	FarePrice int
+	Distance  float64
+	PickUp    Coordinate
+	DropOff   Coordinate
+}

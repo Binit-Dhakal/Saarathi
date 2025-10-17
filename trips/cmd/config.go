@@ -24,12 +24,13 @@ type (
 	}
 
 	TripAppConfig struct {
-		Environment     string
-		LogLevel        string `envconfig:"LOG_LEVEL" default:"DEBUG"`
-		PG              PGTripsConfig
-		Nats            NatsConfig
-		Redis           CacheConfig
-		ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
+		Environment      string
+		LogLevel         string `envconfig:"LOG_LEVEL" default:"DEBUG"`
+		PG               PGTripsConfig
+		Nats             NatsConfig
+		UsersGRPCAddress string
+		Redis            CacheConfig
+		ShutdownTimeout  time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
 	}
 )
 

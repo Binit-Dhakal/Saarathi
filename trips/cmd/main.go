@@ -16,6 +16,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
+	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/grpc"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/postgres"
@@ -101,6 +102,9 @@ func run() (err error) {
 
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
+	tripReadRepo := postgres.NewTripReadRepository(app.tripsDB)
+	presenceGateway := redis.NewPresenceGatewayRepository(app.cacheClient)
+	tripProjectRepo := redis.NewTripProjectionRepository(app.cacheClient)
 
 	routeService := application.NewRouteService()
 	rideService := application.NewRideService(redisRepo, tripRepo, eventDispatcher)
@@ -111,7 +115,15 @@ func run() (err error) {
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
 
-	domainHandler := messaging.NewDomainEventHandlers(tripEvtStream, sagaEvtStream)
+	usersClient, err := grpc.NewGRPCClient(app.cfg.UsersGRPCAddress)
+	if err != nil {
+		return fmt.Errorf("failed to create users client: %w", err)
+	}
+	defer usersClient.Close()
+
+	projectionSvc := application.NewProjectionService(usersClient, presenceGateway, tripProjectRepo, tripReadRepo)
+
+	domainHandler := messaging.NewDomainEventHandlers(tripEvtStream, sagaEvtStream, projectionSvc)
 	messaging.RegisterDomainEventHandlers(eventDispatcher, domainHandler)
 
 	mux := http.NewServeMux()
