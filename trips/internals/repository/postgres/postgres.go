@@ -99,18 +99,20 @@ func (t *tripRepository) SaveRideDetail(rideModel domain.TripModel) (string, err
 	return rideID, nil
 }
 
-func (t *tripRepository) AssignDriverToTrip(tripID string, driverID string) error {
+func (t *tripRepository) AssignDriverToTrip(tripID string, driverID string) (string, error) {
+	// TODO: need to make it concurrent proof
 	query := `
-		UPDATE rides set driver_id=$1 where id=$2 
+		UPDATE rides set driver_id=$1 where id=$2 returning rider_id 
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := t.pool.Exec(ctx, query, driverID, tripID)
+	var riderID string
+	err := t.pool.QueryRow(ctx, query, driverID, tripID).Scan(&riderID)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return riderID, nil
 }

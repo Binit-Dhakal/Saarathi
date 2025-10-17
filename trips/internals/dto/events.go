@@ -1,6 +1,7 @@
 package dto
 
 type AcceptDriver struct {
+	SagaID   string
 	DriverID string
 	TripID   string
 }

@@ -12,6 +12,7 @@ import (
 type RideService interface {
 	EstimateFare(route *domain.Route) ([]domain.Fare, string, error)
 	FareAcceptByRider(req *dto.FareConfirmRequest, userID string) (string, error)
+	AcceptDriverToTrip(ctx context.Context, input dto.AcceptDriver) error
 }
 
 type rideService struct {
@@ -130,4 +131,30 @@ func (f *rideService) FareAcceptByRider(req *dto.FareConfirmRequest, userID stri
 	}
 
 	return rideId, nil
+}
+
+func (f *rideService) AcceptDriverToTrip(ctx context.Context, input dto.AcceptDriver) error {
+	riderID, err := f.tripRepo.AssignDriverToTrip(input.TripID, input.DriverID)
+	if err != nil {
+		return err
+	}
+
+	// TODO: populate driver info:
+	// Later after building driver cache repository in trips service(with GRPC fallback)
+	// TODO: Outbox transactional pattern
+	// remove inconsistency between event publish and database change
+
+	evt := ddd.NewEvent(domain.TripMatchedEvent, domain.TripMatched{
+		TripID:   input.TripID,
+		DriverID: input.DriverID,
+		SagaID:   input.SagaID,
+		RiderID:  riderID,
+	})
+
+	err = f.dispatcher.Publish(ctx, evt)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

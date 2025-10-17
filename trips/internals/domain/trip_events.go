@@ -2,6 +2,7 @@ package domain
 
 const (
 	TripCreatedEvent = "trips.created"
+	TripMatchedEvent = "trips.matched"
 )
 
 type TripCreated struct {
@@ -12,4 +13,11 @@ type TripCreated struct {
 	Distance float64
 	Price    int
 	CarType  CarPackage
+}
+
+type TripMatched struct {
+	SagaID   string
+	TripID   string
+	DriverID string
+	RiderID  string
 }

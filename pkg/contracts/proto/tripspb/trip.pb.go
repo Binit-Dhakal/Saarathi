@@ -114,31 +114,30 @@ func (x *TripRequested) GetCarType() string {
 	return ""
 }
 
-type TripConfirmed struct {
+type TripAssigned struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverId      string                 `protobuf:"bytes,2,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
-	DriverName    string                 `protobuf:"bytes,3,opt,name=driver_name,json=driverName,proto3" json:"driver_name,omitempty"`
-	VehicleNumber string                 `protobuf:"bytes,4,opt,name=vehicle_number,json=vehicleNumber,proto3" json:"vehicle_number,omitempty"`
-	ContactNumber string                 `protobuf:"bytes,5,opt,name=contact_number,json=contactNumber,proto3" json:"contact_number,omitempty"`
+	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverId      string                 `protobuf:"bytes,3,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	RiderId       string                 `protobuf:"bytes,4,opt,name=rider_id,json=riderId,proto3" json:"rider_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TripConfirmed) Reset() {
-	*x = TripConfirmed{}
+func (x *TripAssigned) Reset() {
+	*x = TripAssigned{}
 	mi := &file_proto_tripspb_trip_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TripConfirmed) String() string {
+func (x *TripAssigned) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TripConfirmed) ProtoMessage() {}
+func (*TripAssigned) ProtoMessage() {}
 
-func (x *TripConfirmed) ProtoReflect() protoreflect.Message {
+func (x *TripAssigned) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_tripspb_trip_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -150,42 +149,35 @@ func (x *TripConfirmed) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TripConfirmed.ProtoReflect.Descriptor instead.
-func (*TripConfirmed) Descriptor() ([]byte, []int) {
+// Deprecated: Use TripAssigned.ProtoReflect.Descriptor instead.
+func (*TripAssigned) Descriptor() ([]byte, []int) {
 	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *TripConfirmed) GetTripId() string {
+func (x *TripAssigned) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
+	}
+	return ""
+}
+
+func (x *TripAssigned) GetTripId() string {
 	if x != nil {
 		return x.TripId
 	}
 	return ""
 }
 
-func (x *TripConfirmed) GetDriverId() string {
+func (x *TripAssigned) GetDriverId() string {
 	if x != nil {
 		return x.DriverId
 	}
 	return ""
 }
 
-func (x *TripConfirmed) GetDriverName() string {
+func (x *TripAssigned) GetRiderId() string {
 	if x != nil {
-		return x.DriverName
-	}
-	return ""
-}
-
-func (x *TripConfirmed) GetVehicleNumber() string {
-	if x != nil {
-		return x.VehicleNumber
-	}
-	return ""
-}
-
-func (x *TripConfirmed) GetContactNumber() string {
-	if x != nil {
-		return x.ContactNumber
+		return x.RiderId
 	}
 	return ""
 }
@@ -351,14 +343,12 @@ const file_proto_tripspb_trip_proto_rawDesc = "" +
 	"\x05price\x18\x04 \x01(\x05R\x05price\x123\n" +
 	"\apick_up\x18\x05 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
 	"\bdrop_off\x18\x06 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
-	"\bcar_type\x18\a \x01(\tR\acarType\"\xb4\x01\n" +
-	"\rTripConfirmed\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
-	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\x12\x1f\n" +
-	"\vdriver_name\x18\x03 \x01(\tR\n" +
-	"driverName\x12%\n" +
-	"\x0evehicle_number\x18\x04 \x01(\tR\rvehicleNumber\x12%\n" +
-	"\x0econtact_number\x18\x05 \x01(\tR\rcontactNumber\"D\n" +
+	"\bcar_type\x18\a \x01(\tR\acarType\"x\n" +
+	"\fTripAssigned\x12\x17\n" +
+	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1b\n" +
+	"\tdriver_id\x18\x03 \x01(\tR\bdriverId\x12\x19\n" +
+	"\brider_id\x18\x04 \x01(\tR\ariderId\"D\n" +
 	"\fAcceptDriver\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"U\n" +
@@ -384,7 +374,7 @@ func file_proto_tripspb_trip_proto_rawDescGZIP() []byte {
 var file_proto_tripspb_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_tripspb_trip_proto_goTypes = []any{
 	(*TripRequested)(nil),        // 0: trips.v1.TripRequested
-	(*TripConfirmed)(nil),        // 1: trips.v1.TripConfirmed
+	(*TripAssigned)(nil),         // 1: trips.v1.TripAssigned
 	(*AcceptDriver)(nil),         // 2: trips.v1.AcceptDriver
 	(*AcceptDriverResponse)(nil), // 3: trips.v1.AcceptDriverResponse
 	(*RejectTrip)(nil),           // 4: trips.v1.RejectTrip

@@ -9,12 +9,11 @@ const (
 	// Events
 	TripAggregateChannel = "saarathi.trips.events"
 	TripRequestedEvent   = "trips.requested"
-	TripConfirmedEvent   = "trips.TripConfirmed"
+	TripAssignedEvent    = "trips.TripAssigned"
 
 	// Commands
-	CommandChannel      = "saarthi.trips.commands"
-	AcceptDriverCommand = "tripsapi.driver.accept"
-	RejectTripCommand   = "tripsapi.trips.reject"
+	CommandChannel    = "saarthi.trips.commands"
+	RejectTripCommand = "tripsapi.trips.reject"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -24,14 +23,9 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
-	if err = serde.Register(&TripConfirmed{}); err != nil {
+	if err = serde.Register(&TripAssigned{}); err != nil {
 		return err
 	}
-
-	if err = serde.Register(&AcceptDriver{}); err != nil {
-		return err
-	}
-
 	if err = serde.Register(&RejectTrip{}); err != nil {
 		return err
 	}
@@ -40,6 +34,5 @@ func Registration(reg registry.Registry) (err error) {
 }
 
 func (*TripRequested) Key() string { return TripRequestedEvent }
-func (*TripConfirmed) Key() string { return TripConfirmedEvent }
-func (*AcceptDriver) Key() string  { return AcceptDriverCommand }
+func (*TripAssigned) Key() string  { return TripAssignedEvent }
 func (*RejectTrip) Key() string    { return RejectTripCommand }
