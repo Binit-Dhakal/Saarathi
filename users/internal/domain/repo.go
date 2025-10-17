@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"context"
+
 	"github.com/jackc/pgx/v5"
 )
 
@@ -10,6 +12,9 @@ type UserRepo interface {
 	CreateRiderProfile(tx pgx.Tx, profile *RiderProfile) error
 	CreateDriverProfile(tx pgx.Tx, profile *DriverProfile) error
 	GetUserByEmail(tx pgx.Tx, email string) (*User, error)
+
+	GetRiderByID(ctx context.Context, id string) (*UserDetail, error)
+	GetDriverByID(ctx context.Context, id string) (*DriverDetail, error)
 }
 
 type TokenRepo interface {

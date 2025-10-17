@@ -1,18 +1,24 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
+	"github.com/Binit-Dhakal/Saarathi/pkg/waiter"
 	"github.com/Binit-Dhakal/Saarathi/users/internal/application"
+	"github.com/Binit-Dhakal/Saarathi/users/internal/handlers/grpc"
 	"github.com/Binit-Dhakal/Saarathi/users/internal/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/users/internal/repository/postgres"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -33,6 +39,8 @@ func infraSetup(app *app) (err error) {
 		Environment: app.cfg.Environment,
 		LogLevel:    logger.Level(app.cfg.LogLevel),
 	})
+
+	app.rpc = setup.SetupRpc()
 
 	return nil
 }
@@ -59,6 +67,7 @@ func run() (err error) {
 
 	authService := application.NewAuthService(app.usersDB, userRepo)
 	tokenService := application.NewJWTService(app.cfg.PrivateKey, tokenRepo)
+	detailsService := application.NewUserDetailService(userRepo)
 
 	jsonReader := jsonutil.NewReader()
 	jsonWriter := jsonutil.NewWriter()
@@ -66,13 +75,18 @@ func run() (err error) {
 
 	authHandler := rest.NewUserHandler(authService, tokenService, jsonReader, jsonWriter, errorResponder)
 
+	err = grpc.RegisterServer(detailsService, app.rpc)
+	if err != nil {
+		return err
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/v1/users/riders", authHandler.CreateRiderHandler)
 	mux.HandleFunc("POST /api/v1/users/drivers", authHandler.CreateDriverHandler)
 	mux.HandleFunc("POST /api/v1/tokens/authentication", authHandler.CreateTokenHandler)
 	mux.HandleFunc("POST /api/v1/tokens/refresh", authHandler.RefreshTokenHandler)
 
-	server := &http.Server{
+	httpServer := &http.Server{
 		Addr:         ":8080",
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
@@ -80,10 +94,28 @@ func run() (err error) {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	fmt.Println("starting serve on :8080")
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	runner := waiter.NewRunner(app.cfg.ShutdownTimeout)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	group, gCtx := errgroup.WithContext(ctx)
+
+	group.Go(func() error {
+		return runner.RunHTTPServer(gCtx, httpServer)
+	})
+
+	group.Go(func() error {
+		return runner.RunGRPCServer(gCtx, app.rpc, app.cfg.Rpc.Address())
+	})
+
+	app.logger.Info().Msg("Users service is starting up servers...")
+	if err := group.Wait(); err != nil {
+		app.logger.Error().Err(err).Msg("Service shut down due to an error")
 		return err
 	}
 
-	return
+	app.logger.Info().Msg("All server shut down gracefully")
+
+	return nil
 }

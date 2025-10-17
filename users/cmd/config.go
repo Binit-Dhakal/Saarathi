@@ -9,6 +9,11 @@ import (
 )
 
 type (
+	RpcConfig struct {
+		Host string `default:"0.0.0.0"`
+		Port string `default:":8085"`
+	}
+
 	PGUsersConfig struct {
 		Conn string `required:"true"`
 	}
@@ -17,6 +22,7 @@ type (
 		Environment     string
 		LogLevel        string `envconfig:"LOG_LEVEL" default:"DEBUG"`
 		PG              PGUsersConfig
+		Rpc             RpcConfig
 		ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
 		PrivateKey      string        `envconfig:"JWT_PRIVATE_KEY" required:"true"`
 	}
@@ -30,4 +36,8 @@ func InitConfig() (cfg UserAppConfig, err error) {
 	err = envconfig.Process("", &cfg)
 
 	return
+}
+
+func (c RpcConfig) Address() string {
+	return fmt.Sprintf("%s%s", c.Host, c.Port)
 }

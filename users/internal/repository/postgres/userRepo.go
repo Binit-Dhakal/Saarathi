@@ -159,3 +159,56 @@ func (u *UserRepo) GetForToken(refreshToken string) (*domain.User, error) {
 
 	return &user, nil
 }
+
+func (u *UserRepo) GetRiderByID(ctx context.Context, id string) (*domain.UserDetail, error) {
+	query := `SELECT id, name, phone_number from users where id=$1`
+
+	var user domain.UserDetail
+
+	err := u.pool.QueryRow(ctx, query, id).Scan(&user.ID, &user.Name, &user.PhoneNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Role = "rider"
+
+	return &user, nil
+}
+
+func (u *UserRepo) GetDriverByID(ctx context.Context, id string) (*domain.DriverDetail, error) {
+	query := `
+		SELECT 
+			u.id, 
+			u.name, 
+			u.phone_number,
+			dp.license_number,
+			dp.vehicle_number, 
+			dp.vehicle_model, 
+			dp.vehicle_make 
+		FROM 
+			users u
+		INNER JOIN 
+			driver_profiles dp ON dp.user_id = u.id
+		WHERE 
+			u.id = $1;
+	`
+
+	var user domain.DriverDetail
+
+	err := u.pool.QueryRow(ctx, query, id).Scan(
+		&user.ID,
+		&user.Name,
+		&user.PhoneNumber,
+		&user.LicenseNumber,
+		&user.VehicleNumber,
+		&user.VehicleModel,
+		&user.VehicleMake,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Role = "driver"
+
+	return &user, nil
+}

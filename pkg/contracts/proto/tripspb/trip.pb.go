@@ -182,111 +182,6 @@ func (x *TripAssigned) GetRiderId() string {
 	return ""
 }
 
-// Command
-type AcceptDriver struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
-	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AcceptDriver) Reset() {
-	*x = AcceptDriver{}
-	mi := &file_proto_tripspb_trip_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AcceptDriver) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AcceptDriver) ProtoMessage() {}
-
-func (x *AcceptDriver) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_tripspb_trip_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AcceptDriver.ProtoReflect.Descriptor instead.
-func (*AcceptDriver) Descriptor() ([]byte, []int) {
-	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *AcceptDriver) GetDriverId() string {
-	if x != nil {
-		return x.DriverId
-	}
-	return ""
-}
-
-func (x *AcceptDriver) GetTripId() string {
-	if x != nil {
-		return x.TripId
-	}
-	return ""
-}
-
-type AcceptDriverResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	ErrorMessage  string                 `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AcceptDriverResponse) Reset() {
-	*x = AcceptDriverResponse{}
-	mi := &file_proto_tripspb_trip_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AcceptDriverResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AcceptDriverResponse) ProtoMessage() {}
-
-func (x *AcceptDriverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_tripspb_trip_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AcceptDriverResponse.ProtoReflect.Descriptor instead.
-func (*AcceptDriverResponse) Descriptor() ([]byte, []int) {
-	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *AcceptDriverResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *AcceptDriverResponse) GetErrorMessage() string {
-	if x != nil {
-		return x.ErrorMessage
-	}
-	return ""
-}
-
 type RejectTrip struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
@@ -296,7 +191,7 @@ type RejectTrip struct {
 
 func (x *RejectTrip) Reset() {
 	*x = RejectTrip{}
-	mi := &file_proto_tripspb_trip_proto_msgTypes[4]
+	mi := &file_proto_tripspb_trip_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -308,7 +203,7 @@ func (x *RejectTrip) String() string {
 func (*RejectTrip) ProtoMessage() {}
 
 func (x *RejectTrip) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_tripspb_trip_proto_msgTypes[4]
+	mi := &file_proto_tripspb_trip_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -321,7 +216,7 @@ func (x *RejectTrip) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RejectTrip.ProtoReflect.Descriptor instead.
 func (*RejectTrip) Descriptor() ([]byte, []int) {
-	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{4}
+	return file_proto_tripspb_trip_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RejectTrip) GetTripId() string {
@@ -348,13 +243,7 @@ const file_proto_tripspb_trip_proto_rawDesc = "" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1b\n" +
 	"\tdriver_id\x18\x03 \x01(\tR\bdriverId\x12\x19\n" +
-	"\brider_id\x18\x04 \x01(\tR\ariderId\"D\n" +
-	"\fAcceptDriver\x12\x1b\n" +
-	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
-	"\atrip_id\x18\x02 \x01(\tR\x06tripId\"U\n" +
-	"\x14AcceptDriverResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
-	"\rerror_message\x18\x02 \x01(\tR\ferrorMessage\"%\n" +
+	"\brider_id\x18\x04 \x01(\tR\ariderId\"%\n" +
 	"\n" +
 	"RejectTrip\x12\x17\n" +
 	"\atrip_id\x18\x01 \x01(\tR\x06tripIdB>Z<github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspbb\x06proto3"
@@ -371,18 +260,16 @@ func file_proto_tripspb_trip_proto_rawDescGZIP() []byte {
 	return file_proto_tripspb_trip_proto_rawDescData
 }
 
-var file_proto_tripspb_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_tripspb_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_tripspb_trip_proto_goTypes = []any{
-	(*TripRequested)(nil),        // 0: trips.v1.TripRequested
-	(*TripAssigned)(nil),         // 1: trips.v1.TripAssigned
-	(*AcceptDriver)(nil),         // 2: trips.v1.AcceptDriver
-	(*AcceptDriverResponse)(nil), // 3: trips.v1.AcceptDriverResponse
-	(*RejectTrip)(nil),           // 4: trips.v1.RejectTrip
-	(*common.Coordinates)(nil),   // 5: common.geo.v1.Coordinates
+	(*TripRequested)(nil),      // 0: trips.v1.TripRequested
+	(*TripAssigned)(nil),       // 1: trips.v1.TripAssigned
+	(*RejectTrip)(nil),         // 2: trips.v1.RejectTrip
+	(*common.Coordinates)(nil), // 3: common.geo.v1.Coordinates
 }
 var file_proto_tripspb_trip_proto_depIdxs = []int32{
-	5, // 0: trips.v1.TripRequested.pick_up:type_name -> common.geo.v1.Coordinates
-	5, // 1: trips.v1.TripRequested.drop_off:type_name -> common.geo.v1.Coordinates
+	3, // 0: trips.v1.TripRequested.pick_up:type_name -> common.geo.v1.Coordinates
+	3, // 1: trips.v1.TripRequested.drop_off:type_name -> common.geo.v1.Coordinates
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -401,7 +288,7 @@ func file_proto_tripspb_trip_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_tripspb_trip_proto_rawDesc), len(file_proto_tripspb_trip_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

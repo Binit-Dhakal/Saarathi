@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package userspb;
+
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/userspb";
+
+service UsersService {
+  rpc GetRiderDetails(GetRiderDetailsRequest) returns (GetRiderDetailsResponse);
+  rpc GetDriverDetails(GetDriverDetailsRequest) returns (GetDriverDetailsResponse);
+}
+
+message GetRiderDetailsRequest {
+  string id = 1;
+}
+
+message GetRiderDetailsResponse {
+  string id = 1;
+  string name = 2;
+  string phone_number = 3;
+}
+
+message GetDriverDetailsRequest {
+  string id = 1;
+}
+
+message GetDriverDetailsResponse {
+  string id = 1;
+  string name = 2;
+  string phone_number = 3;
+  string license_number = 4;
+  string vehicle_make = 5;
+  string vehicle_model = 6;
+  string vehicle_plate = 7;
+}

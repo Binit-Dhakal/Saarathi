@@ -32,3 +32,18 @@ type DriverProfile struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
+
+type UserDetail struct {
+	ID          string
+	Name        string
+	PhoneNumber string
+	Role        string
+}
+
+type DriverDetail struct {
+	UserDetail
+	LicenseNumber string
+	VehicleNumber string
+	VehicleMake   string
+	VehicleModel  string
+}
