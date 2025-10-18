@@ -3,19 +3,15 @@ package rest
 import (
 	"net/http"
 	"sync"
-
-	"github.com/Binit-Dhakal/Saarathi/rider/internal/application"
 )
 
 type TripUpdateHandler struct {
-	updateSvc   application.RiderUpdateService
 	connections map[string]*Client
 	mu          sync.RWMutex
 }
 
-func NewTripUpdateHandler(updateSvc application.RiderUpdateService) *TripUpdateHandler {
+func NewTripUpdateHandler() *TripUpdateHandler {
 	return &TripUpdateHandler{
-		updateSvc:   updateSvc,
 		connections: map[string]*Client{},
 	}
 }

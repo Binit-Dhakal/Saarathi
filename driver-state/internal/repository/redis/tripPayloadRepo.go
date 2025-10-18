@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Binit-Dhakal/Saarathi/rider/internal/domain"
+	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/redis/go-redis/v9"
 )
 

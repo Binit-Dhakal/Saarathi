@@ -84,12 +84,13 @@ func run() (err error) {
 	locationRepo := redis.NewLocationRepo(app.cacheClient)
 	wsRepo := redis.NewWSRepo(app.cacheClient)
 	offerRepo := redis.NewOfferRepository(app.cacheClient)
+	tripRepo := redis.NewTripPayloadRepository(app.cacheClient)
 
 	presenceSvc := application.NewPresenceService(wsRepo)
 	locationSvc := application.NewLocationService(locationRepo)
 
 	// Solving circular dependency
-	offerSvc := application.NewOfferService(domainDispatcher, nil, offerRepo)
+	offerSvc := application.NewOfferService(domainDispatcher, nil, offerRepo, tripRepo)
 	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, offerSvc)
 	offerSvc.SetNotifier(driverStateHandler)
 

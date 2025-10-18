@@ -67,7 +67,7 @@ func (s *riderUpdateService) SendTripCompleteDetail(ctx context.Context, confirm
 	}
 
 	if s.notifier == nil {
-		fmt.Errorf("notifier is not set for rider service")
+		return fmt.Errorf("notifier is not set for rider service")
 	}
 
 	s.notifier.NotifyRider(confirmedDto.TripID, jsonBytes)

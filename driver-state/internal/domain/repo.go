@@ -16,3 +16,7 @@ type OfferRepository interface {
 	FindByID(ctx context.Context, id string) (*Offer, error)
 	Save(ctx context.Context, offer *Offer) error
 }
+
+type TripPayloadRepository interface {
+	GetTripFullPayload(ctx context.Context, tripID string) ([]byte, error)
+}

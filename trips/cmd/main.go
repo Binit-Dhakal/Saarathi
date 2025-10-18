@@ -119,6 +119,9 @@ func run() (err error) {
 	domainHandler := messaging.NewDomainEventHandlers(stream, projectionSvc)
 	messaging.RegisterDomainEventHandlers(eventDispatcher, domainHandler)
 
+	integrationHandler := messaging.NewIntegrationEventHandlers(rideService)
+	messaging.RegisterIntegrationEventHandlers(stream, integrationHandler)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)

@@ -9,6 +9,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
 
@@ -34,6 +35,13 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		return err
 	}
 
+	err = subscriber.Subscribe(tripspb.TripAggregateChannel, evtMsgHandler, am.MessageFilter{
+		tripspb.TripAssignedEvent,
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -41,6 +49,8 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 	switch event.EventName() {
 	case offerspb.TripOfferRequestedEvent:
 		return h.onOfferRequested(ctx, event)
+	case tripspb.TripAssignedEvent:
+		return h.onTripAssigned(ctx, event)
 	}
 	return nil
 }
@@ -57,4 +67,16 @@ func (h integrationHandlers[T]) onOfferRequested(ctx context.Context, event T) e
 	}
 
 	return h.offerSvc.CreateAndSendOffer(ctx, offerRequestedDTO)
+}
+
+func (h integrationHandlers[T]) onTripAssigned(ctx context.Context, event T) error {
+	payload := event.Payload().(*tripspb.TripAssigned)
+
+	assignedDto := dto.TripAssignedDTO{
+		TripID:   payload.TripId,
+		DriverID: payload.DriverId,
+		RiderID:  payload.RiderId,
+	}
+
+	return h.offerSvc.SendTripDetail(ctx, &assignedDto)
 }
