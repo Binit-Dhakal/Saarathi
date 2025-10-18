@@ -41,12 +41,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.nc)
-	if err != nil {
-		return err
-	}
-
-	err = setup.SetupStreams(app.js, app.cfg.Nats.TripStream, app.cfg.Nats.SagaStream)
+	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
 	if err != nil {
 		return err
 	}
@@ -84,10 +79,10 @@ func run() (err error) {
 		return err
 	}
 
-	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
+	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 
-	sagaEvtStream := am.NewEventStream(reg, sagaStream)
+	sagaEvtStream := am.NewEventStream(reg, stream)
 
 	tripReadRepo := postgres.NewTripReadModelRepo(app.DB)
 	candidatesRepo := redis.NewTripCandidatesRepo(app.cacheClient)

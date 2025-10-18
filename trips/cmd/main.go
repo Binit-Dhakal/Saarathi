@@ -48,12 +48,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.nc)
-	if err != nil {
-		return err
-	}
-
-	err = setup.SetupStreams(app.js, app.cfg.Nats.TripStream, app.cfg.Nats.SagaStream)
+	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
 	if err != nil {
 		return err
 	}
@@ -94,11 +89,9 @@ func run() (err error) {
 	}
 
 	eventDispatcher := ddd.NewEventDispatcher[ddd.Event]()
-	tripStream := jetstream.NewStream(cfg.Nats.TripStream, app.js, app.logger)
-	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
+	tripStream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 
-	tripEvtStream := am.NewEventStream(reg, tripStream)
-	sagaEvtStream := am.NewEventStream(reg, sagaStream)
+	stream := am.NewEventStream(reg, tripStream)
 
 	redisRepo := redis.NewRedisFareRepository(app.cacheClient)
 	tripRepo := postgres.NewTripRepository(app.tripsDB)
@@ -123,7 +116,7 @@ func run() (err error) {
 
 	projectionSvc := application.NewProjectionService(usersClient, presenceGateway, tripProjectRepo, tripReadRepo)
 
-	domainHandler := messaging.NewDomainEventHandlers(tripEvtStream, sagaEvtStream, projectionSvc)
+	domainHandler := messaging.NewDomainEventHandlers(stream, projectionSvc)
 	messaging.RegisterDomainEventHandlers(eventDispatcher, domainHandler)
 
 	mux := http.NewServeMux()

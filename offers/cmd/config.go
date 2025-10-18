@@ -14,9 +14,8 @@ type (
 	}
 
 	NatsConfig struct {
-		URL        string `required:"true"`
-		TripStream string `default:"saarathi"`
-		SagaStream string `default:"trip-creation-saga"`
+		URL    string `required:"true"`
+		Stream string `default:"saarathi"`
 	}
 
 	CacheConfig struct {

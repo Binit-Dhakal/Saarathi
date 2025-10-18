@@ -48,7 +48,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.nc)
+	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
 	if err != nil {
 		return err
 	}

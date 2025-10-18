@@ -38,7 +38,7 @@ func infraSetup(app *app) (err error) {
 		return err
 	}
 
-	app.js, err = setup.SetupJetStream(app.nc)
+	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
 	if err != nil {
 		return err
 	}
@@ -76,9 +76,9 @@ func run() (err error) {
 		return err
 	}
 
-	sagaStream := jetstream.NewStream(cfg.Nats.SagaStream, app.js, app.logger)
+	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 
-	eventStream := am.NewEventStream(reg, sagaStream)
+	eventStream := am.NewEventStream(reg, stream)
 	domainDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 
 	locationRepo := redis.NewLocationRepo(app.cacheClient)
@@ -90,7 +90,7 @@ func run() (err error) {
 
 	// Solving circular dependency
 	offerSvc := application.NewOfferService(domainDispatcher, nil, offerRepo)
-	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, offerSvc, domainDispatcher)
+	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, offerSvc)
 	offerSvc.SetNotifier(driverStateHandler)
 
 	domainHandler := messaging.NewDomainHandlers(eventStream)

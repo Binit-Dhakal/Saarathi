@@ -10,8 +10,8 @@ import (
 
 type (
 	NatsConfig struct {
-		URL        string `required:"true"`
-		SagaStream string `default:"offers"`
+		URL    string `required:"true"`
+		Stream string `default:"offers"`
 	}
 
 	CacheConfig struct {
