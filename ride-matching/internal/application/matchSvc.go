@@ -38,7 +38,7 @@ func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO
 	onlineCandidates := m.availCheck.GetOnlineDrivers(ctx, candidates)
 
 	if len(onlineCandidates) == 0 {
-		return nil
+		return fmt.Errorf("No driver online")
 	}
 
 	metadatas, err := m.metaFetcher.GetBulkMetada(ctx, onlineCandidates)
@@ -56,7 +56,7 @@ func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO
 		}
 	}
 
-	replyPayload := domain.MatchingCandidates{
+	replyPayload := &domain.MatchingCandidates{
 		SagaID:    requestDTO.SagaID,
 		TripID:    requestDTO.TripID,
 		DriverIds: shortlistDrivers,

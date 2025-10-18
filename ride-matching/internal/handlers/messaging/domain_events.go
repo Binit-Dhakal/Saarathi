@@ -28,7 +28,7 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error {
 	switch event.EventName() {
 	case domain.MatchingCandidatesEvent:
-		h.onCandidatesMatched(ctx, event)
+		return h.onCandidatesMatched(ctx, event)
 	}
 
 	return nil

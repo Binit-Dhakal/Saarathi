@@ -27,10 +27,14 @@ func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers dd
 		return handlers.HandleEvent(ctx, eventMsg)
 	})
 
-	err = subscriber.Subscribe(offerspb.OfferAggregateChannel, evtMsgHandler, am.GroupName("RMS-Service"), am.MessageFilter{
-		offerspb.RideMatchingRequestedEvent,
-	})
-
+	err = subscriber.Subscribe(
+		offerspb.OfferAggregateChannel,
+		evtMsgHandler,
+		am.GroupName("rms-offer-request"),
+		am.MessageFilter{
+			offerspb.RideMatchingRequestedEvent,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -43,6 +47,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 	case offerspb.RideMatchingRequestedEvent:
 		return h.onMatchingRequest(ctx, event)
 	}
+
 	return nil
 }
 

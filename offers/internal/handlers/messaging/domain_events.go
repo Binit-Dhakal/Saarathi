@@ -56,7 +56,6 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
 
-	fmt.Println("Offer asked the rms to provide driver data", matchDriverEvt)
 	return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, matchDriverEvt)
 }
 

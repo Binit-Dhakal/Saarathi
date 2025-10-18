@@ -8,8 +8,8 @@ import (
 	"syscall"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
@@ -18,6 +18,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/infrastructure"
+	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/logging"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
 	"github.com/nats-io/nats.go"
@@ -81,11 +82,11 @@ func run() (err error) {
 
 	reg := registry.NewRegistry()
 
-	if err := tripspb.Registration(reg); err != nil {
+	if err := offerspb.Registration(reg); err != nil {
 		return err
 	}
 
-	if err := driverspb.Registration(reg); err != nil {
+	if err := rmspb.Registration(reg); err != nil {
 		return err
 	}
 
@@ -107,11 +108,22 @@ func run() (err error) {
 
 	matchingSvc := application.NewMatchingService(domainDispatcher, rideRepo, driverInfoAdapter, driverInfoAdapter)
 
-	domainHandler := messaging.NewDomainEventHandlers(eventStream)
-	messaging.RegisterDomainEventHandlers(domainDispatcher, domainHandler)
+	domainHandler := logging.LogEventHandlerAccess(
+		messaging.NewDomainEventHandlers(eventStream),
+		"DomainEvents",
+		app.logger,
+	)
+	integrationHandler := logging.LogEventHandlerAccess(
+		messaging.NewIntegrationEventHandlers(matchingSvc),
+		"IntegrationEvents",
+		app.logger,
+	)
 
-	integrationHandler := messaging.NewIntegrationEventHandlers(matchingSvc)
-	messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
+	messaging.RegisterDomainEventHandlers(domainDispatcher, domainHandler)
+	err = messaging.RegisterIntegrationEventHandlers(eventStream, integrationHandler)
+	if err != nil {
+		return err
+	}
 
 	// Wait for shutdown signal
 	sigs := make(chan os.Signal, 1)
@@ -122,7 +134,6 @@ func run() (err error) {
 	cancel()
 
 	eventStream.Unsubscribe()
-
 	fmt.Println("Graceful shutdown")
 
 	return nil
