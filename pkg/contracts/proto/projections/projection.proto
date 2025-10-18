@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package projectionspb.v1;
+
+import "proto/common/geo.proto";
+
+
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/projectionspb";
+
+message TripProjectionV1 {
+  // Rider Details
+  string rider_id = 1;
+  string rider_name = 2;
+  string rider_phone = 3;
+
+  // Driver Details
+  string driver_id = 4;
+  string driver_name = 5;
+  string driver_phone = 6;
+  string vehicle_make = 7;
+  string vehicle_model = 8;
+  string license_number = 9;
+  string vehicle_number = 10;
+  common.geo.v1.Coordinates driver_location = 11;
+
+  // Trip Details
+  string trip_id = 12;
+  common.geo.v1.Coordinates pickup = 13;
+  common.geo.v1.Coordinates dropoff = 14;
+  double distance = 15;
+  int32 fare_price = 16;
+}

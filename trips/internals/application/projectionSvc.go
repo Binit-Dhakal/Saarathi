@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
+	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/projections"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
+	"google.golang.org/protobuf/proto"
 )
 
 type ProjectionService interface {
@@ -49,32 +52,34 @@ func (s *projectionService) ProjectTripDetails(ctx context.Context, tripID, driv
 		return fmt.Errorf("failed to fetch rider details: %w", err)
 	}
 
-	fullPayload := map[string]any{
+	fullPayload := projectionspb.TripProjectionV1{
 		// rider detail
-		"rider_id":    riderDetails.ID,
-		"rider_name":  riderDetails.Name,
-		"rider_phone": riderDetails.PhoneNumber,
+		RiderId:    riderDetails.ID,
+		RiderName:  riderDetails.Name,
+		RiderPhone: riderDetails.PhoneNumber,
 
 		// driver detail
-		"driver_id":          driverDetails.ID,
-		"driver_name":        driverDetails.Name,
-		"driver_phone":       driverDetails.PhoneNumber,
-		"vehicle_make":       driverDetails.VehicleMake,
-		"vehicle_model":      driverDetails.VehicleModel,
-		"license_number":     driverDetails.LicenseNumber,
-		"vehicle_number":     driverDetails.VehicleNumber,
-		"driver_initial_lat": driverLocation.Lat,
-		"driver_initial_lng": driverLocation.Lon,
+		DriverId:       driverDetails.ID,
+		DriverName:     driverDetails.Name,
+		DriverPhone:    driverDetails.PhoneNumber,
+		VehicleMake:    driverDetails.VehicleMake,
+		VehicleModel:   driverDetails.VehicleModel,
+		LicenseNumber:  driverDetails.LicenseNumber,
+		VehicleNumber:  driverDetails.VehicleNumber,
+		DriverLocation: &common.Coordinates{Lng: driverLocation.Lon, Lat: driverLocation.Lat},
 
 		// trip detail
-		"trip_id":     tripID,
-		"pickup_lat":  tripDetail.PickUp.Lat,
-		"pickup_lng":  tripDetail.PickUp.Lon,
-		"dropoff_lat": tripDetail.DropOff.Lat,
-		"dropoff_lng": tripDetail.DropOff.Lon,
-		"distance":    tripDetail.Distance,
-		"farePrice":   tripDetail.FarePrice,
+		TripId:    tripID,
+		Pickup:    &common.Coordinates{Lng: tripDetail.PickUp.Lon, Lat: tripDetail.PickUp.Lat},
+		Dropoff:   &common.Coordinates{Lng: tripDetail.DropOff.Lon, Lat: tripDetail.DropOff.Lat},
+		Distance:  tripDetail.Distance,
+		FarePrice: int32(tripDetail.FarePrice),
 	}
 
-	return s.saveRepo.SetTripPayload(ctx, tripID, fullPayload, 24*time.Hour)
+	bytePayload, err := proto.Marshal(&fullPayload)
+	if err != nil {
+		return err
+	}
+
+	return s.saveRepo.SetTripPayload(ctx, tripID, bytePayload, 24*time.Hour)
 }

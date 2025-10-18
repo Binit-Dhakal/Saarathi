@@ -20,7 +20,7 @@ type TripRepository interface {
 }
 
 type TripProjectionRepository interface {
-	SetTripPayload(ctx context.Context, tripID string, payload map[string]any, expiration time.Duration) error
+	SetTripPayload(ctx context.Context, tripID string, payload []byte, expiration time.Duration) error
 }
 
 type PresenceGatewayRepository interface {

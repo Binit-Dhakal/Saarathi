@@ -24,16 +24,10 @@ func NewTripProjectionRepository(client *redis.Client) domain.TripProjectionRepo
 	}
 }
 
-func (t *tripProjectionRepository) SetTripPayload(ctx context.Context, tripID string, payload map[string]any, expiration time.Duration) error {
+func (t *tripProjectionRepository) SetTripPayload(ctx context.Context, tripID string, payload []byte, expiration time.Duration) error {
 	key := fmt.Sprintf(projectionKeyPrefix, tripID)
 
-	jsonBytes, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal trip payload to JSON for trip %s: %w", tripID, err)
-	}
-
-	err = t.client.Set(ctx, key, jsonBytes, expiration).Err()
-
+	err := t.client.Set(ctx, key, payload, expiration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to save trip projection payload to redis for trip %s: %w", tripID, err)
 	}
