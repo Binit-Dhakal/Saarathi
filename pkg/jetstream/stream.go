@@ -91,7 +91,7 @@ func (s *Stream) Subscribe(ctx context.Context, topicName string, handler am.Raw
 
 	cfg := &nats.ConsumerConfig{
 		MaxDeliver:     subCfg.MaxRedeliver(),
-		DeliverSubject: topicName,
+		DeliverSubject: "",
 		FilterSubject:  topicName,
 	}
 

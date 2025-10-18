@@ -22,7 +22,7 @@ import (
 func main() {
 	err := run()
 	if err != nil {
-		fmt.Printf("Trips service exitted abnormally: %v\n", err)
+		fmt.Printf("Rider service exitted abnormally: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -40,6 +40,7 @@ func infraSetup(app *app) (err error) {
 
 	app.js, err = setup.SetupJetStream(app.cfg.Nats.Stream, app.nc)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -85,6 +86,7 @@ func run() (err error) {
 	integrationHandler := messaging.NewIntegrationEventHandlers(updateSvc)
 	err = messaging.RegisterIntegrationHandlers(evtStream, integrationHandler)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -108,5 +110,4 @@ func run() (err error) {
 	}
 
 	return
-
 }

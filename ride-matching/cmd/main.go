@@ -13,7 +13,6 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
-	"github.com/Binit-Dhakal/Saarathi/pkg/natscore"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
@@ -95,9 +94,6 @@ func run() (err error) {
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 	eventStream := am.NewEventStream(reg, stream)
 
-	coreBroker := natscore.NewCoreBroker(app.nc, app.logger)
-	commandBus := am.NewCommandBus(reg, coreBroker)
-
 	_, cancel := context.WithCancel(context.Background())
 
 	rideRepo := redis.NewRideMatchingRepository(app.cacheClient)
@@ -126,7 +122,6 @@ func run() (err error) {
 	cancel()
 
 	eventStream.Unsubscribe()
-	commandBus.Unsubscribe()
 
 	fmt.Println("Graceful shutdown")
 

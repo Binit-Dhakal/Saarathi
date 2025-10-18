@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/rider/internal/application"
 )
 

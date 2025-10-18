@@ -40,7 +40,7 @@ services:
       PG_CONN: postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable
       JWT_PRIVATE_KEY: ${RSA_PRIVATE_KEY}
     volumes:
-      - ./users:/app/users
+      - ./:/app
       - /app/users/tmp
     restart: always
 
@@ -180,6 +180,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      users-db:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 1
@@ -190,6 +192,57 @@ services:
     volumes:
       - ./:/app
       - /app/ride-matching/tmp
+
+  offers-db:
+    image: postgres:16
+    container_name: offers_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: offersdb
+    ports:
+      - "5439:5432"
+    volumes:
+      - postgres_offers_data:/var/lib/postgresql/data
+
+  offers-migrate:
+    image: migrate/migrate:v4.17.0
+    depends_on:
+      - offers-db
+    volumes:
+      - ./offers/migrations:/migrations
+    entrypoint: [
+      "migrate",
+      "-path", "/migrations",
+      "-database", "postgres://myuser:mypassword@offers-db:5432/offersdb?sslmode=disable",
+      "up"
+    ]
+    restart: "on-failure"
+
+
+  offers-service:
+    build:
+      context: .
+      dockerfile: offers/Dockerfile.dev
+    depends_on:
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      offers-db:
+        condition: service_started
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      NATS_URL: nats://nats:4222
+      REDIS_CACHEURL: redis://redis:6379/0
+      PG_CONN: postgres://myuser:mypassword@offers-db:5432/offersdb?sslmode=disable
+    volumes:
+      - ./:/app
+      - /app/offer/tmp 
+    restart: always 
 
   rider-service:
     build:
@@ -233,6 +286,7 @@ services:
 
 volumes:
   postgres_trips_data:
+  postgres_offers_data:
   postgres_users_data:
     external: true
   web_node_modules:
