@@ -10,9 +10,6 @@ const (
 
 	TripRequestedEvent = "trips.requested"
 	TripAssignedEvent  = "trips.assigned"
-
-	// Commands
-	RejectTripCommand = "tripsapi.trips.reject"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -25,13 +22,9 @@ func Registration(reg registry.Registry) (err error) {
 	if err = serde.Register(&TripAssigned{}); err != nil {
 		return err
 	}
-	if err = serde.Register(&RejectTrip{}); err != nil {
-		return err
-	}
 
 	return nil
 }
 
 func (*TripRequested) Key() string { return TripRequestedEvent }
 func (*TripAssigned) Key() string  { return TripAssignedEvent }
-func (*RejectTrip) Key() string    { return RejectTripCommand }

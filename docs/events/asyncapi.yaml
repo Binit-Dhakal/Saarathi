@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: Saarathi Platform Event Contracts
+  version: 1.0.0
+  description: The central catalogue of all event streams and messages across the Saarathi microservice architecture.
+  contact:
+    name: Microservices Team
+    email: binit.dhakal@proton.me
+
+channels:
+  # Reference all channels defined in the external file
+  $ref: './channels-trips.yaml#/channels'
+
+components:
+  schemas:
+    # Reference all schemas defined in the external file (like Coordinates)
+    $ref: './channels-trips.yaml#/components/schemas'
+    
+  messages:
+    # Reference all messages defined in the external file (TripRequested, TripAssigned, etc.)
+    $ref: './channels-trips.yaml#/components/messages'
+

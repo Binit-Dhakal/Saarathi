@@ -7,7 +7,6 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
@@ -63,7 +62,7 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 func (h domainHandlers) onTripOffer(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*domain.TripOffer)
 
-	routingKey := fmt.Sprintf(driverspb.DriverOfferEventsChannel, payload.PresenceServerID)
+	routingKey := fmt.Sprintf(offerspb.OfferInstanceEventChannel, payload.PresenceServerID)
 
 	p := &offerspb.TripOfferRequested{
 		SagaId:   payload.SagaID,

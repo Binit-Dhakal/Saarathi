@@ -1,0 +1,210 @@
+channels:
+  # --- Channel: Trip Status Confirmed ---
+  trips.status.confirmed:
+    address: 'trips.status.{tripId}'
+    description: Critical status update for a trip. This event is published to the 'saarathi.trips.events' JetStream and filtered by consumers based on the subject prefix.
+    parameters:
+      tripId:
+        description: The ID of the affected trip.
+        schema:
+          type: string
+    publish:
+      message:
+        $ref: '#/components/messages/TripConfirmed'
+    subscribe:
+      operationId: consumeConfirmedTrip
+
+  # --- Channel: Trip Requested (Published by Trip Service) ---
+  trips.requested:
+    address: 'trips.requested' 
+    description: The core event published when a rider successfully submits a trip request. This message is routed through the 'saarathi.trips.events' JetStream.
+    publish:
+      message:
+        $ref: '#/components/messages/TripRequested'
+    subscribe:
+      operationId: consumeTripRequest
+
+  # --- Channel: Trip Assigned (Published by Trip Service/Offers Service) ---
+  trips.assigned:
+    address: 'trips.assigned' 
+    description: Published when a driver accepts an offer. This message is routed through the 'saarathi.trips.events' JetStream.
+    publish:
+      message:
+        $ref: '#/components/messages/TripAssigned'
+    subscribe:
+      operationId: consumeTripAssigned
+
+components:
+  schemas:
+    # Schema for common.geo.v1.Coordinates used in the Protobuf definitions
+    Coordinates:
+      type: object
+      description: The standard Lng, Lat coordinate pair used across services.
+      properties:
+        lng:
+          type: number
+          format: double
+        lat:
+          type: number
+          format: double
+
+  messages:
+    TripConfirmed:
+      payload:
+        type: object
+        properties:
+          trip_id:
+            type: string
+            description: The unique identifier of the trip.
+          driver_name:
+            type: string
+            description: Name of the assigned driver.
+
+    TripRequested:
+      payload:
+        type: object
+        properties:
+          saga_id:
+            type: string
+            description: The unique ID used to track the lifecycle of the trip creation saga.
+          trip_id:
+    channels:
+  # --- Channel: Trip Status Confirmed ---
+  trips.status.confirmed:
+    address: 'trips.status.{tripId}'
+    parameters:
+      tripId:
+        description: The ID of the affected trip.
+        schema:
+          type: string
+    publish:
+      message:
+        $ref: '#/components/messages/TripConfirmed'
+    subscribe:
+      operationId: consumeConfirmedTrip
+
+  # --- Channel: Trip Requested (Published by Trip Service) ---
+  trips.requested:
+    address: 'trips.requested' 
+    publish:
+      description: The core event published when a rider successfully submits a trip request. This kicks off the ride matching saga.
+      message:
+        $ref: '#/components/messages/TripRequested'
+    subscribe:
+      operationId: consumeTripRequest
+
+  # --- Channel: Trip Assigned (Published by Trip Service/Offers Service) ---
+  trips.assigned:
+    address: 'trips.assigned' 
+    publish:
+      description: Published by the Offers Service or Trip Service when a driver successfully accepts an offer and is assigned to the trip.
+      message:
+        $ref: '#/components/messages/TripAssigned'
+    subscribe:
+      operationId: consumeTripAssigned
+
+components:
+  schemas:
+    # Schema for common.geo.v1.Coordinates used in the Protobuf definitions
+    Coordinates:
+      type: object
+      description: The standard Lng, Lat coordinate pair used across services.
+      properties:
+        lng:
+          type: number
+          format: double
+        lat:
+          type: number
+          format: double
+
+  messages:
+    TripConfirmed:
+      payload:
+        type: object
+        properties:
+          trip_id:
+            type: string
+            description: The unique identifier of the trip.
+          driver_name:
+            type: string
+            description: Name of the assigned driver.
+
+    TripRequested:
+      payload:
+        type: object
+        properties:
+          saga_id:
+            type: string
+            description: The unique ID used to track the lifecycle of the trip creation saga.
+          trip_id:
+            type: string
+            description: The unique identifier for the trip.
+          distance:
+            type: number
+            format: double
+            description: Calculated distance of the route in kilometers.
+          price:
+            type: number
+            format: int32
+            description: Estimated trip price.
+          pick_up:
+            $ref: '#/components/schemas/Coordinates'
+            description: The rider's pickup location.
+          drop_off:
+            $ref: '#/components/schemas/Coordinates'
+            description: The rider's destination location.
+          car_type:
+            type: string
+            description: The requested vehicle type (e.g., 'Economy', 'Premium').
+
+    TripAssigned:
+      payload:
+        type: object
+        properties:
+          saga_id:
+            type: string
+            description: The saga ID for context.
+          trip_id:
+            type: string
+            description: The unique identifier for the trip.
+          driver_id:
+            type: string
+            description: The ID of the driver assigned to the trip.
+          rider_id:
+            type: string
+            description: The ID of the rider who requested the trip.        type: string
+            description: The unique identifier for the trip.
+          distance:
+            type: number
+            format: double
+            description: Calculated distance of the route in kilometers.
+          price:
+            type: number
+            format: int32
+            description: Estimated trip price.
+          pick_up:
+            $ref: '#/components/schemas/Coordinates'
+            description: The rider's pickup location.
+          drop_off:
+            $ref: '#/components/schemas/Coordinates'
+            description: The rider's destination location.
+          car_type:
+            type: string
+            description: The requested vehicle type (e.g., 'Economy', 'Premium').
+
+    TripAssigned:
+      payload:
+        type: object
+        properties:
+          saga_id:
+            type: string
+            description: The saga ID for context.
+          trip_id:
+            type: string
+            description: The unique identifier for the trip.
+          driver_id:
+            type: string
+            description: The ID of the driver assigned to the trip.
+          rider_id:
+            type: string
+            description: The ID of the rider who requested the trip.

@@ -8,8 +8,6 @@ import (
 const (
 	DriverAggregateChannel = "saarathi.drivers.events"
 
-	DriverOfferEventsChannel = "saarathi.drivers.instance.%s"
-
 	OfferAcceptedEvent = "driversapi.offer.accepted"
 	OfferRejectedEvent = "driversapi.offer.rejected"
 	OfferTimedoutEvent = "driversapi.offer.timedout"

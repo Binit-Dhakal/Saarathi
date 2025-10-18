@@ -8,7 +8,6 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 )
@@ -30,7 +29,7 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		return handlers.HandleEvent(ctx, eventMsg)
 	})
 
-	err := subscriber.Subscribe(fmt.Sprintf(driverspb.DriverOfferEventsChannel, hostName), evtMsgHandler)
+	err := subscriber.Subscribe(fmt.Sprintf(offerspb.OfferInstanceEventChannel, hostName), evtMsgHandler)
 	if err != nil {
 		return err
 	}
