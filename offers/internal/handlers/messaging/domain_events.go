@@ -57,7 +57,7 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
 
-	return h.publisher.Publish(ctx, offerspb.RideMatchingRequestedEvent, matchDriverEvt)
+	return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, matchDriverEvt)
 }
 
 func (h domainHandlers) onTripOffer(ctx context.Context, event ddd.Event) error {
@@ -86,5 +86,5 @@ func (h domainHandlers) onTripOfferAccepted(ctx context.Context, event ddd.Event
 	}
 
 	evt := ddd.NewEvent(offerspb.TripOfferAcceptedEvent, p)
-	return h.publisher.Publish(ctx, offerspb.TripOfferAcceptedEvent, evt)
+	return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, evt)
 }

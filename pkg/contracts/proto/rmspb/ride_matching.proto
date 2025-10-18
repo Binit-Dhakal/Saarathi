@@ -6,26 +6,8 @@ import "proto/common/geo.proto";
 
 option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb";
 
-message TripMatched {
-  string trip_id = 1;
-  string driver_id = 2;
-}
-
-message MatchingCandidates {
+message CandidatesMatched {
   string saga_id = 1;
   string trip_id = 2;
   repeated string driver_ids = 3;
-}
-
-// Command
-message FindEligibleDrivers {
-  string trip_id = 1;
-  common.geo.v1.Coordinates pick_up = 4;
-  common.geo.v1.Coordinates drop_off = 5;
-}
-
-// Reply
-message FindEligibleDriversReply {
-  string trip_id = 1;
-  repeated string driver_ids = 2;
 }

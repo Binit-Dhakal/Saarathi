@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	OfferAggregateChannel = "saarathi.offers.event"
+
 	RideMatchingRequestedEvent = "offers.rms.request_matching"
 	TripOfferRequestedEvent    = "offers.drivers.requested"
 	TripOfferAcceptedEvent     = "offers.trips.accepted"

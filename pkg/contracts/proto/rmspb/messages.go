@@ -6,42 +6,17 @@ import (
 )
 
 const (
-	// Events
-	RMSAggregateChannel        = "saarathi.rms.events"
-	RMSMatchingCandidatesEvent = "rms.candidates"
-	RMSTripMatched             = "rms.TripMatched"
-
-	// Commands
-	RMSCommandChannel           = "saarathi.rms.commands"
-	FindEligibleDriversCommands = "rmsapi.drivers.search"
-
-	// Reply
-	EligibleDriversListReply = "rmsapi.replies.drivers.search"
+	RMSAggregateChannel       = "saarathi.rms.events"
+	RMSCandidatesMatchedEvent = "rms.candidates"
 )
 
 func Registration(reg registry.Registry) (err error) {
 	serde := serdes.NewJsonSerde(reg)
 
-	if err = serde.Register(&MatchingCandidates{}); err != nil {
+	if err = serde.Register(&CandidatesMatched{}); err != nil {
 		return err
 	}
-
-	if err = serde.Register(&TripMatched{}); err != nil {
-		return err
-	}
-
-	if err = serde.Register(&FindEligibleDrivers{}); err != nil {
-		return err
-	}
-
-	if err = serde.Register(&FindEligibleDriversReply{}); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (*MatchingCandidates) Key() string       { return RMSMatchingCandidatesEvent }
-func (*TripMatched) Key() string              { return RMSTripMatched }
-func (*FindEligibleDrivers) Key() string      { return FindEligibleDriversCommands }
-func (*FindEligibleDriversReply) Key() string { return EligibleDriversListReply }
+func (*CandidatesMatched) Key() string { return RMSCandidatesMatchedEvent }

@@ -56,7 +56,7 @@ func (h domainHandlers) onTripCreated(ctx context.Context, event ddd.Event) erro
 
 	evt := ddd.NewEvent(tripspb.TripRequestedEvent, createdEvent)
 
-	err := h.publisher.Publish(ctx, tripspb.TripRequestedEvent, evt)
+	err := h.publisher.Publish(ctx, tripspb.TripAggregateChannel, evt)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (h domainHandlers) onTripMatched(ctx context.Context, event ddd.Event) erro
 		RiderId:  payload.RiderID,
 	}
 	assignedEvt := ddd.NewEvent(tripspb.TripAssignedEvent, p)
-	err = h.publisher.Publish(ctx, tripspb.TripAssignedEvent, assignedEvt)
+	err = h.publisher.Publish(ctx, tripspb.TripAggregateChannel, assignedEvt)
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
@@ -38,13 +37,13 @@ func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error 
 func (h domainHandlers) onCandidatesMatched(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*domain.MatchingCandidates)
 
-	matchDriversPayload := &rmspb.MatchingCandidates{
+	matchDriversPayload := &rmspb.CandidatesMatched{
 		SagaId:    payload.SagaID,
 		TripId:    payload.TripID,
 		DriverIds: payload.DriverIds,
 	}
 
-	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
+	matchDriverEvt := ddd.NewEvent(rmspb.RMSCandidatesMatchedEvent, matchDriversPayload)
 
-	return h.publisher.Publish(ctx, offerspb.RideMatchingRequestedEvent, matchDriverEvt)
+	return h.publisher.Publish(ctx, rmspb.RMSAggregateChannel, matchDriverEvt)
 }

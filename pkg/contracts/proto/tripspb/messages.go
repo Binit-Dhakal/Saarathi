@@ -6,13 +6,12 @@ import (
 )
 
 const (
-	// Events
 	TripAggregateChannel = "saarathi.trips.events"
-	TripRequestedEvent   = "trips.requested"
-	TripAssignedEvent    = "trips.TripAssigned"
+
+	TripRequestedEvent = "trips.requested"
+	TripAssignedEvent  = "trips.assigned"
 
 	// Commands
-	CommandChannel    = "saarthi.trips.commands"
 	RejectTripCommand = "tripsapi.trips.reject"
 )
 

@@ -27,7 +27,9 @@ func RegisterIntegrationEventHandlers(subscriber am.EventSubscriber, handlers dd
 		return handlers.HandleEvent(ctx, eventMsg)
 	})
 
-	err = subscriber.Subscribe(offerspb.TripOfferAcceptedEvent, evtMsgHandler)
+	err = subscriber.Subscribe(offerspb.OfferAggregateChannel, evtMsgHandler, am.MessageFilter{
+		offerspb.TripOfferAcceptedEvent,
+	})
 	if err != nil {
 		return err
 	}

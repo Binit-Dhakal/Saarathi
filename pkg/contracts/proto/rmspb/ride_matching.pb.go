@@ -7,7 +7,7 @@
 package rmspb
 
 import (
-	common "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
+	_ "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -22,59 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type TripMatched struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverId      string                 `protobuf:"bytes,2,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TripMatched) Reset() {
-	*x = TripMatched{}
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TripMatched) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TripMatched) ProtoMessage() {}
-
-func (x *TripMatched) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TripMatched.ProtoReflect.Descriptor instead.
-func (*TripMatched) Descriptor() ([]byte, []int) {
-	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *TripMatched) GetTripId() string {
-	if x != nil {
-		return x.TripId
-	}
-	return ""
-}
-
-func (x *TripMatched) GetDriverId() string {
-	if x != nil {
-		return x.DriverId
-	}
-	return ""
-}
-
-type MatchingCandidates struct {
+type CandidatesMatched struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
 	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
@@ -83,21 +31,21 @@ type MatchingCandidates struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *MatchingCandidates) Reset() {
-	*x = MatchingCandidates{}
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[1]
+func (x *CandidatesMatched) Reset() {
+	*x = CandidatesMatched{}
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *MatchingCandidates) String() string {
+func (x *CandidatesMatched) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MatchingCandidates) ProtoMessage() {}
+func (*CandidatesMatched) ProtoMessage() {}
 
-func (x *MatchingCandidates) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[1]
+func (x *CandidatesMatched) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -108,140 +56,26 @@ func (x *MatchingCandidates) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use MatchingCandidates.ProtoReflect.Descriptor instead.
-func (*MatchingCandidates) Descriptor() ([]byte, []int) {
-	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{1}
+// Deprecated: Use CandidatesMatched.ProtoReflect.Descriptor instead.
+func (*CandidatesMatched) Descriptor() ([]byte, []int) {
+	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *MatchingCandidates) GetSagaId() string {
+func (x *CandidatesMatched) GetSagaId() string {
 	if x != nil {
 		return x.SagaId
 	}
 	return ""
 }
 
-func (x *MatchingCandidates) GetTripId() string {
+func (x *CandidatesMatched) GetTripId() string {
 	if x != nil {
 		return x.TripId
 	}
 	return ""
 }
 
-func (x *MatchingCandidates) GetDriverIds() []string {
-	if x != nil {
-		return x.DriverIds
-	}
-	return nil
-}
-
-// Command
-type FindEligibleDrivers struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	PickUp        *common.Coordinates    `protobuf:"bytes,4,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
-	DropOff       *common.Coordinates    `protobuf:"bytes,5,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FindEligibleDrivers) Reset() {
-	*x = FindEligibleDrivers{}
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FindEligibleDrivers) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FindEligibleDrivers) ProtoMessage() {}
-
-func (x *FindEligibleDrivers) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FindEligibleDrivers.ProtoReflect.Descriptor instead.
-func (*FindEligibleDrivers) Descriptor() ([]byte, []int) {
-	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *FindEligibleDrivers) GetTripId() string {
-	if x != nil {
-		return x.TripId
-	}
-	return ""
-}
-
-func (x *FindEligibleDrivers) GetPickUp() *common.Coordinates {
-	if x != nil {
-		return x.PickUp
-	}
-	return nil
-}
-
-func (x *FindEligibleDrivers) GetDropOff() *common.Coordinates {
-	if x != nil {
-		return x.DropOff
-	}
-	return nil
-}
-
-// Reply
-type FindEligibleDriversReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverIds     []string               `protobuf:"bytes,2,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FindEligibleDriversReply) Reset() {
-	*x = FindEligibleDriversReply{}
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FindEligibleDriversReply) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FindEligibleDriversReply) ProtoMessage() {}
-
-func (x *FindEligibleDriversReply) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_rmspb_ride_matching_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FindEligibleDriversReply.ProtoReflect.Descriptor instead.
-func (*FindEligibleDriversReply) Descriptor() ([]byte, []int) {
-	return file_proto_rmspb_ride_matching_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *FindEligibleDriversReply) GetTripId() string {
-	if x != nil {
-		return x.TripId
-	}
-	return ""
-}
-
-func (x *FindEligibleDriversReply) GetDriverIds() []string {
+func (x *CandidatesMatched) GetDriverIds() []string {
 	if x != nil {
 		return x.DriverIds
 	}
@@ -252,23 +86,12 @@ var File_proto_rmspb_ride_matching_proto protoreflect.FileDescriptor
 
 const file_proto_rmspb_ride_matching_proto_rawDesc = "" +
 	"\n" +
-	"\x1fproto/rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x16proto/common/geo.proto\"C\n" +
-	"\vTripMatched\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1b\n" +
-	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\"e\n" +
-	"\x12MatchingCandidates\x12\x17\n" +
+	"\x1fproto/rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x16proto/common/geo.proto\"d\n" +
+	"\x11CandidatesMatched\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1d\n" +
 	"\n" +
-	"driver_ids\x18\x03 \x03(\tR\tdriverIds\"\x9a\x01\n" +
-	"\x13FindEligibleDrivers\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x123\n" +
-	"\apick_up\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
-	"\bdrop_off\x18\x05 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\"R\n" +
-	"\x18FindEligibleDriversReply\x12\x17\n" +
-	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1d\n" +
-	"\n" +
-	"driver_ids\x18\x02 \x03(\tR\tdriverIdsB<Z:github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspbb\x06proto3"
+	"driver_ids\x18\x03 \x03(\tR\tdriverIdsB<Z:github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspbb\x06proto3"
 
 var (
 	file_proto_rmspb_ride_matching_proto_rawDescOnce sync.Once
@@ -282,22 +105,16 @@ func file_proto_rmspb_ride_matching_proto_rawDescGZIP() []byte {
 	return file_proto_rmspb_ride_matching_proto_rawDescData
 }
 
-var file_proto_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_proto_rmspb_ride_matching_proto_goTypes = []any{
-	(*TripMatched)(nil),              // 0: ridematching.v1.TripMatched
-	(*MatchingCandidates)(nil),       // 1: ridematching.v1.MatchingCandidates
-	(*FindEligibleDrivers)(nil),      // 2: ridematching.v1.FindEligibleDrivers
-	(*FindEligibleDriversReply)(nil), // 3: ridematching.v1.FindEligibleDriversReply
-	(*common.Coordinates)(nil),       // 4: common.geo.v1.Coordinates
+	(*CandidatesMatched)(nil), // 0: ridematching.v1.CandidatesMatched
 }
 var file_proto_rmspb_ride_matching_proto_depIdxs = []int32{
-	4, // 0: ridematching.v1.FindEligibleDrivers.pick_up:type_name -> common.geo.v1.Coordinates
-	4, // 1: ridematching.v1.FindEligibleDrivers.drop_off:type_name -> common.geo.v1.Coordinates
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // [0:0] is the sub-list for method output_type
+	0, // [0:0] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_proto_rmspb_ride_matching_proto_init() }
@@ -311,7 +128,7 @@ func file_proto_rmspb_ride_matching_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_rmspb_ride_matching_proto_rawDesc), len(file_proto_rmspb_ride_matching_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

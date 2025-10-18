@@ -46,7 +46,7 @@ func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) e
 			SagaId:   payload.SagaID,
 		})
 
-		err = h.publisher.Publish(ctx, driverspb.OfferAcceptedEvent, replyPayload)
+		err = h.publisher.Publish(ctx, driverspb.DriverAggregateChannel, replyPayload)
 
 	case domain.OfferRejected:
 		replyPayload := ddd.NewEvent(driverspb.OfferRejectedEvent, driverspb.OfferRejected{
@@ -55,7 +55,7 @@ func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) e
 			SagaId:   payload.SagaID,
 		})
 
-		err = h.publisher.Publish(ctx, driverspb.OfferRejectedEvent, replyPayload)
+		err = h.publisher.Publish(ctx, driverspb.DriverAggregateChannel, replyPayload)
 	}
 
 	if err != nil {
@@ -76,7 +76,7 @@ func (h domainHandlers) onOfferTimedOut(ctx context.Context, event ddd.Event) er
 			SagaId:   payload.SagaID,
 		})
 
-		err := h.publisher.Publish(ctx, driverspb.OfferTimedoutEvent, replyPayload)
+		err := h.publisher.Publish(ctx, driverspb.DriverAggregateChannel, replyPayload)
 		if err != nil {
 			return err
 		}

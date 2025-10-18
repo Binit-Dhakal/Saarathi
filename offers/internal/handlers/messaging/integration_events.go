@@ -27,27 +27,25 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		return handlers.HandleEvent(ctx, eventMsg)
 	})
 
-	err := subscriber.Subscribe(tripspb.TripRequestedEvent, evtMsgHandler)
+	err := subscriber.Subscribe(tripspb.TripAggregateChannel, evtMsgHandler, am.MessageFilter{
+		tripspb.TripRequestedEvent,
+	})
 	if err != nil {
 		return err
 	}
 
-	err = subscriber.Subscribe(rmspb.RMSMatchingCandidatesEvent, evtMsgHandler)
+	err = subscriber.Subscribe(rmspb.RMSAggregateChannel, evtMsgHandler, am.MessageFilter{
+		rmspb.RMSCandidatesMatchedEvent,
+	})
 	if err != nil {
 		return err
 	}
 
-	err = subscriber.Subscribe(driverspb.OfferAcceptedEvent, evtMsgHandler)
-	if err != nil {
-		return err
-	}
-
-	err = subscriber.Subscribe(driverspb.OfferRejectedEvent, evtMsgHandler)
-	if err != nil {
-		return err
-	}
-
-	err = subscriber.Subscribe(driverspb.OfferTimedoutEvent, evtMsgHandler)
+	err = subscriber.Subscribe(driverspb.DriverAggregateChannel, evtMsgHandler, am.MessageFilter{
+		driverspb.OfferAcceptedEvent,
+		driverspb.OfferRejectedEvent,
+		driverspb.OfferTimedoutEvent,
+	})
 	if err != nil {
 		return err
 	}
@@ -59,7 +57,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 	switch event.EventName() {
 	case tripspb.TripRequestedEvent:
 		return h.onTripRequested(ctx, event)
-	case rmspb.RMSMatchingCandidatesEvent:
+	case rmspb.RMSCandidatesMatchedEvent:
 		return h.onCandidatesList(ctx, event)
 	case driverspb.OfferAcceptedEvent:
 		return h.onOfferAccepted(ctx, event)
@@ -84,7 +82,7 @@ func (h integrationHandlers[T]) onTripRequested(ctx context.Context, event T) er
 }
 
 func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) error {
-	payload := event.Payload().(*rmspb.MatchingCandidates)
+	payload := event.Payload().(*rmspb.CandidatesMatched)
 
 	candidatesDTO := domain.MatchedDriversDTO{
 		SagaID:             payload.SagaId,

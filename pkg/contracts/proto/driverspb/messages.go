@@ -8,10 +8,11 @@ import (
 const (
 	DriverAggregateChannel = "saarathi.drivers.events"
 
-	DriverOfferEventsChannel = "drivers.events.offers.%s"
-	OfferAcceptedEvent       = "driversapi.offer.accepted"
-	OfferRejectedEvent       = "driversapi.offer.rejected"
-	OfferTimedoutEvent       = "driversapi.offer.timedout"
+	DriverOfferEventsChannel = "saarathi.drivers.instance.%s"
+
+	OfferAcceptedEvent = "driversapi.offer.accepted"
+	OfferRejectedEvent = "driversapi.offer.rejected"
+	OfferTimedoutEvent = "driversapi.offer.timedout"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -25,7 +26,7 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
-	if err = serde.Register(&OfferTimedout{}); err != nil {
+	if err = serde.Register(&OfferTimedOut{}); err != nil {
 		return err
 	}
 
@@ -34,4 +35,4 @@ func Registration(reg registry.Registry) (err error) {
 
 func (*OfferAccepted) Key() string { return OfferAcceptedEvent }
 func (*OfferRejected) Key() string { return OfferRejectedEvent }
-func (*OfferTimedout) Key() string { return OfferTimedoutEvent }
+func (*OfferTimedOut) Key() string { return OfferTimedoutEvent }
