@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
@@ -19,6 +20,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/grpc"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/handlers/rest"
+	"github.com/Binit-Dhakal/Saarathi/trips/internals/logging"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/repository/redis"
 	"github.com/nats-io/nats.go"
@@ -88,6 +90,11 @@ func run() (err error) {
 		return err
 	}
 
+	err = offerspb.Registration(reg)
+	if err != nil {
+		return err
+	}
+
 	eventDispatcher := ddd.NewEventDispatcher[ddd.Event]()
 	tripStream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 
@@ -116,11 +123,22 @@ func run() (err error) {
 
 	projectionSvc := application.NewProjectionService(usersClient, presenceGateway, tripProjectRepo, tripReadRepo)
 
-	domainHandler := messaging.NewDomainEventHandlers(stream, projectionSvc)
+	domainHandler := logging.LogEventHandlerAccess(
+		messaging.NewDomainEventHandlers(stream, projectionSvc),
+		"DomainEvents",
+		app.logger,
+	)
 	messaging.RegisterDomainEventHandlers(eventDispatcher, domainHandler)
 
-	integrationHandler := messaging.NewIntegrationEventHandlers(rideService)
-	messaging.RegisterIntegrationEventHandlers(stream, integrationHandler)
+	integrationHandler := logging.LogEventHandlerAccess(
+		messaging.NewIntegrationEventHandlers(rideService),
+		"IntegrationEvents",
+		app.logger,
+	)
+	err = messaging.RegisterIntegrationEventHandlers(stream, integrationHandler)
+	if err != nil {
+		return err
+	}
 
 	mux := http.NewServeMux()
 

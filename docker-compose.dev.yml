@@ -220,7 +220,6 @@ services:
     ]
     restart: "on-failure"
 
-
   offers-service:
     build:
       context: .
@@ -241,7 +240,7 @@ services:
       PG_CONN: postgres://myuser:mypassword@offers-db:5432/offersdb?sslmode=disable
     volumes:
       - ./:/app
-      - /app/offer/tmp 
+      - /app/offers/tmp 
     restart: always 
 
   rider-service:

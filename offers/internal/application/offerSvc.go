@@ -37,7 +37,7 @@ func (o *offerSvc) CreateTripReadModel(ctx context.Context, payload domain.TripR
 		return err
 	}
 
-	startMatchPayload := domain.RideMatchingInitialized{
+	startMatchPayload := &domain.RideMatchingInitialized{
 		SagaID:  payload.SagaID,
 		TripID:  payload.TripID,
 		CarType: payload.CarType,
@@ -76,12 +76,11 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 		if err != nil {
 			continue
 		}
-
 		if !locked {
 			continue
 		}
 
-		payload := domain.TripOffer{
+		payload := &domain.TripOffer{
 			SagaID:           tripDetail.SagaID,
 			TripID:           tripID,
 			Price:            tripDetail.Price,
@@ -104,7 +103,7 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 }
 
 func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyPayload domain.OfferAcceptedReplyDTO) error {
-	evtPayload := domain.TripOfferAccepted{
+	evtPayload := &domain.TripOfferAccepted{
 		SagaID:   replyPayload.SagaID,
 		TripID:   replyPayload.TripID,
 		DriverID: replyPayload.DriverID,

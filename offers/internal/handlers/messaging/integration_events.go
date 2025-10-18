@@ -29,14 +29,14 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 
 	err := subscriber.Subscribe(tripspb.TripAggregateChannel, evtMsgHandler, am.MessageFilter{
 		tripspb.TripRequestedEvent,
-	})
+	}, am.GroupName("offers-trips-requested"))
 	if err != nil {
 		return err
 	}
 
 	err = subscriber.Subscribe(rmspb.RMSAggregateChannel, evtMsgHandler, am.MessageFilter{
 		rmspb.RMSCandidatesMatchedEvent,
-	})
+	}, am.GroupName("offers-rms-matched"))
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		driverspb.OfferAcceptedEvent,
 		driverspb.OfferRejectedEvent,
 		driverspb.OfferTimedoutEvent,
-	})
+	}, am.GroupName("offers-drivers-response"))
 	if err != nil {
 		return err
 	}
@@ -62,6 +62,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 	case driverspb.OfferAcceptedEvent:
 		return h.onOfferAccepted(ctx, event)
 	}
+
 	return nil
 }
 

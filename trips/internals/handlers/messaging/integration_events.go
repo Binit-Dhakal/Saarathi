@@ -42,6 +42,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 	case offerspb.TripOfferAcceptedEvent:
 		return h.onDriverAccepted(ctx, event)
 	}
+
 	return nil
 }
 

@@ -33,9 +33,9 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error {
 	switch event.EventName() {
 	case domain.TripCreatedEvent:
-		h.onTripCreated(ctx, event)
+		return h.onTripCreated(ctx, event)
 	case domain.TripMatchedEvent:
-		h.onTripMatched(ctx, event)
+		return h.onTripMatched(ctx, event)
 	}
 
 	return nil
@@ -57,6 +57,7 @@ func (h domainHandlers) onTripCreated(ctx context.Context, event ddd.Event) erro
 	evt := ddd.NewEvent(tripspb.TripRequestedEvent, createdEvent)
 
 	err := h.publisher.Publish(ctx, tripspb.TripAggregateChannel, evt)
+
 	if err != nil {
 		return err
 	}

@@ -5,3 +5,6 @@ public.key
 osrm-data/
 
 secret.yaml
+
+tmp/
+offer/

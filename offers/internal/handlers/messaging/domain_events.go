@@ -32,11 +32,11 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error {
 	switch event.EventName() {
 	case domain.RideMatchingInitializedEvent:
-		h.onRideMatchingInitialized(ctx, event)
+		return h.onRideMatchingInitialized(ctx, event)
 	case domain.TripOfferEvent:
-		h.onTripOffer(ctx, event)
+		return h.onTripOffer(ctx, event)
 	case domain.TripOfferAcceptedEvent:
-		h.onTripOfferAccepted(ctx, event)
+		return h.onTripOfferAccepted(ctx, event)
 	}
 
 	return nil
@@ -56,6 +56,7 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
 
+	fmt.Println("Offer asked the rms to provide driver data", matchDriverEvt)
 	return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, matchDriverEvt)
 }
 
