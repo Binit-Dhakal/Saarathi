@@ -108,7 +108,7 @@ func run() (err error) {
 
 	tripHandler := rest.NewTripHandler(rideService, routeService, jsonReader, jsonWriter, errorResponder)
 
-	usersClient, err := grpc.NewGRPCClient(app.cfg.UsersGRPCAddress)
+	usersClient, err := grpc.NewGRPCClient(app.cfg.UsersGrpcAddress)
 	if err != nil {
 		return fmt.Errorf("failed to create users client: %w", err)
 	}
@@ -126,7 +126,6 @@ func run() (err error) {
 
 	mux.HandleFunc("/api/v1/fare/preview", tripHandler.PreviewFare)
 	mux.HandleFunc("/api/v1/fare/confirm", tripHandler.ConfirmFare)
-	mux.HandleFunc("/api/v1/trip/updates", tripHandler.TripUpdate)
 
 	server := &http.Server{
 		Addr:         ":8070",

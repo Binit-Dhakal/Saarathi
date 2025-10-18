@@ -130,6 +130,7 @@ services:
       PG_CONN: postgres://myuser:mypassword@trips-db:5432/tripsdb?sslmode=disable
       NATS_URL: nats://nats:4222
       REDIS_CACHEURL: redis://redis:6379/0
+      UsersGRPCAddress: users-service:8085
     volumes:
       - ./:/app
       - /app/trips/tmp
@@ -189,6 +190,26 @@ services:
     volumes:
       - ./:/app
       - /app/ride-matching/tmp
+
+  rider-service:
+    build:
+      context: .
+      dockerfile: rider/Dockerfile.dev
+    depends_on: 
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      NATS_URL: nats://nats:4222 
+      REDIS_CACHEURL: redis://redis:6379/0
+    volumes:
+      - ./:/app 
+      - /app/rider/tmp
+    restart: always
 
   driver-state-service:
     build:

@@ -1,13 +1,10 @@
 package rest
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
@@ -107,63 +104,5 @@ func (t *TripHandler) ConfirmFare(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		t.errorResponder.ServerError(w, r, err)
 		return
-	}
-}
-
-func (t *TripHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
-	tripID := r.URL.Query().Get("tripId")
-	if tripID == "" {
-		http.Error(w, "missing tripId", http.StatusBadRequest)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
-		return
-	}
-
-	updates := make(chan string, 10)
-	t.subscriber.Subscribe(
-		tripspb.TripAggregateChannel,
-		am.MessageHandlerFunc[am.IncomingEventMessage](func(ctx context.Context, msg am.IncomingEventMessage) error {
-			evt := msg.Payload().(*tripspb.TripConfirmed)
-
-			data := dto.TripConfirmed{
-				TripID:        evt.GetTripId(),
-				DriverID:      evt.GetDriverId(),
-				DriverName:    evt.GetDriverName(),
-				VehicleNumber: evt.GetVehicleNumber(),
-				ContactNumber: evt.GetVehicleNumber(),
-				Status:        "driver-confirmed",
-			}
-
-			b, err := json.Marshal(data)
-			if err != nil {
-				return err
-			}
-
-			updates <- string(b)
-
-			return msg.Ack()
-		}),
-		am.MessageFilter{fmt.Sprintf("trips.%s.*", tripID)},
-	)
-
-	notify := r.Context().Done()
-
-	for {
-		select {
-		case <-notify:
-			fmt.Println("Client disconnected")
-			return
-		case msg := <-updates:
-			fmt.Fprintf(w, "data: %s\n\n", msg)
-			flusher.Flush()
-		}
 	}
 }
