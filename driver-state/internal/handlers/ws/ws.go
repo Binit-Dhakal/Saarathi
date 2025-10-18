@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
-	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,12 +16,11 @@ type WebsocketHandler struct {
 	locationSvc application.LocationService
 	presenceSvc application.PresenceService
 	offerSvc    application.OfferService
-	publisher   ddd.EventPublisher[ddd.Event]
 	connCleaner chan *Client
 	mu          sync.Mutex
 }
 
-func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc application.PresenceService, offerSvc application.OfferService, publisher ddd.EventPublisher[ddd.Event]) *WebsocketHandler {
+func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc application.PresenceService, offerSvc application.OfferService) *WebsocketHandler {
 
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -40,7 +38,6 @@ func NewWebSocketHandler(locationSvc application.LocationService, presenceSvc ap
 		locationSvc: locationSvc,
 		offerSvc:    offerSvc,
 		presenceSvc: presenceSvc,
-		publisher:   publisher,
 		connCleaner: make(chan *Client, 100),
 	}
 
@@ -78,7 +75,6 @@ func (ws *WebsocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
 		locationSvc: ws.locationSvc,
 		presenceSvc: ws.presenceSvc,
 		offerSvc:    ws.offerSvc,
-		publisher:   ws.publisher,
 		connCleaner: ws.connCleaner,
 	}
 

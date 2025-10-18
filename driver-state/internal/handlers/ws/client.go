@@ -10,7 +10,6 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
-	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/gorilla/websocket"
 )
 
@@ -18,7 +17,6 @@ type Client struct {
 	ID          string
 	Conn        *websocket.Conn
 	Send        chan any
-	publisher   ddd.EventPublisher[ddd.Event]
 	locationSvc application.LocationService
 	presenceSvc application.PresenceService
 	offerSvc    application.OfferService
