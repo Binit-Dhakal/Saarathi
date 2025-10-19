@@ -83,6 +83,7 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 		payload := &domain.TripOffer{
 			SagaID:           tripDetail.SagaID,
 			TripID:           tripID,
+			DriverID:         driverID,
 			Price:            tripDetail.Price,
 			Distance:         tripDetail.Distance,
 			PresenceServerID: presenceServer,

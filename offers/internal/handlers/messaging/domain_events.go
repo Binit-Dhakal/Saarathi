@@ -68,6 +68,7 @@ func (h domainHandlers) onTripOffer(ctx context.Context, event ddd.Event) error 
 		SagaId:   payload.SagaID,
 		TripId:   payload.TripID,
 		Price:    payload.Price,
+		DriverId: payload.DriverID,
 		Distance: payload.Distance,
 	}
 

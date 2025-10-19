@@ -8,9 +8,11 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/handlers/ws"
+	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/logging"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/repository/redis"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
@@ -75,6 +77,10 @@ func run() (err error) {
 	if err != nil {
 		return err
 	}
+	err = offerspb.Registration(reg)
+	if err != nil {
+		return err
+	}
 
 	stream := jetstream.NewStream(cfg.Nats.Stream, app.js, app.logger)
 
@@ -94,10 +100,19 @@ func run() (err error) {
 	driverStateHandler := ws.NewWebSocketHandler(locationSvc, presenceSvc, offerSvc)
 	offerSvc.SetNotifier(driverStateHandler)
 
-	domainHandler := messaging.NewDomainHandlers(eventStream)
+	domainHandler := logging.LogEventHandlerAccess(
+		messaging.NewDomainHandlers(eventStream),
+		"DomainEvents",
+		app.logger,
+	)
+
 	messaging.RegisterDomainEventHandlers(domainDispatcher, domainHandler)
 
-	integrationHandler := messaging.NewIntegrationEventHandlers(offerSvc)
+	integrationHandler := logging.LogEventHandlerAccess(
+		messaging.NewIntegrationEventHandlers(offerSvc),
+		"IntegrationEvents",
+		app.logger,
+	)
 	messaging.RegisterIntegrationHandlers(eventStream, integrationHandler)
 
 	mux := http.NewServeMux()

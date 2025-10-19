@@ -45,13 +45,16 @@ func (t *tripReadModelRepository) GetTripDetails(ctx context.Context, tripID str
 	)
 	data := t.pool.QueryRow(ctx, query, tripID)
 
-	data.Scan(
+	err := data.Scan(
 		&result.TripID, &result.SagaID,
-		pickUpLng, pickUpLat,
-		dropOffLng, dropOffLat,
+		&pickUpLng, &pickUpLat,
+		&dropOffLng, &dropOffLat,
 		&result.Distance, &result.Price,
 		&result.CarType,
 	)
+	if err != nil {
+		return domain.TripReadModelDTO{}, err
+	}
 	result.PickUp[0] = pickUpLng
 	result.PickUp[1] = pickUpLat
 	result.DropOff[0] = dropOffLng

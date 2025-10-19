@@ -87,7 +87,7 @@ func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) e
 
 	candidatesDTO := domain.MatchedDriversDTO{
 		SagaID:             payload.SagaId,
-		TripID:             payload.SagaId,
+		TripID:             payload.TripId,
 		CandidateDriversID: payload.DriverIds,
 	}
 

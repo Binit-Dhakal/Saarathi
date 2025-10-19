@@ -53,6 +53,7 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 
 func (h integrationHandlers[T]) onMatchingRequest(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*offerspb.RideMatchingRequested)
+
 	evt := dto.TripCreated{
 		SagaID:       payload.GetSagaId(),
 		TripID:       payload.GetTripId(),

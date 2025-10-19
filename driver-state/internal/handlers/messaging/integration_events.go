@@ -66,6 +66,8 @@ func (h integrationHandlers[T]) onOfferRequested(ctx context.Context, event T) e
 		DriverID: payload.DriverId,
 	}
 
+	fmt.Println("Offer Requested", offerRequestedDTO)
+
 	return h.offerSvc.CreateAndSendOffer(ctx, offerRequestedDTO)
 }
 
