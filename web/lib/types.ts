@@ -33,8 +33,11 @@ export interface WSMessage {
 }
 
 export interface TripOffer {
-  tripId: string;
+  offerID: string;
+  tripID: string;
   pickUp: [number, number]; // [lon, lat]
   dropOff: [number, number]; // [lon, lat]
+  price: number;
+  distance: number;
   expiresAt: string;
 }

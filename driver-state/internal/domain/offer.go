@@ -28,6 +28,8 @@ type Offer struct {
 	TripID   string
 	SagaID   string
 	DriverID string
+	PickUp   [2]float64
+	DropOff  [2]float64
 	Price    int32
 	Distance float64
 
@@ -37,12 +39,14 @@ type Offer struct {
 	Status    OfferStatus
 }
 
-func NewOffer(tripID string, sagaID string, driverID string, price int32, distance float64) Offer {
+func NewOffer(tripID string, sagaID string, driverID string, pickUp [2]float64, dropOff [2]float64, price int32, distance float64) Offer {
 	ttl := 15 * time.Second
 	return Offer{
 		Aggregate: ddd.NewAggregate(uuid.NewString(), "drivers.Offer"),
 		TripID:    tripID,
 		DriverID:  driverID,
+		PickUp:    pickUp,
+		DropOff:   dropOff,
 		SagaID:    sagaID,
 		Price:     price,
 		Distance:  distance,

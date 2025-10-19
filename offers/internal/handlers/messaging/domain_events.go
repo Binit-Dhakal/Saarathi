@@ -68,6 +68,8 @@ func (h domainHandlers) onTripOffer(ctx context.Context, event ddd.Event) error 
 		SagaId:   payload.SagaID,
 		TripId:   payload.TripID,
 		Price:    payload.Price,
+		PickUp:   &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
+		DropOff:  &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
 		DriverId: payload.DriverID,
 		Distance: payload.Distance,
 	}

@@ -72,7 +72,7 @@ func (o *offerService) ProcessTripOffer(ctx context.Context, offerID string, res
 }
 
 func (o *offerService) CreateAndSendOffer(ctx context.Context, offerDto *dto.OfferRequestedDTO) error {
-	offer := domain.NewOffer(offerDto.TripID, offerDto.SagaID, offerDto.DriverID, offerDto.Price, offerDto.Distance)
+	offer := domain.NewOffer(offerDto.TripID, offerDto.SagaID, offerDto.DriverID, offerDto.PickUp, offerDto.DropOff, offerDto.Price, offerDto.Distance)
 
 	err := o.repo.Save(ctx, &offer)
 	if err != nil {
@@ -82,6 +82,10 @@ func (o *offerService) CreateAndSendOffer(ctx context.Context, offerDto *dto.Off
 	offerReq := dto.OfferRequestDriver{
 		OfferID:   offer.ID(),
 		TripID:    offer.TripID,
+		PickUp:    offer.PickUp,
+		DropOff:   offer.DropOff,
+		Price:     offer.Price,
+		Distance:  offer.Distance,
 		ExpiresAt: offer.ExpiresAt,
 	}
 	err = o.notifier.NotifyClient(offer.DriverID, dto.EventSend{

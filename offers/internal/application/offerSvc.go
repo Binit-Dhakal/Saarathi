@@ -86,6 +86,8 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 			DriverID:         driverID,
 			Price:            tripDetail.Price,
 			Distance:         tripDetail.Distance,
+			PickUp:           tripDetail.PickUp,
+			DropOff:          tripDetail.DropOff,
 			PresenceServerID: presenceServer,
 		}
 

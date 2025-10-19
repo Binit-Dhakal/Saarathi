@@ -113,6 +113,8 @@ type TripOfferRequested struct {
 	DriverId      string                 `protobuf:"bytes,3,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
 	Price         int32                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
 	Distance      float64                `protobuf:"fixed64,5,opt,name=distance,proto3" json:"distance,omitempty"`
+	PickUp        *common.Coordinates    `protobuf:"bytes,6,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
+	DropOff       *common.Coordinates    `protobuf:"bytes,7,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -180,6 +182,20 @@ func (x *TripOfferRequested) GetDistance() float64 {
 		return x.Distance
 	}
 	return 0
+}
+
+func (x *TripOfferRequested) GetPickUp() *common.Coordinates {
+	if x != nil {
+		return x.PickUp
+	}
+	return nil
+}
+
+func (x *TripOfferRequested) GetDropOff() *common.Coordinates {
+	if x != nil {
+		return x.DropOff
+	}
+	return nil
 }
 
 type TripOfferAccepted struct {
@@ -253,13 +269,15 @@ const file_proto_offerspb_offer_proto_rawDesc = "" +
 	"\apick_up\x18\x03 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
 	"\bdrop_off\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
 	"\bcar_type\x18\x05 \x01(\tR\acarType\x12/\n" +
-	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKm\"\x95\x01\n" +
+	"\x14max_search_radius_km\x18\x06 \x01(\x01R\x11maxSearchRadiusKm\"\x81\x02\n" +
 	"\x12TripOfferRequested\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1b\n" +
 	"\tdriver_id\x18\x03 \x01(\tR\bdriverId\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x05R\x05price\x12\x1a\n" +
-	"\bdistance\x18\x05 \x01(\x01R\bdistance\"b\n" +
+	"\bdistance\x18\x05 \x01(\x01R\bdistance\x123\n" +
+	"\apick_up\x18\x06 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
+	"\bdrop_off\x18\a \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\"b\n" +
 	"\x11TripOfferAccepted\x12\x1b\n" +
 	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x17\n" +
@@ -287,11 +305,13 @@ var file_proto_offerspb_offer_proto_goTypes = []any{
 var file_proto_offerspb_offer_proto_depIdxs = []int32{
 	3, // 0: offers.v1.RideMatchingRequested.pick_up:type_name -> common.geo.v1.Coordinates
 	3, // 1: offers.v1.RideMatchingRequested.drop_off:type_name -> common.geo.v1.Coordinates
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: offers.v1.TripOfferRequested.pick_up:type_name -> common.geo.v1.Coordinates
+	3, // 3: offers.v1.TripOfferRequested.drop_off:type_name -> common.geo.v1.Coordinates
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_offerspb_offer_proto_init() }

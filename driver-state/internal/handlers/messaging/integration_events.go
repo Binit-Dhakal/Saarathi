@@ -64,9 +64,9 @@ func (h integrationHandlers[T]) onOfferRequested(ctx context.Context, event T) e
 		Distance: payload.Distance,
 		Price:    payload.Price,
 		DriverID: payload.DriverId,
+		PickUp:   [2]float64{payload.PickUp.GetLng(), payload.PickUp.GetLat()},
+		DropOff:  [2]float64{payload.DropOff.GetLng(), payload.DropOff.GetLat()},
 	}
-
-	fmt.Println("Offer Requested", offerRequestedDTO)
 
 	return h.offerSvc.CreateAndSendOffer(ctx, offerRequestedDTO)
 }

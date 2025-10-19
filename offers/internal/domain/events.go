@@ -19,6 +19,8 @@ type TripOffer struct {
 	TripID           string
 	Price            int32
 	Distance         float64
+	PickUp           [2]float64
+	DropOff          [2]float64
 	DriverID         string
 	PresenceServerID string
 }
