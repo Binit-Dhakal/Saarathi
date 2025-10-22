@@ -24,14 +24,14 @@ const (
 )
 
 type Offer struct {
-	ddd.Aggregate
-	TripID   string
-	SagaID   string
-	DriverID string
-	PickUp   [2]float64
-	DropOff  [2]float64
-	Price    int32
-	Distance float64
+	Aggregate ddd.Aggregate `json:"-"`
+	TripID    string
+	SagaID    string
+	DriverID  string
+	PickUp    [2]float64
+	DropOff   [2]float64
+	Price     int32
+	Distance  float64
 
 	ExpiresAt time.Time
 	CreatedAt time.Time
@@ -56,6 +56,32 @@ func NewOffer(tripID string, sagaID string, driverID string, pickUp [2]float64, 
 		ExpiresAt: time.Now().UTC().Add(ttl),
 		Status:    OfferPending,
 	}
+}
+
+func (o *Offer) AddEvent(name string, payload ddd.EventPayload, options ...ddd.EventOption) {
+	if o.Aggregate != nil {
+		o.Aggregate.AddEvent(name, payload, options...)
+	}
+}
+
+func (o *Offer) Events() []ddd.AggregateEvent {
+	if o.Aggregate == nil {
+		return nil
+	}
+	return o.Aggregate.Events()
+}
+
+func (o *Offer) ClearEvents() {
+	if o.Aggregate != nil {
+		o.Aggregate.ClearEvents()
+	}
+}
+
+func (o *Offer) AggregateName() string {
+	if o.Aggregate == nil {
+		return "drivers.Offer"
+	}
+	return o.Aggregate.AggregateName()
 }
 
 func (o *Offer) Accept() (ddd.Event, error) {

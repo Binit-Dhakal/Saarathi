@@ -87,7 +87,7 @@ const Map = () => {
     if (!offer) return;
     sendMessage({
       event: "TRIP_ACCEPTED",
-      data: { tripId: offer.tripId }
+      data: { tripID: offer.tripID, offerID: offer.offerID }
     })
   }
 
@@ -95,7 +95,7 @@ const Map = () => {
     if (!offer) return;
     sendMessage({
       event: "TRIP_REJECTED",
-      data: { tripId: offer.tripId }
+      data: { tripID: offer.tripID, offerID: offer.offerID }
     })
   }
 

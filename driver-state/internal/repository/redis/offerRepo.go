@@ -44,16 +44,15 @@ func (r *offerRepository) Save(ctx context.Context, offer *domain.Offer) error {
 		return fmt.Errorf("failed to marshal offer: %w", err)
 	}
 
-	remainingTTL := time.Until(offer.ExpiresAt)
+	remainingTTL := time.Until(offer.ExpiresAt.Add(5 * time.Minute))
 	if remainingTTL <= 0 {
 		remainingTTL = 1 * time.Second
 	}
 
-	err = r.client.Set(ctx, offerKey(offer.ID()), data, remainingTTL).Err()
+	err = r.client.Set(ctx, offerKey(offer.Aggregate.ID()), data, remainingTTL).Err()
 	if err != nil {
 		return fmt.Errorf("Redis set failed: %w", err)
 	}
 
 	return nil
 }
-

@@ -42,9 +42,11 @@ func (o *offerService) ProcessTripOffer(ctx context.Context, offerID string, res
 	offer, err := o.repo.FindByID(ctx, offerID)
 	if err != nil {
 		// TODO: handle bad case if other error rather than not found offer
-		fmt.Printf("offerID not found: %v", err)
+		fmt.Println("offerID not found:", err)
 		return nil
 	}
+
+	offer.Aggregate = ddd.NewAggregate(offerID, "drivers.Offer")
 
 	var event ddd.Event
 
@@ -68,6 +70,7 @@ func (o *offerService) ProcessTripOffer(ctx context.Context, offerID string, res
 		return fmt.Errorf("failed to saved updated offer state: %w", err)
 	}
 
+	fmt.Println("Event: ", event)
 	return o.publisher.Publish(context.Background(), event)
 }
 
@@ -80,7 +83,7 @@ func (o *offerService) CreateAndSendOffer(ctx context.Context, offerDto *dto.Off
 	}
 
 	offerReq := dto.OfferRequestDriver{
-		OfferID:   offer.ID(),
+		OfferID:   offer.Aggregate.ID(),
 		TripID:    offer.TripID,
 		PickUp:    offer.PickUp,
 		DropOff:   offer.DropOff,

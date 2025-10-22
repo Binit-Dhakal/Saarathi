@@ -27,7 +27,7 @@ type (
 		LogLevel         string `envconfig:"LOG_LEVEL" default:"DEBUG"`
 		PG               PGTripsConfig
 		Nats             NatsConfig
-		UsersGrpcAddress string `envconfig:"UsersGRPCAddress"`
+		UsersGrpcAddress string
 		Redis            CacheConfig
 		ShutdownTimeout  time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
 	}

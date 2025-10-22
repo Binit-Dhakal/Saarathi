@@ -130,7 +130,7 @@ services:
       PG_CONN: postgres://myuser:mypassword@trips-db:5432/tripsdb?sslmode=disable
       NATS_URL: nats://nats:4222
       REDIS_CACHEURL: redis://redis:6379/0
-      UsersGRPCAddress: users-service:8085
+      USERSGRPCADDRESS: users-service:8085
     volumes:
       - ./:/app
       - /app/trips/tmp

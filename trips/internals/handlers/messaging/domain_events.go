@@ -66,7 +66,7 @@ func (h domainHandlers) onTripCreated(ctx context.Context, event ddd.Event) erro
 }
 
 func (h domainHandlers) onTripMatched(ctx context.Context, event ddd.Event) error {
-	payload := event.Payload().(*domain.TripMatched)
+	payload := event.Payload().(domain.TripMatched)
 
 	err := h.projectionSvc.ProjectTripDetails(ctx, payload.TripID, payload.DriverID, payload.RiderID)
 	if err != nil {

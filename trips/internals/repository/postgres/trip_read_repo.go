@@ -31,7 +31,7 @@ func (t *tripReadRepository) GetTripProjectionDetail(ctx context.Context, tripID
 			rt.destination[1]
 		FROM rides r 
 		JOIN fares f on r.fare_id = f.id
-		JOIN routes rt on r.route_id = rt.id 
+		JOIN routes rt on f.route_id = rt.id 
 		WHERE r.id = $1
 	`
 	var detail domain.TripProjectionDetail

@@ -13,6 +13,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
@@ -78,6 +79,11 @@ func run() (err error) {
 		return err
 	}
 	err = offerspb.Registration(reg)
+	if err != nil {
+		return err
+	}
+
+	err = tripspb.Registration(reg)
 	if err != nil {
 		return err
 	}

@@ -83,7 +83,7 @@ func (c *Client) readPump() {
 		case "TRIP_ACCEPTED":
 			var tripResponse dto.OfferResponseDriver
 			if err := json.Unmarshal(baseMessage.Data, &tripResponse); err != nil {
-				log.Println("Failed to unmarshal assigned response payload: ", err)
+				fmt.Println("Failed to unmarshal assigned response payload: ", err)
 				continue
 			}
 
