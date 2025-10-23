@@ -1,4 +1,5 @@
 version: v2
 modules:
+  - path: shared
   - path: dto
   - path: proto

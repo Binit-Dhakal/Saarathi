@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
-	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/projections"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/common"
+	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/proto/projections"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"google.golang.org/protobuf/proto"
 )

@@ -5,7 +5,7 @@ package driversstate.v1;
 import "common/geo.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/driverspb";
 
 message TripOffer {
   string offer_id = 1;

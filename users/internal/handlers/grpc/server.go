@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/userspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/userspb"
 	"github.com/Binit-Dhakal/Saarathi/users/internal/application"
 	"google.golang.org/grpc"
 )

@@ -7,7 +7,7 @@
 package driverspb
 
 import (
-	common "github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/common"
+	common "github.com/Binit-Dhakal/Saarathi/pkg/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -128,7 +128,7 @@ const file_driverspb_drivers_messages_proto_rawDesc = "" +
 	"\x05price\x18\x05 \x01(\x05R\x05price\x12\x1a\n" +
 	"\bdistance\x18\x06 \x01(\x01R\bdistance\x129\n" +
 	"\n" +
-	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAtB@Z>github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspbb\x06proto3"
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAtB>Z<github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/driverspbb\x06proto3"
 
 var (
 	file_driverspb_drivers_messages_proto_rawDescOnce sync.Once

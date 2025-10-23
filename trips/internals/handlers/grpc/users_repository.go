@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/userspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/userspb"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/domain"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

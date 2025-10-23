@@ -1,8 +1,10 @@
-import { TripOffer } from "@/lib/types";
 import { useEffect, useState } from "react";
+import { TripOffer } from "@/gen/driverspb/drivers_messages_pb";
 import { Drawer, DrawerContent, DrawerHeader, DrawerFooter, DrawerTitle } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { timestampDate } from "@bufbuild/protobuf/wkt";
+
 
 const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject }: {
   offer: TripOffer | null,
@@ -15,8 +17,9 @@ const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject }: {
 
   useEffect(() => {
     if (!offer) return;
+    if (!offer.expiresAt) return;
 
-    const expiry = new Date(offer.expiresAt).getTime()
+    const expiry = timestampDate(offer.expiresAt).getTime()
     const total = Math.floor((expiry - Date.now()) / 1000);
 
     setTotalSeconds(total);
@@ -43,9 +46,9 @@ const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject }: {
       <DrawerContent className="rounded-t-2xl shadow-2xl border-t bg-white z-[999]  mx-5">
         <DrawerHeader>
           <DrawerTitle>🚖 New Trip Offer</DrawerTitle>
-          <p>Pickup: {offer.pickUp[1].toFixed(4)}, {offer.pickUp[0].toFixed(4)}</p>
-          <p>Dropoff: {offer.dropOff[1].toFixed(4)}, {offer.dropOff[0].toFixed(4)}</p>
-          <p>Price: ${0}</p>
+          <p>Pickup: {offer.pickUp?.lat.toFixed(4)}, {offer.pickUp?.lng.toFixed(4)}</p>
+          <p>Dropoff: {offer.dropOff?.lat.toFixed(4)}, {offer.dropOff?.lng.toFixed(4)}</p>
+          <p>Price: ${offer.price}</p>
           <div className="mt-3">
             <Progress value={progressValue} className="h-2" />
             <p className="text-sm text-red-500 font-bold mt-1">

@@ -8,8 +8,11 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/common"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/driverspb"
 	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/proto/projections"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type OfferService interface {
@@ -81,18 +84,23 @@ func (o *offerService) CreateAndSendOffer(ctx context.Context, offerDto *dto.Off
 		return fmt.Errorf("Failed to save new error: %w", err)
 	}
 
-	offerReq := dto.OfferRequestDriver{
-		OfferID:   offer.Aggregate.ID(),
-		TripID:    offer.TripID,
-		PickUp:    offer.PickUp,
-		DropOff:   offer.DropOff,
+	offerReq := &driverspb.TripOffer{
+		OfferId:   offer.Aggregate.ID(),
+		TripId:    offer.TripID,
+		PickUp:    &common.Coordinates{Lng: offer.PickUp[0], Lat: offer.PickUp[1]},
+		DropOff:   &common.Coordinates{Lng: offer.DropOff[0], Lat: offer.DropOff[1]},
 		Price:     offer.Price,
 		Distance:  offer.Distance,
-		ExpiresAt: offer.ExpiresAt,
+		ExpiresAt: timestamppb.New(offer.ExpiresAt),
+	}
+
+	payload, err := proto.Marshal(offerReq)
+	if err != nil {
+		return err
 	}
 	err = o.notifier.NotifyClient(offer.DriverID, dto.EventSend{
 		Event: "TRIP_OFFER_REQUEST",
-		Data:  offerReq,
+		Data:  payload,
 	})
 
 	if err != nil {

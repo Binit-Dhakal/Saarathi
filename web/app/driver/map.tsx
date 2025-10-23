@@ -3,8 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import { useWS } from "@/context/WebSocketContext";
-import { TripOffer } from "@/lib/types";
 import TripOfferDrawer from "./tripOffer";
+import { TripOffer, TripOfferSchema } from "@/gen/driverspb/drivers_messages_pb";
+import { decodeProtoMessage } from "@/lib/proto-utils";
 
 const sourceIcon = new L.Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
@@ -41,7 +42,8 @@ const Map = () => {
     if (!lastMessage) return;
 
     if (lastMessage.event == "TRIP_OFFER_REQUEST") {
-      const data = lastMessage.data as TripOffer;
+      const base64 = lastMessage.data as string;
+      const data = decodeProtoMessage(TripOfferSchema, base64)
       setOffer(data);
     }
 
@@ -87,7 +89,7 @@ const Map = () => {
     if (!offer) return;
     sendMessage({
       event: "TRIP_ACCEPTED",
-      data: { tripID: offer.tripID, offerID: offer.offerID }
+      data: { tripID: offer.tripId, offerID: offer.offerId }
     })
   }
 
@@ -95,7 +97,7 @@ const Map = () => {
     if (!offer) return;
     sendMessage({
       event: "TRIP_REJECTED",
-      data: { tripID: offer.tripID, offerID: offer.offerID }
+      data: { tripID: offer.tripId, offerID: offer.offerId }
     })
   }
 
@@ -123,14 +125,17 @@ const Map = () => {
 
         {offer && (
           <>
-            <Marker position={[offer.pickUp[1], offer.pickUp[0]]} icon={sourceIcon}>
-              <Popup>Pickup</Popup>
-            </Marker>
+            {offer.pickUp &&
+              <Marker position={[offer.pickUp?.lat, offer.pickUp?.lng]} icon={sourceIcon}>
+                <Popup>Pickup</Popup>
+              </Marker>}
 
 
-            <Marker position={[offer.dropOff[1], offer.dropOff[0]]} icon={destinationIcon}>
-              <Popup>Dropoff</Popup>
-            </Marker>
+            {offer.dropOff &&
+              <Marker position={[offer.dropOff?.lat, offer.dropOff?.lng]} icon={destinationIcon}>
+                <Popup>Dropoff</Popup>
+              </Marker>
+            }
           </>
         )}
       </MapContainer>

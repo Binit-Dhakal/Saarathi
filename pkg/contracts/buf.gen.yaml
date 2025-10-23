@@ -1,11 +1,12 @@
 version: v2
 plugins:
+  # Go generation for all modules
   - remote: buf.build/protocolbuffers/go
-    out: ../../proto
+    out: ../proto
     opt:
       - paths=source_relative
   
   - remote: buf.build/grpc/go
-    out: ../../proto
+    out: ../proto
     opt:
       - paths=source_relative

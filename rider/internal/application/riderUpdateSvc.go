@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/projections"
+	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/proto/projections"
 	"github.com/Binit-Dhakal/Saarathi/rider/internal/domain"
 	"google.golang.org/protobuf/proto"
 )
