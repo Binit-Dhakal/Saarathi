@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file common/geo.proto.
  */
 export const file_common_geo: GenFile = /*@__PURE__*/
-  fileDesc("ChBjb21tb24vZ2VvLnByb3RvEg1jb21tb24uZ2VvLnYxIicKC0Nvb3JkaW5hdGVzEgsKA2xhdBgBIAEoARILCgNsbmcYAiABKAFCO1o5Z2l0aHViLmNvbS9CaW5pdC1EaGFrYWwvU2FhcmF0aGkvcGtnL2NvbnRyYWN0cy9kdG8vY29tbW9uYgZwcm90bzM");
+  fileDesc("ChBjb21tb24vZ2VvLnByb3RvEg1jb21tb24uZ2VvLnYxIicKC0Nvb3JkaW5hdGVzEgsKA2xhdBgBIAEoARILCgNsbmcYAiABKAFCM1oxZ2l0aHViLmNvbS9CaW5pdC1EaGFrYWwvU2FhcmF0aGkvcGtnL3Byb3RvL2NvbW1vbmIGcHJvdG8z");
 
 /**
  * @generated from message common.geo.v1.Coordinates

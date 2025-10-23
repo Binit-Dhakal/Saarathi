@@ -1,11 +1,11 @@
 version: v2
 plugins:
   - remote: buf.build/bufbuild/es
-    out: ../../../web/gen
+    out: ../../web/gen
     opt:
       - target=ts
   
   - remote: buf.build/connectrpc/es
-    out: ../../../web/gen
+    out: ../../web/gen
     opt:
       - target=ts

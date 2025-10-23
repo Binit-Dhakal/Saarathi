@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file driverspb/drivers_messages.proto.
  */
 export const file_driverspb_drivers_messages: GenFile = /*@__PURE__*/
-  fileDesc("CiBkcml2ZXJzcGIvZHJpdmVyc19tZXNzYWdlcy5wcm90bxIPZHJpdmVyc3N0YXRlLnYxItoBCglUcmlwT2ZmZXISEAoIb2ZmZXJfaWQYASABKAkSDwoHdHJpcF9pZBgCIAEoCRIrCgdwaWNrX3VwGAMgASgLMhouY29tbW9uLmdlby52MS5Db29yZGluYXRlcxIsCghkcm9wX29mZhgEIAEoCzIaLmNvbW1vbi5nZW8udjEuQ29vcmRpbmF0ZXMSDQoFcHJpY2UYBSABKAUSEAoIZGlzdGFuY2UYBiABKAESLgoKZXhwaXJlc19hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCQFo+Z2l0aHViLmNvbS9CaW5pdC1EaGFrYWwvU2FhcmF0aGkvcGtnL2NvbnRyYWN0cy9wcm90by9kcml2ZXJzcGJiBnByb3RvMw", [file_common_geo, file_google_protobuf_timestamp]);
+  fileDesc("CiBkcml2ZXJzcGIvZHJpdmVyc19tZXNzYWdlcy5wcm90bxIPZHJpdmVyc3N0YXRlLnYxItoBCglUcmlwT2ZmZXISEAoIb2ZmZXJfaWQYASABKAkSDwoHdHJpcF9pZBgCIAEoCRIrCgdwaWNrX3VwGAMgASgLMhouY29tbW9uLmdlby52MS5Db29yZGluYXRlcxIsCghkcm9wX29mZhgEIAEoCzIaLmNvbW1vbi5nZW8udjEuQ29vcmRpbmF0ZXMSDQoFcHJpY2UYBSABKAUSEAoIZGlzdGFuY2UYBiABKAESLgoKZXhwaXJlc19hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAizAEKE0RyaXZlclVwZGF0ZVBheWxvYWQSDwoHdHJpcF9pZBgBIAEoCRISCgpyaWRlcl9uYW1lGAIgASgJEhQKDHJpZGVyX251bWJlchgDIAEoCRIrCgdwaWNrX3VwGAQgASgLMhouY29tbW9uLmdlby52MS5Db29yZGluYXRlcxIsCghkcm9wX29mZhgFIAEoCzIaLmNvbW1vbi5nZW8udjEuQ29vcmRpbmF0ZXMSDQoFcHJpY2UYBiABKAUSEAoIZGlzdGFuY2UYByABKAFCPlo8Z2l0aHViLmNvbS9CaW5pdC1EaGFrYWwvU2FhcmF0aGkvcGtnL2NvbnRyYWN0cy9kdG8vZHJpdmVyc3BiYgZwcm90bzM", [file_common_geo, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message driversstate.v1.TripOffer
@@ -62,4 +62,51 @@ export type TripOffer = Message<"driversstate.v1.TripOffer"> & {
  */
 export const TripOfferSchema: GenMessage<TripOffer> = /*@__PURE__*/
   messageDesc(file_driverspb_drivers_messages, 0);
+
+/**
+ * @generated from message driversstate.v1.DriverUpdatePayload
+ */
+export type DriverUpdatePayload = Message<"driversstate.v1.DriverUpdatePayload"> & {
+  /**
+   * @generated from field: string trip_id = 1;
+   */
+  tripId: string;
+
+  /**
+   * @generated from field: string rider_name = 2;
+   */
+  riderName: string;
+
+  /**
+   * @generated from field: string rider_number = 3;
+   */
+  riderNumber: string;
+
+  /**
+   * @generated from field: common.geo.v1.Coordinates pick_up = 4;
+   */
+  pickUp?: Coordinates;
+
+  /**
+   * @generated from field: common.geo.v1.Coordinates drop_off = 5;
+   */
+  dropOff?: Coordinates;
+
+  /**
+   * @generated from field: int32 price = 6;
+   */
+  price: number;
+
+  /**
+   * @generated from field: double distance = 7;
+   */
+  distance: number;
+};
+
+/**
+ * Describes the message driversstate.v1.DriverUpdatePayload.
+ * Use `create(DriverUpdatePayloadSchema)` to create a new message.
+ */
+export const DriverUpdatePayloadSchema: GenMessage<DriverUpdatePayload> = /*@__PURE__*/
+  messageDesc(file_driverspb_drivers_messages, 1);
 

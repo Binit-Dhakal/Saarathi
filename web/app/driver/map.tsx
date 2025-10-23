@@ -4,8 +4,9 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import { useWS } from "@/context/WebSocketContext";
 import TripOfferDrawer from "./tripOffer";
-import { TripOffer, TripOfferSchema } from "@/gen/driverspb/drivers_messages_pb";
+import { DriverUpdatePayload, DriverUpdatePayloadSchema, TripOffer, TripOfferSchema } from "@/gen/driverspb/drivers_messages_pb";
 import { decodeProtoMessage } from "@/lib/proto-utils";
+import TripDetailsDrawer from "./tripDetail";
 
 const sourceIcon = new L.Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
@@ -37,6 +38,7 @@ const Map = () => {
   const { sendMessage, lastMessage } = useWS()
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [offer, setOffer] = useState<TripOffer | null>(null);
+  const [acceptedTrip, setAcceptedTrip] = useState<DriverUpdatePayload | null>(null);
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -45,6 +47,12 @@ const Map = () => {
       const base64 = lastMessage.data as string;
       const data = decodeProtoMessage(TripOfferSchema, base64)
       setOffer(data);
+    } else if (lastMessage.event == "TRIP_ACCEPT_PAYLOAD") {
+      const base64Msg = lastMessage.data as string
+      const data = decodeProtoMessage(DriverUpdatePayloadSchema, base64Msg)
+      console.log(data)
+      setAcceptedTrip(data);
+      setOffer(null);
     }
 
   }, [lastMessage])
@@ -101,6 +109,23 @@ const Map = () => {
     })
   }
 
+  const handleStartTrip = () => {
+    if (!acceptedTrip) return;
+    sendMessage({
+      event: "TRIP_STARTED",
+      data: { tripID: acceptedTrip.tripId }
+    });
+  }
+
+  const handleEndTrip = () => {
+    if (!acceptedTrip) return;
+    sendMessage({
+      event: "TRIP_COMPLETED",
+      data: { tripID: acceptedTrip.tripId }
+    });
+    setAcceptedTrip(null);
+  };
+
   return (
     <div className="relative w-full h-full">
       <MapContainer
@@ -138,8 +163,29 @@ const Map = () => {
             }
           </>
         )}
+
+        {acceptedTrip && (
+          <>
+            {
+              acceptedTrip.pickUp &&
+              <Marker position={[acceptedTrip.pickUp?.lat, acceptedTrip.pickUp?.lng]} icon={sourceIcon}>
+                <Popup>Pickup</Popup>
+              </Marker>
+            }
+
+            {
+              acceptedTrip.dropOff &&
+              <Marker position={[acceptedTrip.dropOff?.lat, acceptedTrip.dropOff?.lng]} icon={destinationIcon}>
+                <Popup>Dropoff</Popup>
+              </Marker>
+
+            }
+
+          </>
+        )}
       </MapContainer>
       <TripOfferDrawer offer={offer} setOffer={setOffer} onAccept={handleAccept} onReject={handleReject} />
+      <TripDetailsDrawer trip={acceptedTrip} onStartTrip={handleStartTrip} onEndTrip={handleEndTrip} />
     </div>
   );
 };

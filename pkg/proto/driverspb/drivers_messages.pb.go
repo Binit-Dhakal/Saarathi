@@ -115,6 +115,98 @@ func (x *TripOffer) GetExpiresAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type DriverUpdatePayload struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	RiderName     string                 `protobuf:"bytes,2,opt,name=rider_name,json=riderName,proto3" json:"rider_name,omitempty"`
+	RiderNumber   string                 `protobuf:"bytes,3,opt,name=rider_number,json=riderNumber,proto3" json:"rider_number,omitempty"`
+	PickUp        *common.Coordinates    `protobuf:"bytes,4,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
+	DropOff       *common.Coordinates    `protobuf:"bytes,5,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
+	Price         int32                  `protobuf:"varint,6,opt,name=price,proto3" json:"price,omitempty"`
+	Distance      float64                `protobuf:"fixed64,7,opt,name=distance,proto3" json:"distance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DriverUpdatePayload) Reset() {
+	*x = DriverUpdatePayload{}
+	mi := &file_driverspb_drivers_messages_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DriverUpdatePayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DriverUpdatePayload) ProtoMessage() {}
+
+func (x *DriverUpdatePayload) ProtoReflect() protoreflect.Message {
+	mi := &file_driverspb_drivers_messages_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DriverUpdatePayload.ProtoReflect.Descriptor instead.
+func (*DriverUpdatePayload) Descriptor() ([]byte, []int) {
+	return file_driverspb_drivers_messages_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *DriverUpdatePayload) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *DriverUpdatePayload) GetRiderName() string {
+	if x != nil {
+		return x.RiderName
+	}
+	return ""
+}
+
+func (x *DriverUpdatePayload) GetRiderNumber() string {
+	if x != nil {
+		return x.RiderNumber
+	}
+	return ""
+}
+
+func (x *DriverUpdatePayload) GetPickUp() *common.Coordinates {
+	if x != nil {
+		return x.PickUp
+	}
+	return nil
+}
+
+func (x *DriverUpdatePayload) GetDropOff() *common.Coordinates {
+	if x != nil {
+		return x.DropOff
+	}
+	return nil
+}
+
+func (x *DriverUpdatePayload) GetPrice() int32 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *DriverUpdatePayload) GetDistance() float64 {
+	if x != nil {
+		return x.Distance
+	}
+	return 0
+}
+
 var File_driverspb_drivers_messages_proto protoreflect.FileDescriptor
 
 const file_driverspb_drivers_messages_proto_rawDesc = "" +
@@ -128,7 +220,16 @@ const file_driverspb_drivers_messages_proto_rawDesc = "" +
 	"\x05price\x18\x05 \x01(\x05R\x05price\x12\x1a\n" +
 	"\bdistance\x18\x06 \x01(\x01R\bdistance\x129\n" +
 	"\n" +
-	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAtB>Z<github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/driverspbb\x06proto3"
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"\x8e\x02\n" +
+	"\x13DriverUpdatePayload\x12\x17\n" +
+	"\atrip_id\x18\x01 \x01(\tR\x06tripId\x12\x1d\n" +
+	"\n" +
+	"rider_name\x18\x02 \x01(\tR\triderName\x12!\n" +
+	"\frider_number\x18\x03 \x01(\tR\vriderNumber\x123\n" +
+	"\apick_up\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
+	"\bdrop_off\x18\x05 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x14\n" +
+	"\x05price\x18\x06 \x01(\x05R\x05price\x12\x1a\n" +
+	"\bdistance\x18\a \x01(\x01R\bdistanceB>Z<github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/driverspbb\x06proto3"
 
 var (
 	file_driverspb_drivers_messages_proto_rawDescOnce sync.Once
@@ -142,21 +243,24 @@ func file_driverspb_drivers_messages_proto_rawDescGZIP() []byte {
 	return file_driverspb_drivers_messages_proto_rawDescData
 }
 
-var file_driverspb_drivers_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_driverspb_drivers_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_driverspb_drivers_messages_proto_goTypes = []any{
 	(*TripOffer)(nil),             // 0: driversstate.v1.TripOffer
-	(*common.Coordinates)(nil),    // 1: common.geo.v1.Coordinates
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(*DriverUpdatePayload)(nil),   // 1: driversstate.v1.DriverUpdatePayload
+	(*common.Coordinates)(nil),    // 2: common.geo.v1.Coordinates
+	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 }
 var file_driverspb_drivers_messages_proto_depIdxs = []int32{
-	1, // 0: driversstate.v1.TripOffer.pick_up:type_name -> common.geo.v1.Coordinates
-	1, // 1: driversstate.v1.TripOffer.drop_off:type_name -> common.geo.v1.Coordinates
-	2, // 2: driversstate.v1.TripOffer.expires_at:type_name -> google.protobuf.Timestamp
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: driversstate.v1.TripOffer.pick_up:type_name -> common.geo.v1.Coordinates
+	2, // 1: driversstate.v1.TripOffer.drop_off:type_name -> common.geo.v1.Coordinates
+	3, // 2: driversstate.v1.TripOffer.expires_at:type_name -> google.protobuf.Timestamp
+	2, // 3: driversstate.v1.DriverUpdatePayload.pick_up:type_name -> common.geo.v1.Coordinates
+	2, // 4: driversstate.v1.DriverUpdatePayload.drop_off:type_name -> common.geo.v1.Coordinates
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_driverspb_drivers_messages_proto_init() }
@@ -170,7 +274,7 @@ func file_driverspb_drivers_messages_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driverspb_drivers_messages_proto_rawDesc), len(file_driverspb_drivers_messages_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

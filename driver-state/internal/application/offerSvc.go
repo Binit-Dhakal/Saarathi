@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
@@ -123,30 +122,33 @@ func (o *offerService) SendTripDetail(ctx context.Context, assignedDto *dto.Trip
 		return fmt.Errorf("failed to unmarshal trip payload into Protobuf DTO for trip %s: %w", assignedDto.TripID, err)
 	}
 
-	publicPayload := &dto.DriverUpdateDTO{
-		TripID: payload.GetTripId(),
+	publicPayload := &driverspb.DriverUpdatePayload{
+		TripId: payload.GetTripId(),
 
 		RiderName:   payload.GetRiderName(),
 		RiderNumber: payload.GetRiderPhone(),
 
-		PickupLat:  payload.Pickup.GetLat(),
-		PickupLng:  payload.Pickup.GetLng(),
-		DropoffLat: payload.Dropoff.GetLat(),
-		DropoffLng: payload.Dropoff.GetLng(),
-		FarePrice:  payload.GetFarePrice(),
-		Distance:   payload.GetDistance(),
+		PickUp:   &common.Coordinates{Lng: payload.Pickup.Lng, Lat: payload.Pickup.Lat},
+		DropOff:  &common.Coordinates{Lng: payload.Pickup.Lng, Lat: payload.Pickup.Lat},
+		Price:    payload.GetFarePrice(),
+		Distance: payload.GetDistance(),
 	}
-	fmt.Printf("Projection payload: %+v", publicPayload)
-	jsonBytes, err := json.Marshal(publicPayload)
+
+	bytesTripPayload, err := proto.Marshal(publicPayload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal public DTO for trip %s: %w", assignedDto.TripID, err)
+		return err
 	}
+
+	fmt.Printf("Projection payload: %+v", publicPayload)
 
 	if o.notifier == nil {
 		return fmt.Errorf("notifier is not set for rider service")
 	}
 
-	o.notifier.NotifyClient(assignedDto.DriverID, jsonBytes)
+	o.notifier.NotifyClient(assignedDto.DriverID, dto.EventSend{
+		Event: "TRIP_ACCEPT_PAYLOAD",
+		Data:  bytesTripPayload,
+	})
 	return nil
 }
 

@@ -16,3 +16,13 @@ message TripOffer {
   double distance = 6;
   google.protobuf.Timestamp expires_at = 7;
 }
+
+message DriverUpdatePayload {
+  string trip_id = 1;
+  string rider_name = 2;
+  string rider_number = 3;
+  common.geo.v1.Coordinates pick_up = 4;
+  common.geo.v1.Coordinates drop_off = 5;
+  int32 price = 6;
+  double distance = 7;
+}
