@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/common"
 )
 
 type TripCreated struct {

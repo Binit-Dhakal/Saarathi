@@ -6,9 +6,9 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/common"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/common"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/offerspb"
 )
 
 type domainHandlers struct {

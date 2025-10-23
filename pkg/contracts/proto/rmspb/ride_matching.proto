@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package ridematching.v1;
 
-import "proto/common/geo.proto";
+import "common/geo.proto";
 
-option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspb";
 
 message CandidatesMatched {
   string saga_id = 1;

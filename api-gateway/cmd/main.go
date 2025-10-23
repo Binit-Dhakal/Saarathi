@@ -32,6 +32,9 @@ func main() {
 	tripServiceURL, _ := url.Parse("http://trips-service:8070")
 	tripServiceProxy := httputil.NewSingleHostReverseProxy(tripServiceURL)
 
+	riderServiceURL, _ := url.Parse("http://rider-service:8010")
+	riderServiceProxy := httputil.NewSingleHostReverseProxy(riderServiceURL)
+
 	driverStateURL, _ := url.Parse("http://driver-state-service:8050")
 	driverStateProxy := httputil.NewSingleHostReverseProxy(driverStateURL)
 	driverStateProxy.Director = func(req *http.Request) {
@@ -52,6 +55,8 @@ func main() {
 	authMiddleware := rest.NewAuthMiddleware(publicKey)
 
 	mux.Handle("/api/v1/fare/", authMiddleware(proxyHandler(tripServiceProxy)))
+
+	mux.Handle("/api/v1/trip/", authMiddleware(proxyHandler(riderServiceProxy)))
 
 	mux.Handle("/ws/driver", authMiddleware(proxyHandler(driverStateProxy)))
 

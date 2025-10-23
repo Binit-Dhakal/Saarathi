@@ -7,8 +7,8 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
-	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/projections"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/proto/projections"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -70,7 +70,6 @@ func (o *offerService) ProcessTripOffer(ctx context.Context, offerID string, res
 		return fmt.Errorf("failed to saved updated offer state: %w", err)
 	}
 
-	fmt.Println("Event: ", event)
 	return o.publisher.Publish(context.Background(), event)
 }
 
@@ -129,7 +128,7 @@ func (o *offerService) SendTripDetail(ctx context.Context, assignedDto *dto.Trip
 		FarePrice:  payload.GetFarePrice(),
 		Distance:   payload.GetDistance(),
 	}
-
+	fmt.Printf("Projection payload: %+v", publicPayload)
 	jsonBytes, err := json.Marshal(publicPayload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal public DTO for trip %s: %w", assignedDto.TripID, err)

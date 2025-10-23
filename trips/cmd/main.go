@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
 	"github.com/Binit-Dhakal/Saarathi/pkg/jetstream"
 	"github.com/Binit-Dhakal/Saarathi/pkg/logger"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/offerspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/httpx"
 	"github.com/Binit-Dhakal/Saarathi/pkg/rest/jsonutil"

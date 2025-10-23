@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspb"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
 )
 

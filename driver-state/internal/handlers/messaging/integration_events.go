@@ -8,9 +8,9 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/application"
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/dto"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/tripspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/offerspb"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/tripspb"
 )
 
 type integrationHandlers[T ddd.Event] struct {

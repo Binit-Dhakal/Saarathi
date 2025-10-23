@@ -19,5 +19,5 @@ type FareConfirmRequest struct {
 }
 
 type FareConfirmResponse struct {
-	RideID string `json:"rideID"`
+	TripID string `json:"rideID"`
 }

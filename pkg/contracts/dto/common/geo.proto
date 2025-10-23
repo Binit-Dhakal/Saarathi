@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package common.geo.v1;
 
-option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/proto/common";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/common";
 
 message Coordinates {
   double lat = 1;

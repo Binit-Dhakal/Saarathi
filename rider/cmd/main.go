@@ -91,6 +91,7 @@ func run() (err error) {
 	}
 
 	tripHandler := rest.NewTripUpdateHandler()
+	updateSvc.AddNotifier(tripHandler)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/trip/updates", tripHandler.TripUpdate)

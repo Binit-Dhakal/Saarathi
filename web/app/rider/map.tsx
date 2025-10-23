@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { confirmRide, getRoute } from "@/lib/api";
+import { confirmRide, getRoute, listenTripUpdates } from "@/lib/api";
 import { CarPackage, FareEstimateResponse, TripStatus } from "@/lib/types";
 import { RoutingControl } from "./routing-control";
 import { convertCoordinates } from "@/lib/utils";
@@ -66,6 +66,27 @@ const Map = () => {
     fetchRoute();
   }, [source, destination])
 
+  useEffect(() => {
+    if (!rideID) return;
+    const eventSource = listenTripUpdates(rideID)
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Trip update: ", data)
+        setTripStatus(data.status);
+      } catch {
+        console.error("Failed to parse SSE message:", event.data)
+      }
+    }
+
+    eventSource.onerror = (err) => {
+      console.error("SSE Connection error: ", err);
+      eventSource.close()
+    }
+
+    return () => eventSource.close()
+  }, [rideID])
+
   const handleMapClick = useCallback((lat: number, lng: number) => {
     if (clickMode === 'source') {
       setSource([lat, lng]);
@@ -83,8 +104,9 @@ const Map = () => {
 
     try {
       const data = await confirmRide(fare?.FareID, carPackage)
-      setRideID(data.RideID)
+      setRideID(data.rideID)
       setTripStatus("waiting")
+
     } catch (err) {
       console.log("Failed to confirm ride: ", err)
     }

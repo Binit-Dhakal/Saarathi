@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/offerspb"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/application"
 	"github.com/Binit-Dhakal/Saarathi/trips/internals/dto"
 )

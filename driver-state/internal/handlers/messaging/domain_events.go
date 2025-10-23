@@ -5,8 +5,8 @@ import (
 
 	"github.com/Binit-Dhakal/Saarathi/driver-state/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
-	"github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/driverspb"
 )
 
 type domainHandlers struct {

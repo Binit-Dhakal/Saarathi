@@ -22,7 +22,7 @@ export interface FareEstimateResponse {
 }
 
 export interface ConfirmRideResponse {
-  RideID: string;
+  rideID: string;
 }
 
 export type TripStatus = "selecting" | "waiting" | "driverAssigned" | "completed";

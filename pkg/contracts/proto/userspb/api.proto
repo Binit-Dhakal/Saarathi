@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package userspb;
 
-option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/userspb";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/proto/userspb";
 
 service UsersService {
   rpc GetRiderDetails(GetRiderDetailsRequest) returns (GetRiderDetailsResponse);

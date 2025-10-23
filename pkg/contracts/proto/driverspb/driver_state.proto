@@ -3,9 +3,8 @@ syntax = "proto3";
 package driversstate.v1;
 
 import "google/protobuf/timestamp.proto";
-import "proto/common/geo.proto";
 
-option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/driverspb";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/proto/driverspb";
 
 message OfferAccepted {
   string driver_id = 1;

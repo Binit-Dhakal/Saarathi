@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package projectionspb.v1;
 
-import "proto/common/geo.proto";
+import "common/geo.proto";
 
-
-option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/proto/projectionspb";
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/proto/projectionspb";
 
 message TripProjectionV1 {
   // Rider Details

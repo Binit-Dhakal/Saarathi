@@ -87,3 +87,10 @@ export async function confirmRide(fareID: string, carPackage: CarPackage) {
     throw new Error(err?.response?.data?.message || "Failed to fetch confirm ride")
   }
 }
+
+export function listenTripUpdates(tripID: string) {
+  const url = `http://api.saarathi.com:8080/api/v1/trip/updates?tripId=${tripID}`
+  const eventSource = new EventSource(url, { withCredentials: true });
+
+  return eventSource
+}

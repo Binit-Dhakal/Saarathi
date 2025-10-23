@@ -90,14 +90,14 @@ func (t *TripHandler) ConfirmFare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rideID, err := t.rideSvc.FareAcceptByRider(&confirmRequest, userID)
+	tripID, err := t.rideSvc.FareAcceptByRider(&confirmRequest, userID)
 	if err != nil {
 		t.errorResponder.ServerError(w, r, err)
 		return
 	}
 
 	resp := dto.FareConfirmResponse{
-		RideID: rideID,
+		TripID: tripID,
 	}
 
 	err = t.jsonWriter.JSON(w, http.StatusOK, resp)
