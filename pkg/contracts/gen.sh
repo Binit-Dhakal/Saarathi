@@ -2,4 +2,4 @@
 
 buf generate
 
-buf generate --template dto/buf.gen.yaml --path shared/common --path dto/driverspb
+buf generate --template dto/buf.gen.yaml --path shared/common --path dto/driverspb --path dto/riderspb

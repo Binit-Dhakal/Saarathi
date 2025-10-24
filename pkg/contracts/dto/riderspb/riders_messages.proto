@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ridersstate.v1;
+
+import "common/geo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/contracts/dto/riderspb";
+
+message RiderUpdatePayload {
+  string trip_id = 1;
+  string driver_name = 2;
+  string vehicle_make = 3;
+  string vehicle_model = 4;
+  string vehicle_number = 5;
+  common.geo.v1.Coordinates driver_loc = 6;
+  common.geo.v1.Coordinates pickup = 7;
+  common.geo.v1.Coordinates dropoff = 8;
+  int32 price = 9;
+  double distance = 10;
+}

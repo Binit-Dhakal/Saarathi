@@ -7,6 +7,9 @@ import { CarPackage, FareEstimateResponse, TripStatus } from "@/lib/types";
 import { RoutingControl } from "./routing-control";
 import { convertCoordinates } from "@/lib/utils";
 import TripOverview from "./tripOverview";
+import { decodeProtoMessage } from "@/lib/proto-utils";
+import { RiderUpdatePayloadSchema, RiderUpdatePayload } from "@/gen/riderspb/riders_messages_pb";
+import DriverAssignedDrawer from "./DriverAssignedDrawer";
 
 // Fix for default markers
 const sourceIcon = new L.Icon({
@@ -48,6 +51,8 @@ const Map = () => {
   const [fare, setFare] = useState<FareEstimateResponse>();
   const [rideID, setRideID] = useState<string | null>(null);
   const [tripStatus, setTripStatus] = useState<TripStatus>("selecting");
+  const [driverPayload, setDriverPayload] = useState<RiderUpdatePayload | null>(null);
+
 
   useEffect(() => {
     const fetchRoute = async () => {
@@ -68,12 +73,20 @@ const Map = () => {
 
   useEffect(() => {
     if (!rideID) return;
+
     const eventSource = listenTripUpdates(rideID)
     eventSource.onmessage = (event) => {
+      console.log("Event:", event)
+
       try {
-        const data = JSON.parse(event.data);
-        console.log("Trip update: ", data)
-        setTripStatus(data.status);
+        const msg = JSON.parse(event.data);
+        if (msg.event == "TRIP_ACCEPT_PAYLOAD") {
+          const base64Msg = msg.data as string;
+          const data = decodeProtoMessage(RiderUpdatePayloadSchema, base64Msg)
+          console.log(data)
+          setTripStatus("driverAssigned")
+          setDriverPayload(data)
+        }
       } catch {
         console.error("Failed to parse SSE message:", event.data)
       }
@@ -212,6 +225,13 @@ const Map = () => {
           onCancel={() => console.log("cancelled")}
         />
       }
+      {tripStatus === "driverAssigned" && driverPayload && (
+        <DriverAssignedDrawer
+          data={driverPayload}
+          onCancel={() => console.log("cancel ride")}
+        />
+      )}
+
     </>
   );
 };

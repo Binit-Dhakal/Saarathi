@@ -42,6 +42,7 @@ func main() {
 		req.URL.Host = driverStateURL.Host
 		req.URL.Path = "/ws"
 	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/users/", proxyHandler(userServiceProxy))
 	mux.Handle("/api/v1/tokens/", proxyHandler(userServiceProxy))
@@ -77,6 +78,7 @@ func main() {
 
 func proxyHandler(p *httputil.ReverseProxy) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Serving: ", r.URL)
 		p.ServeHTTP(w, r)
 	}
 }

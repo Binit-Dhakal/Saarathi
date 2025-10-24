@@ -34,27 +34,30 @@ func (t *TripUpdateHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		id:         tripID,
-		send:       make(chan any),
-		flusher:    flusher,
-		w:          w,
-		reqContext: r.Context(),
+		id:      tripID,
+		send:    make(chan any, 10),
+		done:    make(chan struct{}),
+		flusher: flusher,
+		w:       w,
 	}
 
-	client.Start()
+	go client.writePump()
 
 	t.mu.Lock()
 	t.connections[tripID] = client
 	t.mu.Unlock()
 
-	<-client.done
+	<-r.Context().Done()
 
 	t.mu.Lock()
 	delete(t.connections, tripID)
-	t.mu.Lock()
+	t.mu.Unlock()
+
+	close(client.done)
+	close(client.send)
 }
 
-func (t *TripUpdateHandler) NotifyRider(tripID string, payload []byte) {
+func (t *TripUpdateHandler) NotifyRider(tripID string, payload any) {
 	t.mu.RLock()
 	client, ok := t.connections[tripID]
 	t.mu.RUnlock()

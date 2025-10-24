@@ -2,10 +2,10 @@ package application
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	projectionspb "github.com/Binit-Dhakal/Saarathi/pkg/proto/projections"
+	"github.com/Binit-Dhakal/Saarathi/pkg/proto/riderspb"
 	"github.com/Binit-Dhakal/Saarathi/rider/internal/domain"
 	"google.golang.org/protobuf/proto"
 )
@@ -44,24 +44,22 @@ func (s *riderUpdateService) SendTripCompleteDetail(ctx context.Context, confirm
 		return fmt.Errorf("failed to unmarshal trip payload into Protobuf DTO for trip %s: %w", confirmedDto.TripID, err)
 	}
 
-	publicPayload := &domain.RiderUpdateDTO{
-		TripID:        payload.GetTripId(),
+	publicPayload := &riderspb.RiderUpdatePayload{
+		TripId:        payload.GetTripId(),
 		DriverName:    payload.GetDriverName(),
 		VehicleMake:   payload.GetVehicleMake(),
 		VehicleModel:  payload.GetVehicleModel(),
 		VehicleNumber: payload.GetVehicleNumber(),
-		DriverLat:     payload.DriverLocation.GetLat(),
-		DriverLng:     payload.DriverLocation.GetLng(),
+		DriverLoc:     payload.DriverLocation,
 
-		PickupLat:  payload.Pickup.GetLat(),
-		PickupLng:  payload.Pickup.GetLng(),
-		DropoffLat: payload.Dropoff.GetLat(),
-		DropoffLng: payload.Dropoff.GetLng(),
-		FarePrice:  payload.GetFarePrice(),
-		Distance:   payload.GetDistance(),
+		Pickup:   payload.Pickup,
+		Dropoff:  payload.Dropoff,
+		Price:    payload.GetFarePrice(),
+		Distance: payload.GetDistance(),
 	}
+	fmt.Println("Rider payload: ", publicPayload)
 
-	jsonBytes, err := json.Marshal(publicPayload)
+	bytesTripPayload, err := proto.Marshal(publicPayload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal public DTO for trip %s: %w", confirmedDto.TripID, err)
 	}
@@ -70,6 +68,9 @@ func (s *riderUpdateService) SendTripCompleteDetail(ctx context.Context, confirm
 		return fmt.Errorf("notifier is not set for rider service")
 	}
 
-	s.notifier.NotifyRider(confirmedDto.TripID, jsonBytes)
+	s.notifier.NotifyRider(confirmedDto.TripID, domain.EventSend{
+		Event: "TRIP_ACCEPT_PAYLOAD",
+		Data:  bytesTripPayload,
+	})
 	return nil
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/rider/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/rider/internal/handlers/rest"
 	"github.com/Binit-Dhakal/Saarathi/rider/internal/repository/redis"
+	"github.com/Binit-Dhakal/Saarathi/rider/logging"
 	"github.com/nats-io/nats.go"
 )
 
@@ -83,7 +84,7 @@ func run() (err error) {
 	repo := redis.NewTripPayloadRepository(app.cacheClient)
 	updateSvc := application.NewRiderUpdateService(repo)
 
-	integrationHandler := messaging.NewIntegrationEventHandlers(updateSvc)
+	integrationHandler := logging.LogEventHandlerAccess(messaging.NewIntegrationEventHandlers(updateSvc), "IntegrationEvents", app.logger)
 	err = messaging.RegisterIntegrationHandlers(evtStream, integrationHandler)
 	if err != nil {
 		fmt.Println(err)

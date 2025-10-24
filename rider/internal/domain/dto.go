@@ -25,3 +25,8 @@ type RiderUpdateDTO struct {
 	FarePrice  int32   `json:"fare_price"`
 	Distance   float64 `json:"distance"`
 }
+
+type EventSend struct {
+	Event string `json:"event"`
+	Data  any    `json:"data"`
+}
