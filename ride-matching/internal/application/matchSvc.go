@@ -57,9 +57,12 @@ func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO
 	}
 
 	replyPayload := &domain.MatchingCandidates{
-		SagaID:    requestDTO.SagaID,
-		TripID:    requestDTO.TripID,
-		DriverIds: shortlistDrivers,
+		SagaID:           requestDTO.SagaID,
+		TripID:           requestDTO.TripID,
+		DriverIds:        shortlistDrivers,
+		Attempt:          requestDTO.Attempt,
+		SearchRadius:     requestDTO.SearchRadius,
+		FirstAttemptUnix: requestDTO.FirstAttemptUnix,
 	}
 	matchEvt := ddd.NewEvent(domain.MatchingCandidatesEvent, replyPayload)
 

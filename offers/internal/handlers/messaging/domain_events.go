@@ -3,6 +3,7 @@ package messaging
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/am"
@@ -26,6 +27,7 @@ func RegisterDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 		domain.RideMatchingInitializedEvent,
 		domain.TripOfferEvent,
 		domain.TripOfferAcceptedEvent,
+		domain.NoCandidateMatchedEvent,
 	)
 }
 
@@ -37,6 +39,8 @@ func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) error 
 		return h.onTripOffer(ctx, event)
 	case domain.TripOfferAcceptedEvent:
 		return h.onTripOfferAccepted(ctx, event)
+	case domain.NoCandidateMatchedEvent:
+		return h.onNoCandidateMatched(ctx, event)
 	}
 
 	return nil
@@ -51,7 +55,9 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 		PickUp:            &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
 		DropOff:           &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
 		CarType:           payload.CarType,
-		MaxSearchRadiusKm: 3,
+		MaxSearchRadiusKm: 1,
+		Attempt:           1,
+		FirstAttemptUnix:  time.Now().Unix(),
 	}
 
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
@@ -89,4 +95,47 @@ func (h domainHandlers) onTripOfferAccepted(ctx context.Context, event ddd.Event
 
 	evt := ddd.NewEvent(offerspb.TripOfferAcceptedEvent, p)
 	return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, evt)
+}
+
+func (h domainHandlers) onNoCandidateMatched(ctx context.Context, event ddd.Event) error {
+	payload := event.Payload().(*domain.NoCandidateMatched)
+	delay := time.Duration(5*(payload.Attempt+1)) * time.Second
+	if delay > 20*time.Second {
+		delay = 20 * time.Second
+	}
+	firstAttempt := time.Unix(payload.FirstAttemptUnix, 0)
+	expiry := firstAttempt.Add(5 * time.Minute)
+	nextAttemptTime := time.Now().Add(delay)
+
+	if nextAttemptTime.After(expiry) {
+		fmt.Printf("Trip %s expired after 5 minutes; stopping matching.\n", payload.TripID)
+
+		driverNotFoundPayload := &offerspb.NoDriverFound{
+			SagaId:        payload.SagaID,
+			TripId:        payload.TripID,
+			ExpiredAtUnix: time.Now().Unix(),
+		}
+
+		driverNotFoundEvt := ddd.NewEvent(offerspb.NoDriverFoundEvent, driverNotFoundPayload)
+
+		return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, driverNotFoundEvt)
+	}
+
+	time.Sleep(delay)
+
+	fmt.Printf("Retrying match for trip %s after %v\n", payload.TripID, delay)
+	nextAttempt := payload.Attempt + 1
+	matchDriversPayload := &offerspb.RideMatchingRequested{
+		SagaId:            payload.SagaID,
+		TripId:            payload.TripID,
+		PickUp:            &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
+		DropOff:           &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
+		CarType:           payload.CarType,
+		MaxSearchRadiusKm: int32(payload.MaxSearchRadiusKm),
+		Attempt:           nextAttempt,
+		FirstAttemptUnix:  payload.FirstAttemptUnix,
+	}
+	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
+
+	return h.publisher.Publish(ctx, offerspb.OfferAggregateChannel, matchDriverEvt)
 }

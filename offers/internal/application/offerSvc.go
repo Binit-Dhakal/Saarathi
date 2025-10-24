@@ -2,7 +2,7 @@ package application
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
@@ -56,6 +56,13 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 		return err
 	}
 
+	return o.tryOfferToCandidates(ctx, candidates)
+}
+
+func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.MatchedDriversDTO) error {
+	const MaxAttemptWindow = 5 * time.Minute
+	tripID := candidates.TripID
+
 	tripDetail, err := o.tripRepo.GetTripDetails(ctx, tripID)
 	if err != nil {
 		return err
@@ -70,6 +77,10 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 		presenceServer, err := o.driverGateway.CheckPresence(ctx, driverID)
 		if err != nil {
 			continue
+		}
+
+		if time.Since(time.Unix(candidates.FirstAttemptUnix, 0)) > MaxAttemptWindow {
+			break
 		}
 
 		locked, err := o.driverGateway.TryAcquireLock(ctx, driverID, tripID)
@@ -102,7 +113,19 @@ func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.
 		return nil
 	}
 
-	return fmt.Errorf("Temp: Not matched")
+	evt := ddd.NewEvent(domain.NoCandidateMatchedEvent, &domain.NoCandidateMatched{
+		SagaID:            tripDetail.SagaID,
+		TripID:            tripDetail.TripID,
+		CarType:           tripDetail.CarType,
+		PickUp:            tripDetail.PickUp,
+		DropOff:           tripDetail.DropOff,
+		MaxSearchRadiusKm: candidates.SearchRadius + 1,
+		Attempt:           candidates.Attempt + 1,
+		FirstAttemptUnix:  candidates.FirstAttemptUnix,
+	})
+
+	return o.publisher.Publish(ctx, evt)
+
 }
 
 func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyPayload domain.OfferAcceptedReplyDTO) error {

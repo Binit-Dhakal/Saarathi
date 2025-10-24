@@ -23,12 +23,15 @@ const (
 )
 
 type CandidatesMatched struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
-	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverIds     []string               `protobuf:"bytes,3,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	SagaId            string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId            string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverIds         []string               `protobuf:"bytes,3,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
+	MaxSearchRadiusKm int32                  `protobuf:"varint,4,opt,name=max_search_radius_km,json=maxSearchRadiusKm,proto3" json:"max_search_radius_km,omitempty"`
+	Attempt           int32                  `protobuf:"varint,5,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	FirstAttemptUnix  int64                  `protobuf:"varint,8,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *CandidatesMatched) Reset() {
@@ -82,16 +85,40 @@ func (x *CandidatesMatched) GetDriverIds() []string {
 	return nil
 }
 
+func (x *CandidatesMatched) GetMaxSearchRadiusKm() int32 {
+	if x != nil {
+		return x.MaxSearchRadiusKm
+	}
+	return 0
+}
+
+func (x *CandidatesMatched) GetAttempt() int32 {
+	if x != nil {
+		return x.Attempt
+	}
+	return 0
+}
+
+func (x *CandidatesMatched) GetFirstAttemptUnix() int64 {
+	if x != nil {
+		return x.FirstAttemptUnix
+	}
+	return 0
+}
+
 var File_rmspb_ride_matching_proto protoreflect.FileDescriptor
 
 const file_rmspb_ride_matching_proto_rawDesc = "" +
 	"\n" +
-	"\x19rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x10common/geo.proto\"d\n" +
+	"\x19rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x10common/geo.proto\"\xdd\x01\n" +
 	"\x11CandidatesMatched\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1d\n" +
 	"\n" +
-	"driver_ids\x18\x03 \x03(\tR\tdriverIdsB2Z0github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspbb\x06proto3"
+	"driver_ids\x18\x03 \x03(\tR\tdriverIds\x12/\n" +
+	"\x14max_search_radius_km\x18\x04 \x01(\x05R\x11maxSearchRadiusKm\x12\x18\n" +
+	"\aattempt\x18\x05 \x01(\x05R\aattempt\x12,\n" +
+	"\x12first_attempt_unix\x18\b \x01(\x03R\x10firstAttemptUnixB2Z0github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspbb\x06proto3"
 
 var (
 	file_rmspb_ride_matching_proto_rawDescOnce sync.Once

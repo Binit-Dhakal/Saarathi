@@ -12,6 +12,7 @@ const (
 	RideMatchingRequestedEvent = "offers.rms.request_matching"
 	TripOfferRequestedEvent    = "offers.drivers.requested"
 	TripOfferAcceptedEvent     = "offers.trips.accepted"
+	NoDriverFoundEvent         = "offers.trips.notFound"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -29,9 +30,14 @@ func Registration(reg registry.Registry) (err error) {
 		return err
 	}
 
+	if err = serde.Register(&NoDriverFound{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (*RideMatchingRequested) Key() string { return RideMatchingRequestedEvent }
 func (*TripOfferRequested) Key() string    { return TripOfferRequestedEvent }
 func (*TripOfferAccepted) Key() string     { return TripOfferAcceptedEvent }
+func (*NoDriverFound) Key() string         { return NoDriverFoundEvent }

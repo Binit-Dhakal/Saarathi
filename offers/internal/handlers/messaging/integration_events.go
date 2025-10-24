@@ -86,9 +86,12 @@ func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) e
 	payload := event.Payload().(*rmspb.CandidatesMatched)
 
 	candidatesDTO := domain.MatchedDriversDTO{
-		SagaID:             payload.SagaId,
-		TripID:             payload.TripId,
-		CandidateDriversID: payload.DriverIds,
+		SagaID:             payload.GetSagaId(),
+		TripID:             payload.GetTripId(),
+		CandidateDriversID: payload.GetDriverIds(),
+		Attempt:            payload.GetAttempt(),
+		FirstAttemptUnix:   payload.GetFirstAttemptUnix(),
+		SearchRadius:       payload.GetMaxSearchRadiusKm(),
 	}
 
 	return h.offerSvc.ProcessCandidatesList(ctx, candidatesDTO)

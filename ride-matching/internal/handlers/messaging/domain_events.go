@@ -38,9 +38,12 @@ func (h domainHandlers) onCandidatesMatched(ctx context.Context, event ddd.Event
 	payload := event.Payload().(*domain.MatchingCandidates)
 
 	matchDriversPayload := &rmspb.CandidatesMatched{
-		SagaId:    payload.SagaID,
-		TripId:    payload.TripID,
-		DriverIds: payload.DriverIds,
+		SagaId:            payload.SagaID,
+		TripId:            payload.TripID,
+		DriverIds:         payload.DriverIds,
+		MaxSearchRadiusKm: payload.SearchRadius,
+		Attempt:           payload.Attempt,
+		FirstAttemptUnix:  payload.FirstAttemptUnix,
 	}
 
 	matchDriverEvt := ddd.NewEvent(rmspb.RMSCandidatesMatchedEvent, matchDriversPayload)

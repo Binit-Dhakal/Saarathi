@@ -55,12 +55,14 @@ func (h integrationHandlers[T]) onMatchingRequest(ctx context.Context, event ddd
 	payload := event.Payload().(*offerspb.RideMatchingRequested)
 
 	evt := dto.TripCreated{
-		SagaID:       payload.GetSagaId(),
-		TripID:       payload.GetTripId(),
-		PickUp:       payload.GetPickUp(),
-		DropOff:      payload.GetDropOff(),
-		CarType:      payload.GetCarType(),
-		SearchRadius: payload.GetMaxSearchRadiusKm(),
+		SagaID:           payload.GetSagaId(),
+		TripID:           payload.GetTripId(),
+		PickUp:           payload.GetPickUp(),
+		DropOff:          payload.GetDropOff(),
+		CarType:          payload.GetCarType(),
+		SearchRadius:     payload.GetMaxSearchRadiusKm(),
+		FirstAttemptUnix: payload.GetFirstAttemptUnix(),
+		Attempt:          payload.GetAttempt(),
 	}
 
 	return h.matchingSvc.ProcessMatchingRequest(ctx, evt)
