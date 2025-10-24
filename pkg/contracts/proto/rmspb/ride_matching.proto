@@ -11,7 +11,13 @@ message CandidatesMatched {
   string trip_id = 2;
   repeated string driver_ids = 3;
 
-  int32 max_search_radius_km = 4;
-  int32 attempt = 5;
-  int64 first_attempt_unix = 8;
+  int32 attempt = 4;
+  int64 first_attempt_unix = 5;
+}
+
+message NoDriverMatched{
+  string saga_id = 1;
+  string trip_id = 2;
+  int32 attempt = 3;
+  int64 first_attempt_unix = 4;
 }

@@ -7,7 +7,8 @@ import (
 
 const (
 	RMSAggregateChannel       = "saarathi.rms.events"
-	RMSCandidatesMatchedEvent = "rms.candidates"
+	RMSCandidatesMatchedEvent = "rms.candidates.matched"
+	RMSNoDriverMatchedEvent   = "rms.candidates.notMatched"
 )
 
 func Registration(reg registry.Registry) (err error) {
@@ -16,7 +17,12 @@ func Registration(reg registry.Registry) (err error) {
 	if err = serde.Register(&CandidatesMatched{}); err != nil {
 		return err
 	}
+
+	if err = serde.Register(&NoDriverMatched{}); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (*CandidatesMatched) Key() string { return RMSCandidatesMatchedEvent }
+func (*NoDriverMatched) Key() string   { return RMSNoDriverMatchedEvent }

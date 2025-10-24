@@ -16,13 +16,13 @@ func NewRideMatchingRepository(client *redis.Client) domain.RedisRideMatchingRep
 		client: client,
 	}
 }
-func (r *rideMatchingRepository) FindNearestDriver(ctx context.Context, lon, lat float64) []string {
+func (r *rideMatchingRepository) FindNearestDriver(ctx context.Context, lon, lat, radius float64) []string {
 	candidates := r.client.GeoSearch(ctx, "geo:drivers:available", &redis.GeoSearchQuery{
 		Latitude:  lat,
 		Longitude: lon,
-		Radius:    3,
+		Radius:    radius,
 		Sort:      "ASC",
-		Count:     50,
+		Count:     5,
 	}).Val()
 
 	return candidates

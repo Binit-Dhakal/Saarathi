@@ -23,15 +23,14 @@ const (
 )
 
 type CandidatesMatched struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	SagaId            string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
-	TripId            string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverIds         []string               `protobuf:"bytes,3,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
-	MaxSearchRadiusKm int32                  `protobuf:"varint,4,opt,name=max_search_radius_km,json=maxSearchRadiusKm,proto3" json:"max_search_radius_km,omitempty"`
-	Attempt           int32                  `protobuf:"varint,5,opt,name=attempt,proto3" json:"attempt,omitempty"`
-	FirstAttemptUnix  int64                  `protobuf:"varint,8,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	SagaId           string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId           string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverIds        []string               `protobuf:"bytes,3,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
+	Attempt          int32                  `protobuf:"varint,4,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	FirstAttemptUnix int64                  `protobuf:"varint,5,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *CandidatesMatched) Reset() {
@@ -85,13 +84,6 @@ func (x *CandidatesMatched) GetDriverIds() []string {
 	return nil
 }
 
-func (x *CandidatesMatched) GetMaxSearchRadiusKm() int32 {
-	if x != nil {
-		return x.MaxSearchRadiusKm
-	}
-	return 0
-}
-
 func (x *CandidatesMatched) GetAttempt() int32 {
 	if x != nil {
 		return x.Attempt
@@ -106,19 +98,91 @@ func (x *CandidatesMatched) GetFirstAttemptUnix() int64 {
 	return 0
 }
 
+type NoDriverMatched struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	SagaId           string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId           string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	Attempt          int32                  `protobuf:"varint,3,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	FirstAttemptUnix int64                  `protobuf:"varint,4,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *NoDriverMatched) Reset() {
+	*x = NoDriverMatched{}
+	mi := &file_rmspb_ride_matching_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NoDriverMatched) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NoDriverMatched) ProtoMessage() {}
+
+func (x *NoDriverMatched) ProtoReflect() protoreflect.Message {
+	mi := &file_rmspb_ride_matching_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NoDriverMatched.ProtoReflect.Descriptor instead.
+func (*NoDriverMatched) Descriptor() ([]byte, []int) {
+	return file_rmspb_ride_matching_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *NoDriverMatched) GetSagaId() string {
+	if x != nil {
+		return x.SagaId
+	}
+	return ""
+}
+
+func (x *NoDriverMatched) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
+func (x *NoDriverMatched) GetAttempt() int32 {
+	if x != nil {
+		return x.Attempt
+	}
+	return 0
+}
+
+func (x *NoDriverMatched) GetFirstAttemptUnix() int64 {
+	if x != nil {
+		return x.FirstAttemptUnix
+	}
+	return 0
+}
+
 var File_rmspb_ride_matching_proto protoreflect.FileDescriptor
 
 const file_rmspb_ride_matching_proto_rawDesc = "" +
 	"\n" +
-	"\x19rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x10common/geo.proto\"\xdd\x01\n" +
+	"\x19rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x10common/geo.proto\"\xac\x01\n" +
 	"\x11CandidatesMatched\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1d\n" +
 	"\n" +
-	"driver_ids\x18\x03 \x03(\tR\tdriverIds\x12/\n" +
-	"\x14max_search_radius_km\x18\x04 \x01(\x05R\x11maxSearchRadiusKm\x12\x18\n" +
-	"\aattempt\x18\x05 \x01(\x05R\aattempt\x12,\n" +
-	"\x12first_attempt_unix\x18\b \x01(\x03R\x10firstAttemptUnixB2Z0github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspbb\x06proto3"
+	"driver_ids\x18\x03 \x03(\tR\tdriverIds\x12\x18\n" +
+	"\aattempt\x18\x04 \x01(\x05R\aattempt\x12,\n" +
+	"\x12first_attempt_unix\x18\x05 \x01(\x03R\x10firstAttemptUnix\"\x8b\x01\n" +
+	"\x0fNoDriverMatched\x12\x17\n" +
+	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
+	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x18\n" +
+	"\aattempt\x18\x03 \x01(\x05R\aattempt\x12,\n" +
+	"\x12first_attempt_unix\x18\x04 \x01(\x03R\x10firstAttemptUnixB2Z0github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspbb\x06proto3"
 
 var (
 	file_rmspb_ride_matching_proto_rawDescOnce sync.Once
@@ -132,9 +196,10 @@ func file_rmspb_ride_matching_proto_rawDescGZIP() []byte {
 	return file_rmspb_ride_matching_proto_rawDescData
 }
 
-var file_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_rmspb_ride_matching_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_rmspb_ride_matching_proto_goTypes = []any{
 	(*CandidatesMatched)(nil), // 0: ridematching.v1.CandidatesMatched
+	(*NoDriverMatched)(nil),   // 1: ridematching.v1.NoDriverMatched
 }
 var file_rmspb_ride_matching_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -155,7 +220,7 @@ func file_rmspb_ride_matching_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rmspb_ride_matching_proto_rawDesc), len(file_rmspb_ride_matching_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

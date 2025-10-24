@@ -33,12 +33,11 @@ type TripOfferAccepted struct {
 }
 
 type NoCandidateMatched struct {
-	SagaID            string
-	TripID            string
-	PickUp            [2]float64
-	DropOff           [2]float64
-	CarType           string
-	MaxSearchRadiusKm int32
-	Attempt           int32
-	FirstAttemptUnix  int64
+	SagaID           string
+	TripID           string
+	PickUp           [2]float64
+	DropOff          [2]float64
+	CarType          string
+	NextAttempt      int32
+	FirstAttemptUnix int64
 }

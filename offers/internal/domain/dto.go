@@ -14,7 +14,6 @@ type MatchedDriversDTO struct {
 	TripID             string
 	SagaID             string
 	CandidateDriversID []string
-	SearchRadius       int32
 	Attempt            int32
 	FirstAttemptUnix   int64
 }

@@ -34,9 +34,7 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		return err
 	}
 
-	err = subscriber.Subscribe(rmspb.RMSAggregateChannel, evtMsgHandler, am.MessageFilter{
-		rmspb.RMSCandidatesMatchedEvent,
-	}, am.GroupName("offers-rms-matched"))
+	err = subscriber.Subscribe(rmspb.RMSAggregateChannel, evtMsgHandler, am.GroupName("offers-rms-matched"))
 	if err != nil {
 		return err
 	}
@@ -59,6 +57,8 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 		return h.onTripRequested(ctx, event)
 	case rmspb.RMSCandidatesMatchedEvent:
 		return h.onCandidatesList(ctx, event)
+	case rmspb.RMSNoDriverMatchedEvent:
+		return h.onNoCandidateFound(ctx, event)
 	case driverspb.OfferAcceptedEvent:
 		return h.onOfferAccepted(ctx, event)
 	}
@@ -91,7 +91,6 @@ func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) e
 		CandidateDriversID: payload.GetDriverIds(),
 		Attempt:            payload.GetAttempt(),
 		FirstAttemptUnix:   payload.GetFirstAttemptUnix(),
-		SearchRadius:       payload.GetMaxSearchRadiusKm(),
 	}
 
 	return h.offerSvc.ProcessCandidatesList(ctx, candidatesDTO)
@@ -107,4 +106,18 @@ func (h integrationHandlers[T]) onOfferAccepted(ctx context.Context, event T) er
 	}
 
 	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
+}
+
+func (h integrationHandlers[T]) onNoCandidateFound(ctx context.Context, event T) error {
+	payload := event.Payload().(*rmspb.NoDriverMatched)
+
+	candidatesDTO := domain.MatchedDriversDTO{
+		TripID:             payload.TripId,
+		SagaID:             payload.SagaId,
+		Attempt:            payload.Attempt,
+		FirstAttemptUnix:   payload.FirstAttemptUnix,
+		CandidateDriversID: make([]string, 0),
+	}
+
+	return h.offerSvc.HandleNoCandidateFound(ctx, candidatesDTO)
 }

@@ -50,14 +50,13 @@ func (h domainHandlers) onRideMatchingInitialized(ctx context.Context, event ddd
 	payload := event.Payload().(*domain.RideMatchingInitialized)
 
 	matchDriversPayload := &offerspb.RideMatchingRequested{
-		SagaId:            payload.SagaID,
-		TripId:            payload.TripID,
-		PickUp:            &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
-		DropOff:           &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
-		CarType:           payload.CarType,
-		MaxSearchRadiusKm: 1,
-		Attempt:           1,
-		FirstAttemptUnix:  time.Now().Unix(),
+		SagaId:           payload.SagaID,
+		TripId:           payload.TripID,
+		PickUp:           &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
+		DropOff:          &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
+		CarType:          payload.CarType,
+		Attempt:          1,
+		FirstAttemptUnix: time.Now().Unix(),
 	}
 
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
@@ -99,10 +98,8 @@ func (h domainHandlers) onTripOfferAccepted(ctx context.Context, event ddd.Event
 
 func (h domainHandlers) onNoCandidateMatched(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*domain.NoCandidateMatched)
-	delay := time.Duration(5*(payload.Attempt+1)) * time.Second
-	if delay > 20*time.Second {
-		delay = 20 * time.Second
-	}
+	delay := min(time.Duration(5*(payload.NextAttempt))*time.Second, 20*time.Second)
+
 	firstAttempt := time.Unix(payload.FirstAttemptUnix, 0)
 	expiry := firstAttempt.Add(5 * time.Minute)
 	nextAttemptTime := time.Now().Add(delay)
@@ -124,16 +121,14 @@ func (h domainHandlers) onNoCandidateMatched(ctx context.Context, event ddd.Even
 	time.Sleep(delay)
 
 	fmt.Printf("Retrying match for trip %s after %v\n", payload.TripID, delay)
-	nextAttempt := payload.Attempt + 1
 	matchDriversPayload := &offerspb.RideMatchingRequested{
-		SagaId:            payload.SagaID,
-		TripId:            payload.TripID,
-		PickUp:            &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
-		DropOff:           &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
-		CarType:           payload.CarType,
-		MaxSearchRadiusKm: int32(payload.MaxSearchRadiusKm),
-		Attempt:           nextAttempt,
-		FirstAttemptUnix:  payload.FirstAttemptUnix,
+		SagaId:           payload.SagaID,
+		TripId:           payload.TripID,
+		PickUp:           &common.Coordinates{Lng: payload.PickUp[0], Lat: payload.PickUp[1]},
+		DropOff:          &common.Coordinates{Lng: payload.DropOff[0], Lat: payload.DropOff[1]},
+		CarType:          payload.CarType,
+		Attempt:          payload.NextAttempt,
+		FirstAttemptUnix: payload.FirstAttemptUnix,
 	}
 	matchDriverEvt := ddd.NewEvent(offerspb.RideMatchingRequestedEvent, matchDriversPayload)
 

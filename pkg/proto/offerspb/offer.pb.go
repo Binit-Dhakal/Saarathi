@@ -23,17 +23,16 @@ const (
 )
 
 type RideMatchingRequested struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	SagaId            string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
-	TripId            string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	PickUp            *common.Coordinates    `protobuf:"bytes,3,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
-	DropOff           *common.Coordinates    `protobuf:"bytes,4,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
-	CarType           string                 `protobuf:"bytes,5,opt,name=car_type,json=carType,proto3" json:"car_type,omitempty"`
-	MaxSearchRadiusKm int32                  `protobuf:"varint,6,opt,name=max_search_radius_km,json=maxSearchRadiusKm,proto3" json:"max_search_radius_km,omitempty"`
-	Attempt           int32                  `protobuf:"varint,7,opt,name=attempt,proto3" json:"attempt,omitempty"`
-	FirstAttemptUnix  int64                  `protobuf:"varint,8,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	SagaId           string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId           string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	PickUp           *common.Coordinates    `protobuf:"bytes,3,opt,name=pick_up,json=pickUp,proto3" json:"pick_up,omitempty"`
+	DropOff          *common.Coordinates    `protobuf:"bytes,4,opt,name=drop_off,json=dropOff,proto3" json:"drop_off,omitempty"`
+	CarType          string                 `protobuf:"bytes,5,opt,name=car_type,json=carType,proto3" json:"car_type,omitempty"`
+	Attempt          int32                  `protobuf:"varint,6,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	FirstAttemptUnix int64                  `protobuf:"varint,7,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *RideMatchingRequested) Reset() {
@@ -99,13 +98,6 @@ func (x *RideMatchingRequested) GetCarType() string {
 		return x.CarType
 	}
 	return ""
-}
-
-func (x *RideMatchingRequested) GetMaxSearchRadiusKm() int32 {
-	if x != nil {
-		return x.MaxSearchRadiusKm
-	}
-	return 0
 }
 
 func (x *RideMatchingRequested) GetAttempt() int32 {
@@ -338,16 +330,15 @@ var File_offerspb_offer_proto protoreflect.FileDescriptor
 
 const file_offerspb_offer_proto_rawDesc = "" +
 	"\n" +
-	"\x14offerspb/offer.proto\x12\toffers.v1\x1a\x10common/geo.proto\"\xc9\x02\n" +
+	"\x14offerspb/offer.proto\x12\toffers.v1\x1a\x10common/geo.proto\"\x98\x02\n" +
 	"\x15RideMatchingRequested\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x123\n" +
 	"\apick_up\x18\x03 \x01(\v2\x1a.common.geo.v1.CoordinatesR\x06pickUp\x125\n" +
 	"\bdrop_off\x18\x04 \x01(\v2\x1a.common.geo.v1.CoordinatesR\adropOff\x12\x19\n" +
-	"\bcar_type\x18\x05 \x01(\tR\acarType\x12/\n" +
-	"\x14max_search_radius_km\x18\x06 \x01(\x05R\x11maxSearchRadiusKm\x12\x18\n" +
-	"\aattempt\x18\a \x01(\x05R\aattempt\x12,\n" +
-	"\x12first_attempt_unix\x18\b \x01(\x03R\x10firstAttemptUnix\"\x81\x02\n" +
+	"\bcar_type\x18\x05 \x01(\tR\acarType\x12\x18\n" +
+	"\aattempt\x18\x06 \x01(\x05R\aattempt\x12,\n" +
+	"\x12first_attempt_unix\x18\a \x01(\x03R\x10firstAttemptUnix\"\x81\x02\n" +
 	"\x12TripOfferRequested\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1b\n" +

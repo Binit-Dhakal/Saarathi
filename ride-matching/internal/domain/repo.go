@@ -3,7 +3,7 @@ package domain
 import "context"
 
 type RedisRideMatchingRepository interface {
-	FindNearestDriver(ctx context.Context, lon, lat float64) []string
+	FindNearestDriver(ctx context.Context, lon, lat, radius float64) []string
 }
 
 type RedisMetaRepository interface {

@@ -10,7 +10,6 @@ type TripCreated struct {
 	PickUp           *common.Coordinates
 	DropOff          *common.Coordinates
 	CarType          string
-	SearchRadius     int32
 	Attempt          int32
 	FirstAttemptUnix int64
 }

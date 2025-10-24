@@ -32,28 +32,54 @@ func NewMatchingService(publisher ddd.EventPublisher[ddd.Event], matchRepo domai
 
 // currently our algorithm just find drivers based on geographical location
 func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO dto.TripCreated) error {
-	candidates := m.matchRepo.FindNearestDriver(ctx, requestDTO.PickUp.Lng, requestDTO.PickUp.Lat)
-
-	// availability check
-	onlineCandidates := m.availCheck.GetOnlineDrivers(ctx, candidates)
-
-	if len(onlineCandidates) == 0 {
-		return fmt.Errorf("No driver online")
-	}
-
-	metadatas, err := m.metaFetcher.GetBulkMetada(ctx, onlineCandidates)
-	if err != nil {
-		return fmt.Errorf("failed to fetch driver metadata: %w", err)
-	}
-
+	const MaxRadiusKm = 5
+	radius := float64(1)
 	var shortlistDrivers []string
-	selectedVehicle := strings.ToUpper(requestDTO.CarType)
 
-	for _, metadata := range metadatas {
-		vt := strings.ToUpper(metadata.VehicleType)
-		if vt == selectedVehicle {
-			shortlistDrivers = append(shortlistDrivers, metadata.DriverID)
+	for radius <= MaxRadiusKm {
+		candidates := m.matchRepo.FindNearestDriver(ctx, requestDTO.PickUp.Lng, requestDTO.PickUp.Lat, radius)
+		if len(candidates) == 0 {
+			radius += 1
+			continue
 		}
+
+		// availability check
+		onlineCandidates := m.availCheck.GetOnlineDrivers(ctx, candidates)
+		if len(onlineCandidates) == 0 {
+			radius += 1
+			continue
+		}
+
+		metadatas, err := m.metaFetcher.GetBulkMetada(ctx, onlineCandidates)
+		if err != nil {
+			return fmt.Errorf("failed to fetch driver metadata: %w", err)
+		}
+
+		selectedVehicle := strings.ToUpper(requestDTO.CarType)
+
+		for _, metadata := range metadatas {
+			if strings.ToUpper(metadata.VehicleType) == selectedVehicle {
+				shortlistDrivers = append(shortlistDrivers, metadata.DriverID)
+			}
+		}
+
+		if len(shortlistDrivers) > 0 {
+			break
+		}
+
+		radius += 1
+	}
+
+	if len(shortlistDrivers) == 0 {
+		payload := domain.NoDriverAvailable{
+			TripID:           requestDTO.TripID,
+			SagaID:           requestDTO.SagaID,
+			Attempt:          requestDTO.Attempt,
+			FirstAttemptUnix: requestDTO.FirstAttemptUnix,
+		}
+		evt := ddd.NewEvent(domain.NoDriverAvailableEvent, payload)
+		return m.publisher.Publish(ctx, evt)
+
 	}
 
 	replyPayload := &domain.MatchingCandidates{
@@ -61,7 +87,6 @@ func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO
 		TripID:           requestDTO.TripID,
 		DriverIds:        shortlistDrivers,
 		Attempt:          requestDTO.Attempt,
-		SearchRadius:     requestDTO.SearchRadius,
 		FirstAttemptUnix: requestDTO.FirstAttemptUnix,
 	}
 	matchEvt := ddd.NewEvent(domain.MatchingCandidatesEvent, replyPayload)

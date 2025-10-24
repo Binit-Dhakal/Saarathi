@@ -12,6 +12,7 @@ type OfferService interface {
 	CreateTripReadModel(ctx context.Context, payload domain.TripReadModelDTO) error
 	ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error
 	ProcessAcceptedOffer(ctx context.Context, event domain.OfferAcceptedReplyDTO) error
+	HandleNoCandidateFound(ctx context.Context, candidates domain.MatchedDriversDTO) error
 }
 
 type offerSvc struct {
@@ -114,14 +115,13 @@ func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.M
 	}
 
 	evt := ddd.NewEvent(domain.NoCandidateMatchedEvent, &domain.NoCandidateMatched{
-		SagaID:            tripDetail.SagaID,
-		TripID:            tripDetail.TripID,
-		CarType:           tripDetail.CarType,
-		PickUp:            tripDetail.PickUp,
-		DropOff:           tripDetail.DropOff,
-		MaxSearchRadiusKm: candidates.SearchRadius + 1,
-		Attempt:           candidates.Attempt + 1,
-		FirstAttemptUnix:  candidates.FirstAttemptUnix,
+		SagaID:           tripDetail.SagaID,
+		TripID:           tripDetail.TripID,
+		CarType:          tripDetail.CarType,
+		PickUp:           tripDetail.PickUp,
+		DropOff:          tripDetail.DropOff,
+		NextAttempt:      candidates.Attempt + 1,
+		FirstAttemptUnix: candidates.FirstAttemptUnix,
 	})
 
 	return o.publisher.Publish(ctx, evt)
@@ -137,4 +137,8 @@ func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyPayload domain
 	acceptEvt := ddd.NewEvent(domain.TripOfferAcceptedEvent, evtPayload)
 
 	return o.publisher.Publish(ctx, acceptEvt)
+}
+
+func (o *offerSvc) HandleNoCandidateFound(ctx context.Context, candidates domain.MatchedDriversDTO) error {
+	return o.tryOfferToCandidates(ctx, candidates)
 }
