@@ -6,11 +6,12 @@ import { Progress } from "@/components/ui/progress"
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 
 
-const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject }: {
+const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject, onTimeout }: {
   offer: TripOffer | null,
   setOffer: React.Dispatch<React.SetStateAction<TripOffer | null>>,
   onAccept: () => void,
-  onReject: () => void
+  onReject: () => void,
+  onTimeout: () => void
 }) => {
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
   const [totalSeconds, setTotalSeconds] = useState<number>(0);
@@ -31,6 +32,7 @@ const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject }: {
       if (remaining == 0) {
         clearInterval(interval)
         setOffer(null)
+        onTimeout()
       }
     }, 1000)
 

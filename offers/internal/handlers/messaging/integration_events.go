@@ -135,7 +135,7 @@ func (h integrationHandlers[T]) onOfferRejected(ctx context.Context, event T) er
 		Status:   "rejected",
 	}
 
-	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
+	return h.offerSvc.ProcessRejectedOffer(ctx, replyDTO)
 }
 
 func (h integrationHandlers[T]) onOfferTimedout(ctx context.Context, event T) error {
@@ -148,5 +148,5 @@ func (h integrationHandlers[T]) onOfferTimedout(ctx context.Context, event T) er
 		Status:   "timedout",
 	}
 
-	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
+	return h.offerSvc.ProcessRejectedOffer(ctx, replyDTO)
 }

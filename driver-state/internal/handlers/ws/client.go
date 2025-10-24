@@ -104,6 +104,18 @@ func (c *Client) readPump() {
 				fmt.Printf("CRITICAL: Failed to process rejected offer %s for driver %s: %v\n", tripResponse.OfferID, c.ID, err)
 			}
 
+		case "TRIP_TIMEDOUT":
+			var tripResponse dto.OfferResponseDriver
+			if err := json.Unmarshal(baseMessage.Data, &tripResponse); err != nil {
+				log.Println("Failed to unmarshal assigned response payload: ", err)
+				continue
+			}
+
+			err = c.offerSvc.ProcessTripOffer(context.Background(), tripResponse.OfferID, "timeout")
+			if err != nil {
+				fmt.Printf("CRITICAL: Failed to process timedout offer %s for driver %s: %v\n", tripResponse.OfferID, c.ID, err)
+			}
+
 		default:
 			fmt.Println(baseMessage)
 		}

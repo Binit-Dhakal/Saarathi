@@ -109,6 +109,14 @@ const Map = () => {
     })
   }
 
+  const handleTimeout = () => {
+    if (!offer) return;
+    sendMessage({
+      event: "TRIP_TIMEDOUT",
+      data: { tripID: offer.tripId, offerID: offer.offerId }
+    })
+  }
+
   const handleStartTrip = () => {
     if (!acceptedTrip) return;
     sendMessage({
@@ -184,7 +192,7 @@ const Map = () => {
           </>
         )}
       </MapContainer>
-      <TripOfferDrawer offer={offer} setOffer={setOffer} onAccept={handleAccept} onReject={handleReject} />
+      <TripOfferDrawer offer={offer} setOffer={setOffer} onAccept={handleAccept} onReject={handleReject} onTimeout={handleTimeout} />
       <TripDetailsDrawer trip={acceptedTrip} onStartTrip={handleStartTrip} onEndTrip={handleEndTrip} />
     </div>
   );
