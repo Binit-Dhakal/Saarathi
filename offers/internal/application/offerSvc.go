@@ -188,6 +188,11 @@ func (o *offerSvc) ProcessRejectedOffer(ctx context.Context, replyDto domain.Off
 		return err
 	}
 
+	err = o.candidateRepo.AddRejectedDriver(ctx, replyDto.TripID, replyDto.DriverID)
+	if err != nil {
+		return err
+	}
+
 	candidates := domain.MatchedDriversDTO{
 		SagaID:  replyDto.SagaID,
 		TripID:  replyDto.TripID,

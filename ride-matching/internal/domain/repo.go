@@ -4,6 +4,7 @@ import "context"
 
 type RedisRideMatchingRepository interface {
 	FindNearestDriver(ctx context.Context, lon, lat, radius float64) []string
+	GetRejectedDriver(ctx context.Context, tripID string) ([]string, error)
 }
 
 type RedisMetaRepository interface {

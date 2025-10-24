@@ -94,3 +94,13 @@ func (t *tripCandidatesRepo) GetNextCandidates(ctx context.Context, tripID strin
 
 	return driverID, nil
 }
+
+func (t *tripCandidatesRepo) AddRejectedDriver(ctx context.Context, tripID string, driverID string) error {
+	key := fmt.Sprintf("trip:rejected:%s", tripID)
+	if err := t.client.SAdd(ctx, key, driverID).Err(); err != nil {
+		return err
+	}
+
+	t.client.Expire(ctx, key, RedisTTL)
+	return nil
+}

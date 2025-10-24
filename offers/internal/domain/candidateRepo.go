@@ -8,4 +8,5 @@ type TripCandidatesRepository interface {
 	GetNextCandidates(ctx context.Context, tripID string, index int) (string, error)
 	SaveFirstAttemptUnix(ctx context.Context, tripID string) error
 	GetFirstAttemptUnix(ctx context.Context, tripID string) (int64, error)
+	AddRejectedDriver(ctx context.Context, tripID string, driverID string) error
 }

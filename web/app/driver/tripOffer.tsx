@@ -16,6 +16,7 @@ const TripOfferDrawer = ({ offer, setOffer, onAccept, onReject, onTimeout }: {
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
   const [totalSeconds, setTotalSeconds] = useState<number>(0);
 
+
   useEffect(() => {
     if (!offer) return;
     if (!offer.expiresAt) return;

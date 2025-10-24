@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
@@ -30,14 +31,29 @@ func NewMatchingService(publisher ddd.EventPublisher[ddd.Event], matchRepo domai
 	}
 }
 
+func (m *matchingService) exclude(candidates []string, rejected []string) []string {
+	rejectedMap := make(map[string]bool)
+	for _, item := range rejected {
+		rejectedMap[item] = true
+	}
+
+	filtered := slices.DeleteFunc(candidates, func(candidate string) bool {
+		return rejectedMap[candidate] // Returns true if the element should be deleted
+	})
+
+	return filtered
+}
+
 // currently our algorithm just find drivers based on geographical location
 func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO dto.TripCreated) error {
 	const MaxRadiusKm = 5
-	radius := float64(1)
+	radius := min(requestDTO.Attempt+1, MaxRadiusKm)
+	rejected, _ := m.matchRepo.GetRejectedDriver(ctx, requestDTO.TripID)
 	var shortlistDrivers []string
 
 	for radius <= MaxRadiusKm {
-		candidates := m.matchRepo.FindNearestDriver(ctx, requestDTO.PickUp.Lng, requestDTO.PickUp.Lat, radius)
+		candidates := m.matchRepo.FindNearestDriver(ctx, requestDTO.PickUp.Lng, requestDTO.PickUp.Lat, float64(radius))
+		candidates = m.exclude(candidates, rejected)
 		if len(candidates) == 0 {
 			radius += 1
 			continue

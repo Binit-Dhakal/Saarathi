@@ -39,7 +39,6 @@ func (h domainHandlers) HandleEvent(ctx context.Context, event ddd.Event) (err e
 func (h domainHandlers) onOfferResponded(ctx context.Context, event ddd.Event) error {
 	var err error
 	payload := event.Payload().(*domain.Offer)
-	fmt.Println("Offer response ", payload)
 
 	switch payload.Status {
 	case domain.OfferAccepted:

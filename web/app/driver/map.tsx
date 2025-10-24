@@ -95,6 +95,7 @@ const Map = () => {
 
   const handleAccept = () => {
     if (!offer) return;
+    setOffer(null)
     sendMessage({
       event: "TRIP_ACCEPTED",
       data: { tripID: offer.tripId, offerID: offer.offerId }
@@ -103,6 +104,7 @@ const Map = () => {
 
   const handleReject = () => {
     if (!offer) return;
+    setOffer(null)
     sendMessage({
       event: "TRIP_REJECTED",
       data: { tripID: offer.tripId, offerID: offer.offerId }
@@ -111,6 +113,7 @@ const Map = () => {
 
   const handleTimeout = () => {
     if (!offer) return;
+    setOffer(null)
     sendMessage({
       event: "TRIP_TIMEDOUT",
       data: { tripID: offer.tripId, offerID: offer.offerId }

@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
 	"github.com/redis/go-redis/v9"
@@ -22,8 +23,22 @@ func (r *rideMatchingRepository) FindNearestDriver(ctx context.Context, lon, lat
 		Longitude: lon,
 		Radius:    radius,
 		Sort:      "ASC",
-		Count:     5,
+		Count:     8,
 	}).Val()
 
 	return candidates
+}
+
+func (r *rideMatchingRepository) GetRejectedDriver(ctx context.Context, tripID string) ([]string, error) {
+	key := fmt.Sprintf("trip:rejected:%s", tripID)
+	members, err := r.client.SMembers(ctx, key).Result()
+	if err == redis.Nil {
+		return []string{}, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return members, nil
 }
