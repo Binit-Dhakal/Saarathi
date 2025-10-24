@@ -23,14 +23,13 @@ const (
 )
 
 type CandidatesMatched struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	SagaId           string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
-	TripId           string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	DriverIds        []string               `protobuf:"bytes,3,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
-	Attempt          int32                  `protobuf:"varint,4,opt,name=attempt,proto3" json:"attempt,omitempty"`
-	FirstAttemptUnix int64                  `protobuf:"varint,5,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	DriverIds     []string               `protobuf:"bytes,3,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
+	Attempt       int32                  `protobuf:"varint,4,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CandidatesMatched) Reset() {
@@ -91,21 +90,13 @@ func (x *CandidatesMatched) GetAttempt() int32 {
 	return 0
 }
 
-func (x *CandidatesMatched) GetFirstAttemptUnix() int64 {
-	if x != nil {
-		return x.FirstAttemptUnix
-	}
-	return 0
-}
-
 type NoDriverMatched struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	SagaId           string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
-	TripId           string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	Attempt          int32                  `protobuf:"varint,3,opt,name=attempt,proto3" json:"attempt,omitempty"`
-	FirstAttemptUnix int64                  `protobuf:"varint,4,opt,name=first_attempt_unix,json=firstAttemptUnix,proto3" json:"first_attempt_unix,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SagaId        string                 `protobuf:"bytes,1,opt,name=saga_id,json=sagaId,proto3" json:"saga_id,omitempty"`
+	TripId        string                 `protobuf:"bytes,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	Attempt       int32                  `protobuf:"varint,3,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *NoDriverMatched) Reset() {
@@ -159,30 +150,21 @@ func (x *NoDriverMatched) GetAttempt() int32 {
 	return 0
 }
 
-func (x *NoDriverMatched) GetFirstAttemptUnix() int64 {
-	if x != nil {
-		return x.FirstAttemptUnix
-	}
-	return 0
-}
-
 var File_rmspb_ride_matching_proto protoreflect.FileDescriptor
 
 const file_rmspb_ride_matching_proto_rawDesc = "" +
 	"\n" +
-	"\x19rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x10common/geo.proto\"\xac\x01\n" +
+	"\x19rmspb/ride_matching.proto\x12\x0fridematching.v1\x1a\x10common/geo.proto\"~\n" +
 	"\x11CandidatesMatched\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x1d\n" +
 	"\n" +
 	"driver_ids\x18\x03 \x03(\tR\tdriverIds\x12\x18\n" +
-	"\aattempt\x18\x04 \x01(\x05R\aattempt\x12,\n" +
-	"\x12first_attempt_unix\x18\x05 \x01(\x03R\x10firstAttemptUnix\"\x8b\x01\n" +
+	"\aattempt\x18\x04 \x01(\x05R\aattempt\"]\n" +
 	"\x0fNoDriverMatched\x12\x17\n" +
 	"\asaga_id\x18\x01 \x01(\tR\x06sagaId\x12\x17\n" +
 	"\atrip_id\x18\x02 \x01(\tR\x06tripId\x12\x18\n" +
-	"\aattempt\x18\x03 \x01(\x05R\aattempt\x12,\n" +
-	"\x12first_attempt_unix\x18\x04 \x01(\x03R\x10firstAttemptUnixB2Z0github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspbb\x06proto3"
+	"\aattempt\x18\x03 \x01(\x05R\aattemptB2Z0github.com/Binit-Dhakal/Saarathi/pkg/proto/rmspbb\x06proto3"
 
 var (
 	file_rmspb_ride_matching_proto_rawDescOnce sync.Once

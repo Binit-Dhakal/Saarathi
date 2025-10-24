@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
@@ -11,8 +12,9 @@ import (
 type OfferService interface {
 	CreateTripReadModel(ctx context.Context, payload domain.TripReadModelDTO) error
 	ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error
-	ProcessAcceptedOffer(ctx context.Context, event domain.OfferAcceptedReplyDTO) error
 	HandleNoCandidateFound(ctx context.Context, candidates domain.MatchedDriversDTO) error
+	ProcessAcceptedOffer(ctx context.Context, replyDto domain.OfferReplyDTO) error
+	ProcessRejectedOffer(ctx context.Context, replyDto domain.OfferReplyDTO) error
 }
 
 type offerSvc struct {
@@ -38,6 +40,11 @@ func (o *offerSvc) CreateTripReadModel(ctx context.Context, payload domain.TripR
 		return err
 	}
 
+	err = o.candidateRepo.SaveFirstAttemptUnix(ctx, payload.TripID)
+	if err != nil {
+		return err
+	}
+
 	startMatchPayload := &domain.RideMatchingInitialized{
 		SagaID:  payload.SagaID,
 		TripID:  payload.TripID,
@@ -50,18 +57,25 @@ func (o *offerSvc) CreateTripReadModel(ctx context.Context, payload domain.TripR
 	return o.publisher.Publish(ctx, evt)
 }
 
+func (o *offerSvc) hasExpired(ctx context.Context, tripID string) (bool, error) {
+	firstAttemptUnix, err := o.candidateRepo.GetFirstAttemptUnix(ctx, tripID)
+	if err != nil {
+		return false, err
+	}
+
+	return time.Since(time.Unix(firstAttemptUnix, 0)) > 5*time.Minute, nil
+}
+
 func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error {
 	tripID := candidates.TripID
 
 	if err := o.candidateRepo.SaveCandidates(ctx, tripID, candidates.CandidateDriversID); err != nil {
 		return err
 	}
-
-	return o.tryOfferToCandidates(ctx, candidates)
+	return o.tryOfferToCandidates(ctx, candidates, 0)
 }
 
-func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.MatchedDriversDTO) error {
-	const MaxAttemptWindow = 5 * time.Minute
+func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.MatchedDriversDTO, index int) error {
 	tripID := candidates.TripID
 
 	tripDetail, err := o.tripRepo.GetTripDetails(ctx, tripID)
@@ -69,26 +83,38 @@ func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.M
 		return err
 	}
 
-	for i := range candidates.CandidateDriversID {
-		driverID, err := o.candidateRepo.GetNextCandidates(ctx, tripID, i)
+	for {
+		driverID, err := o.candidateRepo.GetNextCandidates(ctx, tripID, index)
 		if err != nil {
-			continue
+			if errors.Is(err, domain.ErrCandidateListExhausted) {
+				firstAttemptUnix, err := o.candidateRepo.GetFirstAttemptUnix(ctx, tripID)
+				if err != nil {
+					return err
+				}
+
+				evt := ddd.NewEvent(domain.RetryMatchingEvent, &domain.RetryMatching{
+					SagaID:           tripDetail.SagaID,
+					TripID:           tripDetail.TripID,
+					CarType:          tripDetail.CarType,
+					PickUp:           tripDetail.PickUp,
+					DropOff:          tripDetail.DropOff,
+					NextAttempt:      candidates.Attempt + 1,
+					FirstAttemptUnix: firstAttemptUnix,
+				})
+				return o.publisher.Publish(ctx, evt)
+			}
+			return err
 		}
 
 		presenceServer, err := o.driverGateway.CheckPresence(ctx, driverID)
 		if err != nil {
+			index++
 			continue
-		}
-
-		if time.Since(time.Unix(candidates.FirstAttemptUnix, 0)) > MaxAttemptWindow {
-			break
 		}
 
 		locked, err := o.driverGateway.TryAcquireLock(ctx, driverID, tripID)
-		if err != nil {
-			continue
-		}
-		if !locked {
+		if err != nil || locked {
+			index++
 			continue
 		}
 
@@ -113,6 +139,29 @@ func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.M
 
 		return nil
 	}
+}
+
+func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyDto domain.OfferReplyDTO) error {
+	evtPayload := &domain.TripOfferAccepted{
+		SagaID:   replyDto.SagaID,
+		TripID:   replyDto.TripID,
+		DriverID: replyDto.DriverID,
+	}
+	acceptEvt := ddd.NewEvent(domain.TripOfferAcceptedEvent, evtPayload)
+
+	return o.publisher.Publish(ctx, acceptEvt)
+}
+
+func (o *offerSvc) HandleNoCandidateFound(ctx context.Context, candidates domain.MatchedDriversDTO) error {
+	tripDetail, err := o.tripRepo.GetTripDetails(ctx, candidates.TripID)
+	if err != nil {
+		return err
+	}
+
+	firstAttemptUnix, err := o.candidateRepo.GetFirstAttemptUnix(ctx, candidates.TripID)
+	if err != nil {
+		return err
+	}
 
 	evt := ddd.NewEvent(domain.NoCandidateMatchedEvent, &domain.NoCandidateMatched{
 		SagaID:           tripDetail.SagaID,
@@ -121,24 +170,29 @@ func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.M
 		PickUp:           tripDetail.PickUp,
 		DropOff:          tripDetail.DropOff,
 		NextAttempt:      candidates.Attempt + 1,
-		FirstAttemptUnix: candidates.FirstAttemptUnix,
+		FirstAttemptUnix: firstAttemptUnix,
 	})
 
 	return o.publisher.Publish(ctx, evt)
-
 }
 
-func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyPayload domain.OfferAcceptedReplyDTO) error {
-	evtPayload := &domain.TripOfferAccepted{
-		SagaID:   replyPayload.SagaID,
-		TripID:   replyPayload.TripID,
-		DriverID: replyPayload.DriverID,
+// handle case for both rejected and timedout offer
+func (o *offerSvc) ProcessRejectedOffer(ctx context.Context, replyDto domain.OfferReplyDTO) error {
+	currentIdx, err := o.candidateRepo.IncrementCandidateCounter(ctx, replyDto.TripID)
+	if err != nil {
+		return err
 	}
-	acceptEvt := ddd.NewEvent(domain.TripOfferAcceptedEvent, evtPayload)
 
-	return o.publisher.Publish(ctx, acceptEvt)
-}
+	err = o.driverGateway.ReleaseLock(ctx, replyDto.DriverID, replyDto.TripID)
+	if err != nil {
+		return err
+	}
 
-func (o *offerSvc) HandleNoCandidateFound(ctx context.Context, candidates domain.MatchedDriversDTO) error {
-	return o.tryOfferToCandidates(ctx, candidates)
+	candidates := domain.MatchedDriversDTO{
+		SagaID:  replyDto.SagaID,
+		TripID:  replyDto.TripID,
+		Attempt: int32(currentIdx),
+	}
+
+	return o.tryOfferToCandidates(ctx, candidates, currentIdx)
 }

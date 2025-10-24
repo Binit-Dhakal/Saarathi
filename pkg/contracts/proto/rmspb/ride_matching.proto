@@ -12,12 +12,10 @@ message CandidatesMatched {
   repeated string driver_ids = 3;
 
   int32 attempt = 4;
-  int64 first_attempt_unix = 5;
 }
 
-message NoDriverMatched{
+message NoDriverMatched {
   string saga_id = 1;
   string trip_id = 2;
   int32 attempt = 3;
-  int64 first_attempt_unix = 4;
 }

@@ -15,7 +15,6 @@ message RideMatchingRequested {
   string car_type = 5;
 
   int32 attempt = 6;
-  int64 first_attempt_unix = 7;
 }
 
 message TripOfferRequested {

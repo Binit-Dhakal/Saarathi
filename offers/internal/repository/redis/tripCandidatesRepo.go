@@ -12,6 +12,7 @@ import (
 const (
 	CandidatesListKey = "trip:%s:candidates"
 	AttemptCounterKey = "trip:%s:counter"
+	FirstAttemptKey   = "trip:%s:first_attempt"
 	RedisTTL          = 10 * time.Minute
 )
 
@@ -23,6 +24,24 @@ func NewTripCandidatesRepo(client *redis.Client) domain.TripCandidatesRepository
 	return &tripCandidatesRepo{
 		client: client,
 	}
+}
+
+func (t *tripCandidatesRepo) SaveFirstAttemptUnix(ctx context.Context, tripID string) error {
+	key := fmt.Sprintf(FirstAttemptKey, tripID)
+	return t.client.Set(ctx, key, time.Now().Unix(), RedisTTL).Err()
+}
+
+func (t *tripCandidatesRepo) GetFirstAttemptUnix(ctx context.Context, tripID string) (int64, error) {
+	key := fmt.Sprintf(FirstAttemptKey, tripID)
+	ts, err := t.client.Get(ctx, key).Int64()
+	if err != nil {
+		if err == redis.Nil {
+			return 0, fmt.Errorf("no first attempt timestamp found for trip %s", tripID)
+		}
+		return 0, fmt.Errorf("failed to get first attempt timestamp: %w", err)
+	}
+
+	return ts, nil
 }
 
 func (t *tripCandidatesRepo) SaveCandidates(ctx context.Context, tripID string, driverIDs []string) error {
@@ -67,7 +86,7 @@ func (t *tripCandidatesRepo) GetNextCandidates(ctx context.Context, tripID strin
 	if err != nil {
 		switch err {
 		case redis.Nil:
-			return "", fmt.Errorf("candidate list exhausted for trip %s", tripID)
+			return "", domain.ErrCandidateListExhausted
 		default:
 			return "", fmt.Errorf("failed to get candidates at index %d: %w", index, err)
 		}

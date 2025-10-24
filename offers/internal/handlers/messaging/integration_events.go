@@ -61,6 +61,10 @@ func (h integrationHandlers[T]) HandleEvent(ctx context.Context, event T) error 
 		return h.onNoCandidateFound(ctx, event)
 	case driverspb.OfferAcceptedEvent:
 		return h.onOfferAccepted(ctx, event)
+	case driverspb.OfferRejectedEvent:
+		return h.onOfferRejected(ctx, event)
+	case driverspb.OfferTimedoutEvent:
+		return h.onOfferTimedout(ctx, event)
 	}
 
 	return nil
@@ -90,7 +94,6 @@ func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) e
 		TripID:             payload.GetTripId(),
 		CandidateDriversID: payload.GetDriverIds(),
 		Attempt:            payload.GetAttempt(),
-		FirstAttemptUnix:   payload.GetFirstAttemptUnix(),
 	}
 
 	return h.offerSvc.ProcessCandidatesList(ctx, candidatesDTO)
@@ -99,10 +102,11 @@ func (h integrationHandlers[T]) onCandidatesList(ctx context.Context, event T) e
 func (h integrationHandlers[T]) onOfferAccepted(ctx context.Context, event T) error {
 	payload := event.Payload().(*driverspb.OfferAccepted)
 
-	replyDTO := domain.OfferAcceptedReplyDTO{
+	replyDTO := domain.OfferReplyDTO{
 		SagaID:   payload.SagaId,
 		TripID:   payload.TripId,
 		DriverID: payload.DriverId,
+		Status:   "accepted",
 	}
 
 	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
@@ -115,9 +119,34 @@ func (h integrationHandlers[T]) onNoCandidateFound(ctx context.Context, event T)
 		TripID:             payload.TripId,
 		SagaID:             payload.SagaId,
 		Attempt:            payload.Attempt,
-		FirstAttemptUnix:   payload.FirstAttemptUnix,
 		CandidateDriversID: make([]string, 0),
 	}
 
 	return h.offerSvc.HandleNoCandidateFound(ctx, candidatesDTO)
+}
+
+func (h integrationHandlers[T]) onOfferRejected(ctx context.Context, event T) error {
+	payload := event.Payload().(*driverspb.OfferRejected)
+
+	replyDTO := domain.OfferReplyDTO{
+		SagaID:   payload.SagaId,
+		TripID:   payload.TripId,
+		DriverID: payload.DriverId,
+		Status:   "rejected",
+	}
+
+	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
+}
+
+func (h integrationHandlers[T]) onOfferTimedout(ctx context.Context, event T) error {
+	payload := event.Payload().(*driverspb.OfferTimedOut)
+
+	replyDTO := domain.OfferReplyDTO{
+		SagaID:   payload.SagaId,
+		TripID:   payload.TripId,
+		DriverID: payload.DriverId,
+		Status:   "timedout",
+	}
+
+	return h.offerSvc.ProcessAcceptedOffer(ctx, replyDTO)
 }

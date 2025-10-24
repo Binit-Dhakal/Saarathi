@@ -41,11 +41,10 @@ func (h domainHandlers) onCandidatesMatched(ctx context.Context, event ddd.Event
 	payload := event.Payload().(*domain.MatchingCandidates)
 
 	matchDriversPayload := &rmspb.CandidatesMatched{
-		SagaId:           payload.SagaID,
-		TripId:           payload.TripID,
-		DriverIds:        payload.DriverIds,
-		Attempt:          payload.Attempt,
-		FirstAttemptUnix: payload.FirstAttemptUnix,
+		SagaId:    payload.SagaID,
+		TripId:    payload.TripID,
+		DriverIds: payload.DriverIds,
+		Attempt:   payload.Attempt,
 	}
 
 	matchDriverEvt := ddd.NewEvent(rmspb.RMSCandidatesMatchedEvent, matchDriversPayload)
@@ -54,13 +53,12 @@ func (h domainHandlers) onCandidatesMatched(ctx context.Context, event ddd.Event
 }
 
 func (h domainHandlers) onNoDriverAvailable(ctx context.Context, event ddd.Event) error {
-	payload := event.Payload().(*domain.NoDriverAvailable)
+	payload := event.Payload().(domain.NoDriverAvailable)
 
 	noDriversPayload := &rmspb.NoDriverMatched{
-		TripId:           payload.TripID,
-		SagaId:           payload.SagaID,
-		Attempt:          payload.Attempt,
-		FirstAttemptUnix: payload.FirstAttemptUnix,
+		TripId:  payload.TripID,
+		SagaId:  payload.SagaID,
+		Attempt: payload.Attempt,
 	}
 
 	evt := ddd.NewEvent(rmspb.RMSNoDriverMatchedEvent, noDriversPayload)

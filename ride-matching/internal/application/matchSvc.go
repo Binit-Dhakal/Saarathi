@@ -72,10 +72,9 @@ func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO
 
 	if len(shortlistDrivers) == 0 {
 		payload := domain.NoDriverAvailable{
-			TripID:           requestDTO.TripID,
-			SagaID:           requestDTO.SagaID,
-			Attempt:          requestDTO.Attempt,
-			FirstAttemptUnix: requestDTO.FirstAttemptUnix,
+			TripID:  requestDTO.TripID,
+			SagaID:  requestDTO.SagaID,
+			Attempt: requestDTO.Attempt,
 		}
 		evt := ddd.NewEvent(domain.NoDriverAvailableEvent, payload)
 		return m.publisher.Publish(ctx, evt)
@@ -83,11 +82,10 @@ func (m *matchingService) ProcessMatchingRequest(ctx context.Context, requestDTO
 	}
 
 	replyPayload := &domain.MatchingCandidates{
-		SagaID:           requestDTO.SagaID,
-		TripID:           requestDTO.TripID,
-		DriverIds:        shortlistDrivers,
-		Attempt:          requestDTO.Attempt,
-		FirstAttemptUnix: requestDTO.FirstAttemptUnix,
+		SagaID:    requestDTO.SagaID,
+		TripID:    requestDTO.TripID,
+		DriverIds: shortlistDrivers,
+		Attempt:   requestDTO.Attempt,
 	}
 	matchEvt := ddd.NewEvent(domain.MatchingCandidatesEvent, replyPayload)
 

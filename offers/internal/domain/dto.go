@@ -15,11 +15,11 @@ type MatchedDriversDTO struct {
 	SagaID             string
 	CandidateDriversID []string
 	Attempt            int32
-	FirstAttemptUnix   int64
 }
 
-type OfferAcceptedReplyDTO struct {
+type OfferReplyDTO struct {
 	SagaID   string
 	TripID   string
 	DriverID string
+	Status   string
 }

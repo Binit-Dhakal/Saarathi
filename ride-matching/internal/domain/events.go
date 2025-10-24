@@ -10,15 +10,13 @@ type MatchingCandidates struct {
 	TripID    string
 	DriverIds []string
 
-	SearchRadius     int32
-	Attempt          int32
-	FirstAttemptUnix int64
+	SearchRadius int32
+	Attempt      int32
 }
 
 type NoDriverAvailable struct {
 	SagaID string
 	TripID string
 
-	Attempt          int32
-	FirstAttemptUnix int64
+	Attempt int32
 }

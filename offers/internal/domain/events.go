@@ -5,6 +5,7 @@ const (
 	TripOfferEvent               = "offers.drivers.request"
 	TripOfferAcceptedEvent       = "offers.request.accepted"
 	NoCandidateMatchedEvent      = "offers.rms.notFound"
+	RetryMatchingEvent           = "offers.rms.retry"
 )
 
 type RideMatchingInitialized struct {
@@ -33,6 +34,16 @@ type TripOfferAccepted struct {
 }
 
 type NoCandidateMatched struct {
+	SagaID           string
+	TripID           string
+	PickUp           [2]float64
+	DropOff          [2]float64
+	CarType          string
+	NextAttempt      int32
+	FirstAttemptUnix int64
+}
+
+type RetryMatching struct {
 	SagaID           string
 	TripID           string
 	PickUp           [2]float64
