@@ -2,7 +2,7 @@
 Saarathi is a distributed ride-sharing platform designed with scalability, event-driven communication, and clean architecture in mind.  
 It simulates the full lifecycle of a ride request — from fare estimation to trip completion — powered by modern backend technologies.
 
-
+https://github.com/user-attachments/assets/04f59ffe-ee24-4d19-bcef-8e98c1e38798
 ## 🧩 Architecture Overview
 
 Saarathi is composed of multiple independent **Go microservices**, communicating via **NATS JetStream** and following a **Hexagonal Architecture** pattern.
