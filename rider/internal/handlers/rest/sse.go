@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 )
@@ -40,6 +41,7 @@ func (t *TripUpdateHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
 		flusher: flusher,
 		w:       w,
 	}
+	fmt.Printf("User connected for tripID: %v\n", tripID)
 
 	go client.writePump()
 
@@ -61,6 +63,8 @@ func (t *TripUpdateHandler) NotifyRider(tripID string, payload any) {
 	t.mu.RLock()
 	client, ok := t.connections[tripID]
 	t.mu.RUnlock()
+
+	fmt.Println(tripID, payload)
 
 	if ok {
 		select {

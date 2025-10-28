@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/Binit-Dhakal/Saarathi/offers/internal/domain"
 	"github.com/Binit-Dhakal/Saarathi/pkg/ddd"
@@ -21,15 +20,17 @@ type offerSvc struct {
 	candidateRepo domain.TripCandidatesRepository
 	driverGateway domain.DriverAvailabilityRepo
 	tripRepo      domain.TripReadModelRepository
+	lockRepo      domain.DriverLockRepository
 	publisher     ddd.EventPublisher[ddd.Event]
 }
 
-func NewService(repo domain.TripCandidatesRepository, driverGate domain.DriverAvailabilityRepo, tripRepo domain.TripReadModelRepository, publisher ddd.EventPublisher[ddd.Event]) OfferService {
+func NewService(repo domain.TripCandidatesRepository, driverGate domain.DriverAvailabilityRepo, tripRepo domain.TripReadModelRepository, lockRepo domain.DriverLockRepository, publisher ddd.EventPublisher[ddd.Event]) OfferService {
 	return &offerSvc{
 		candidateRepo: repo,
 		driverGateway: driverGate,
 		tripRepo:      tripRepo,
 		publisher:     publisher,
+		lockRepo:      lockRepo,
 	}
 }
 
@@ -55,15 +56,6 @@ func (o *offerSvc) CreateTripReadModel(ctx context.Context, payload domain.TripR
 	evt := ddd.NewEvent(domain.RideMatchingInitializedEvent, startMatchPayload)
 
 	return o.publisher.Publish(ctx, evt)
-}
-
-func (o *offerSvc) hasExpired(ctx context.Context, tripID string) (bool, error) {
-	firstAttemptUnix, err := o.candidateRepo.GetFirstAttemptUnix(ctx, tripID)
-	if err != nil {
-		return false, err
-	}
-
-	return time.Since(time.Unix(firstAttemptUnix, 0)) > 5*time.Minute, nil
 }
 
 func (o *offerSvc) ProcessCandidatesList(ctx context.Context, candidates domain.MatchedDriversDTO) error {
@@ -112,7 +104,7 @@ func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.M
 			continue
 		}
 
-		locked, err := o.driverGateway.TryAcquireLock(ctx, driverID, tripID)
+		locked, err := o.lockRepo.TryAcquireLock(ctx, driverID, tripID)
 		if err != nil || locked {
 			index++
 			continue
@@ -133,7 +125,7 @@ func (o *offerSvc) tryOfferToCandidates(ctx context.Context, candidates domain.M
 
 		err = o.publisher.Publish(ctx, evt)
 		if err != nil {
-			o.driverGateway.ReleaseLock(ctx, driverID, tripID)
+			o.lockRepo.ReleaseLock(ctx, driverID, tripID)
 			continue
 		}
 
@@ -148,6 +140,11 @@ func (o *offerSvc) ProcessAcceptedOffer(ctx context.Context, replyDto domain.Off
 		DriverID: replyDto.DriverID,
 	}
 	acceptEvt := ddd.NewEvent(domain.TripOfferAcceptedEvent, evtPayload)
+
+	err := o.lockRepo.AcceptTrip(ctx, replyDto.DriverID, replyDto.TripID)
+	if err != nil {
+		return err
+	}
 
 	return o.publisher.Publish(ctx, acceptEvt)
 }
@@ -183,7 +180,7 @@ func (o *offerSvc) ProcessRejectedOffer(ctx context.Context, replyDto domain.Off
 		return err
 	}
 
-	err = o.driverGateway.ReleaseLock(ctx, replyDto.DriverID, replyDto.TripID)
+	err = o.lockRepo.ReleaseLock(ctx, replyDto.DriverID, replyDto.TripID)
 	if err != nil {
 		return err
 	}

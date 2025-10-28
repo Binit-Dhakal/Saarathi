@@ -108,8 +108,9 @@ func run() (err error) {
 	tripReadRepo := postgres.NewTripReadModelRepo(app.DB)
 	candidatesRepo := redis.NewTripCandidatesRepo(app.cacheClient)
 	driverRepo := redis.NewDriverAvailabilityRepo(app.cacheClient)
+	lockRepo := postgres.NewDriverLocksRepository(app.DB)
 
-	offerSvc := application.NewService(candidatesRepo, driverRepo, tripReadRepo, domainDispatcher)
+	offerSvc := application.NewService(candidatesRepo, driverRepo, tripReadRepo, lockRepo, domainDispatcher)
 
 	integrationHandlers := logging.LogEventHandlerAccess(
 		messaging.NewIntegrationEventHandlers(offerSvc),
