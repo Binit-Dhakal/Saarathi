@@ -115,6 +115,10 @@ func (s *Stream) Subscribe(ctx context.Context, topicName string, handler am.Raw
 		opts = append(opts, nats.AckNone())
 	}
 
+	if deliveryPolicy := subCfg.DeliverPolicy(); deliveryPolicy == am.NewDeliveryPolicy {
+		cfg.DeliverPolicy = nats.DeliverNewPolicy
+	}
+
 	_, err = s.js.AddConsumer(s.streamName, cfg)
 	if err != nil {
 		return err

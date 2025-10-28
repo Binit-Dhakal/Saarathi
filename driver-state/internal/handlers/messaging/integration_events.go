@@ -30,14 +30,14 @@ func RegisterIntegrationHandlers(subscriber am.EventSubscriber, handlers ddd.Eve
 		return handlers.HandleEvent(ctx, eventMsg)
 	})
 
-	err := subscriber.Subscribe(fmt.Sprintf(offerspb.OfferInstanceEventChannel, hostName), evtMsgHandler)
+	err := subscriber.Subscribe(fmt.Sprintf(offerspb.OfferInstanceEventChannel, hostName), evtMsgHandler, am.NewDeliveryPolicy)
 	if err != nil {
 		return err
 	}
 
 	err = subscriber.Subscribe(tripspb.TripAggregateChannel, evtMsgHandler, am.MessageFilter{
 		tripspb.TripAssignedEvent,
-	})
+	}, am.NewDeliveryPolicy)
 	if err != nil {
 		return err
 	}
