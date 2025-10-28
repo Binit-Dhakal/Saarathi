@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -43,6 +44,15 @@ func (t *TripUpdateHandler) TripUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("User connected for tripID: %v\n", tripID)
 
+	initialMsg := map[string]string{
+		"event": "CONNECTED",
+		"data":  "connection established",
+	}
+
+	data, _ := json.Marshal(initialMsg)
+	fmt.Fprintf(w, "data: %s\n\n", data)
+	flusher.Flush()
+
 	go client.writePump()
 
 	t.mu.Lock()
@@ -63,8 +73,6 @@ func (t *TripUpdateHandler) NotifyRider(tripID string, payload any) {
 	t.mu.RLock()
 	client, ok := t.connections[tripID]
 	t.mu.RUnlock()
-
-	fmt.Println(tripID, payload)
 
 	if ok {
 		select {

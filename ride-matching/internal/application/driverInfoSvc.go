@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/domain"
+	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/grpc"
 )
 
 type DriverInfoService interface {
@@ -14,15 +15,15 @@ type DriverInfoService interface {
 
 type driverInfoService struct {
 	redisMetaRepo    domain.RedisMetaRepository
-	pgMetaRepo       domain.PGMetaRepository
 	availabilityRepo domain.DriverAvailabilityRepository
+	usersClient      *grpc.GRPCClient
 }
 
-func NewDriverInfoService(redisMetaRepo domain.RedisMetaRepository, pgMetaRepo domain.PGMetaRepository, availabilityRepo domain.DriverAvailabilityRepository) DriverInfoService {
+func NewDriverInfoService(redisMetaRepo domain.RedisMetaRepository, availabilityRepo domain.DriverAvailabilityRepository, client *grpc.GRPCClient) DriverInfoService {
 	return &driverInfoService{
 		redisMetaRepo:    redisMetaRepo,
-		pgMetaRepo:       pgMetaRepo,
 		availabilityRepo: availabilityRepo,
+		usersClient:      client,
 	}
 }
 
@@ -39,14 +40,18 @@ func (d *driverInfoService) GetDriversMetadata(ctx context.Context, candidates [
 		}
 	}
 	if len(missing) > 0 {
-		go d.repopulateMetadataCache(missing)
+		// can be goroutine? need effective solution here
+		d.repopulateMetadataCache(missing)
+
+		second_metadata, _ := d.redisMetaRepo.BulkSearchDriverMeta(missing)
+		metadatas = append(metadatas, second_metadata...)
 	}
 
 	return metadatas, nil
 }
 
 func (d *driverInfoService) repopulateMetadataCache(missingCandidates []string) {
-	dbMeta, err := d.pgMetaRepo.BulkSearchMeta(missingCandidates)
+	dbMeta, err := d.usersClient.GetBulkDriversMetadata(context.Background(), missingCandidates)
 	if err != nil {
 		fmt.Println(err)
 		return

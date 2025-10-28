@@ -188,7 +188,7 @@ services:
     environment:
       NATS_URL: nats://nats:4222
       REDIS_CACHEURL: redis://redis:6379/0
-      PG_CONN: postgres://myuser:mypassword@users-db:5432/usersdb?sslmode=disable
+      USERSGRPCADDRESS: users-service:8085
     volumes:
       - ./:/app
       - /app/ride-matching/tmp

@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UsersService_GetRiderDetails_FullMethodName  = "/userspb.UsersService/GetRiderDetails"
-	UsersService_GetDriverDetails_FullMethodName = "/userspb.UsersService/GetDriverDetails"
+	UsersService_GetRiderDetails_FullMethodName        = "/userspb.UsersService/GetRiderDetails"
+	UsersService_GetDriverDetails_FullMethodName       = "/userspb.UsersService/GetDriverDetails"
+	UsersService_GetDriverMetadataBatch_FullMethodName = "/userspb.UsersService/GetDriverMetadataBatch"
 )
 
 // UsersServiceClient is the client API for UsersService service.
@@ -29,6 +30,7 @@ const (
 type UsersServiceClient interface {
 	GetRiderDetails(ctx context.Context, in *GetRiderDetailsRequest, opts ...grpc.CallOption) (*GetRiderDetailsResponse, error)
 	GetDriverDetails(ctx context.Context, in *GetDriverDetailsRequest, opts ...grpc.CallOption) (*GetDriverDetailsResponse, error)
+	GetDriverMetadataBatch(ctx context.Context, in *GetDriverMetadataBatchRequest, opts ...grpc.CallOption) (*GetDriverMetadataBatchResponse, error)
 }
 
 type usersServiceClient struct {
@@ -59,12 +61,23 @@ func (c *usersServiceClient) GetDriverDetails(ctx context.Context, in *GetDriver
 	return out, nil
 }
 
+func (c *usersServiceClient) GetDriverMetadataBatch(ctx context.Context, in *GetDriverMetadataBatchRequest, opts ...grpc.CallOption) (*GetDriverMetadataBatchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDriverMetadataBatchResponse)
+	err := c.cc.Invoke(ctx, UsersService_GetDriverMetadataBatch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UsersServiceServer is the server API for UsersService service.
 // All implementations must embed UnimplementedUsersServiceServer
 // for forward compatibility.
 type UsersServiceServer interface {
 	GetRiderDetails(context.Context, *GetRiderDetailsRequest) (*GetRiderDetailsResponse, error)
 	GetDriverDetails(context.Context, *GetDriverDetailsRequest) (*GetDriverDetailsResponse, error)
+	GetDriverMetadataBatch(context.Context, *GetDriverMetadataBatchRequest) (*GetDriverMetadataBatchResponse, error)
 	mustEmbedUnimplementedUsersServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedUsersServiceServer) GetRiderDetails(context.Context, *GetRide
 }
 func (UnimplementedUsersServiceServer) GetDriverDetails(context.Context, *GetDriverDetailsRequest) (*GetDriverDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDriverDetails not implemented")
+}
+func (UnimplementedUsersServiceServer) GetDriverMetadataBatch(context.Context, *GetDriverMetadataBatchRequest) (*GetDriverMetadataBatchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDriverMetadataBatch not implemented")
 }
 func (UnimplementedUsersServiceServer) mustEmbedUnimplementedUsersServiceServer() {}
 func (UnimplementedUsersServiceServer) testEmbeddedByValue()                      {}
@@ -138,6 +154,24 @@ func _UsersService_GetDriverDetails_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UsersService_GetDriverMetadataBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDriverMetadataBatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetDriverMetadataBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_GetDriverMetadataBatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetDriverMetadataBatch(ctx, req.(*GetDriverMetadataBatchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UsersService_ServiceDesc is the grpc.ServiceDesc for UsersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDriverDetails",
 			Handler:    _UsersService_GetDriverDetails_Handler,
+		},
+		{
+			MethodName: "GetDriverMetadataBatch",
+			Handler:    _UsersService_GetDriverMetadataBatch_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

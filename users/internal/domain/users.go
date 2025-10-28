@@ -47,3 +47,8 @@ type DriverDetail struct {
 	VehicleMake   string
 	VehicleModel  string
 }
+
+type DriverVehicleMetadata struct {
+	DriverID    string
+	VehicleType string
+}

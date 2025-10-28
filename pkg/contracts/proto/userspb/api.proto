@@ -7,6 +7,7 @@ option go_package = "github.com/Binit-Dhakal/Saarathi/pkg/proto/userspb";
 service UsersService {
   rpc GetRiderDetails(GetRiderDetailsRequest) returns (GetRiderDetailsResponse);
   rpc GetDriverDetails(GetDriverDetailsRequest) returns (GetDriverDetailsResponse);
+  rpc GetDriverMetadataBatch(GetDriverMetadataBatchRequest) returns (GetDriverMetadataBatchResponse);
 }
 
 message GetRiderDetailsRequest {
@@ -31,4 +32,17 @@ message GetDriverDetailsResponse {
   string vehicle_make = 5;
   string vehicle_model = 6;
   string vehicle_plate = 7;
+}
+
+message GetDriverMetadataBatchRequest {
+  repeated string ids = 1;
+}
+
+message DriverMetadata {
+  string id = 1;
+  string vehicle_model = 2;
+}
+
+message GetDriverMetadataBatchResponse {
+  repeated DriverMetadata drivers = 1;
 }

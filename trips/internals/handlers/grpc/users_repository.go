@@ -15,6 +15,7 @@ type GRPCClient struct {
 	addr   string
 	conn   *grpc.ClientConn
 	client userspb.UsersServiceClient
+	userspb.UnimplementedUsersServiceServer
 }
 
 func NewGRPCClient(addr string) (*GRPCClient, error) {

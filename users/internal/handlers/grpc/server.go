@@ -64,3 +64,22 @@ func (s server) GetDriverDetails(ctx context.Context, req *userspb.GetDriverDeta
 		VehiclePlate:  user.VehicleNumber,
 	}, nil
 }
+
+func (s server) GetDriverMetadataBatch(ctx context.Context, req *userspb.GetDriverMetadataBatchRequest) (*userspb.GetDriverMetadataBatchResponse, error) {
+	details, err := s.svc.GetBulkDriverMetadata(ctx, req.Ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve error: %w", err)
+	}
+
+	metas := []*userspb.DriverMetadata{}
+	for _, detail := range details {
+		metas = append(metas, &userspb.DriverMetadata{
+			Id:           detail.DriverID,
+			VehicleModel: detail.VehicleType,
+		})
+	}
+
+	return &userspb.GetDriverMetadataBatchResponse{
+		Drivers: metas,
+	}, nil
+}

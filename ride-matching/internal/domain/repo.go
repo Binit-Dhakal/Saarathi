@@ -12,10 +12,6 @@ type RedisMetaRepository interface {
 	BulkInsertDriverMeta(metas []DriverVehicleMetadata) error
 }
 
-type PGMetaRepository interface {
-	BulkSearchMeta(driverIDs []string) ([]DriverVehicleMetadata, error)
-}
-
 type DriverAvailabilityRepository interface {
 	IsDriverFree(driverID string) bool
 	DeleteUnavailableDrivers(expiredDrivers []string)

@@ -261,6 +261,146 @@ func (x *GetDriverDetailsResponse) GetVehiclePlate() string {
 	return ""
 }
 
+type GetDriverMetadataBatchRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDriverMetadataBatchRequest) Reset() {
+	*x = GetDriverMetadataBatchRequest{}
+	mi := &file_userspb_api_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDriverMetadataBatchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDriverMetadataBatchRequest) ProtoMessage() {}
+
+func (x *GetDriverMetadataBatchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_userspb_api_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDriverMetadataBatchRequest.ProtoReflect.Descriptor instead.
+func (*GetDriverMetadataBatchRequest) Descriptor() ([]byte, []int) {
+	return file_userspb_api_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetDriverMetadataBatchRequest) GetIds() []string {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+type DriverMetadata struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	VehicleModel  string                 `protobuf:"bytes,2,opt,name=vehicle_model,json=vehicleModel,proto3" json:"vehicle_model,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DriverMetadata) Reset() {
+	*x = DriverMetadata{}
+	mi := &file_userspb_api_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DriverMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DriverMetadata) ProtoMessage() {}
+
+func (x *DriverMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_userspb_api_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DriverMetadata.ProtoReflect.Descriptor instead.
+func (*DriverMetadata) Descriptor() ([]byte, []int) {
+	return file_userspb_api_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DriverMetadata) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DriverMetadata) GetVehicleModel() string {
+	if x != nil {
+		return x.VehicleModel
+	}
+	return ""
+}
+
+type GetDriverMetadataBatchResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Drivers       []*DriverMetadata      `protobuf:"bytes,1,rep,name=drivers,proto3" json:"drivers,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDriverMetadataBatchResponse) Reset() {
+	*x = GetDriverMetadataBatchResponse{}
+	mi := &file_userspb_api_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDriverMetadataBatchResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDriverMetadataBatchResponse) ProtoMessage() {}
+
+func (x *GetDriverMetadataBatchResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_userspb_api_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDriverMetadataBatchResponse.ProtoReflect.Descriptor instead.
+func (*GetDriverMetadataBatchResponse) Descriptor() ([]byte, []int) {
+	return file_userspb_api_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetDriverMetadataBatchResponse) GetDrivers() []*DriverMetadata {
+	if x != nil {
+		return x.Drivers
+	}
+	return nil
+}
+
 var File_userspb_api_proto protoreflect.FileDescriptor
 
 const file_userspb_api_proto_rawDesc = "" +
@@ -281,10 +421,18 @@ const file_userspb_api_proto_rawDesc = "" +
 	"\x0elicense_number\x18\x04 \x01(\tR\rlicenseNumber\x12!\n" +
 	"\fvehicle_make\x18\x05 \x01(\tR\vvehicleMake\x12#\n" +
 	"\rvehicle_model\x18\x06 \x01(\tR\fvehicleModel\x12#\n" +
-	"\rvehicle_plate\x18\a \x01(\tR\fvehiclePlate2\xbd\x01\n" +
+	"\rvehicle_plate\x18\a \x01(\tR\fvehiclePlate\"1\n" +
+	"\x1dGetDriverMetadataBatchRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"E\n" +
+	"\x0eDriverMetadata\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
+	"\rvehicle_model\x18\x02 \x01(\tR\fvehicleModel\"S\n" +
+	"\x1eGetDriverMetadataBatchResponse\x121\n" +
+	"\adrivers\x18\x01 \x03(\v2\x17.userspb.DriverMetadataR\adrivers2\xa8\x02\n" +
 	"\fUsersService\x12T\n" +
 	"\x0fGetRiderDetails\x12\x1f.userspb.GetRiderDetailsRequest\x1a .userspb.GetRiderDetailsResponse\x12W\n" +
-	"\x10GetDriverDetails\x12 .userspb.GetDriverDetailsRequest\x1a!.userspb.GetDriverDetailsResponseB4Z2github.com/Binit-Dhakal/Saarathi/pkg/proto/userspbb\x06proto3"
+	"\x10GetDriverDetails\x12 .userspb.GetDriverDetailsRequest\x1a!.userspb.GetDriverDetailsResponse\x12i\n" +
+	"\x16GetDriverMetadataBatch\x12&.userspb.GetDriverMetadataBatchRequest\x1a'.userspb.GetDriverMetadataBatchResponseB4Z2github.com/Binit-Dhakal/Saarathi/pkg/proto/userspbb\x06proto3"
 
 var (
 	file_userspb_api_proto_rawDescOnce sync.Once
@@ -298,23 +446,29 @@ func file_userspb_api_proto_rawDescGZIP() []byte {
 	return file_userspb_api_proto_rawDescData
 }
 
-var file_userspb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_userspb_api_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_userspb_api_proto_goTypes = []any{
-	(*GetRiderDetailsRequest)(nil),   // 0: userspb.GetRiderDetailsRequest
-	(*GetRiderDetailsResponse)(nil),  // 1: userspb.GetRiderDetailsResponse
-	(*GetDriverDetailsRequest)(nil),  // 2: userspb.GetDriverDetailsRequest
-	(*GetDriverDetailsResponse)(nil), // 3: userspb.GetDriverDetailsResponse
+	(*GetRiderDetailsRequest)(nil),         // 0: userspb.GetRiderDetailsRequest
+	(*GetRiderDetailsResponse)(nil),        // 1: userspb.GetRiderDetailsResponse
+	(*GetDriverDetailsRequest)(nil),        // 2: userspb.GetDriverDetailsRequest
+	(*GetDriverDetailsResponse)(nil),       // 3: userspb.GetDriverDetailsResponse
+	(*GetDriverMetadataBatchRequest)(nil),  // 4: userspb.GetDriverMetadataBatchRequest
+	(*DriverMetadata)(nil),                 // 5: userspb.DriverMetadata
+	(*GetDriverMetadataBatchResponse)(nil), // 6: userspb.GetDriverMetadataBatchResponse
 }
 var file_userspb_api_proto_depIdxs = []int32{
-	0, // 0: userspb.UsersService.GetRiderDetails:input_type -> userspb.GetRiderDetailsRequest
-	2, // 1: userspb.UsersService.GetDriverDetails:input_type -> userspb.GetDriverDetailsRequest
-	1, // 2: userspb.UsersService.GetRiderDetails:output_type -> userspb.GetRiderDetailsResponse
-	3, // 3: userspb.UsersService.GetDriverDetails:output_type -> userspb.GetDriverDetailsResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	5, // 0: userspb.GetDriverMetadataBatchResponse.drivers:type_name -> userspb.DriverMetadata
+	0, // 1: userspb.UsersService.GetRiderDetails:input_type -> userspb.GetRiderDetailsRequest
+	2, // 2: userspb.UsersService.GetDriverDetails:input_type -> userspb.GetDriverDetailsRequest
+	4, // 3: userspb.UsersService.GetDriverMetadataBatch:input_type -> userspb.GetDriverMetadataBatchRequest
+	1, // 4: userspb.UsersService.GetRiderDetails:output_type -> userspb.GetRiderDetailsResponse
+	3, // 5: userspb.UsersService.GetDriverDetails:output_type -> userspb.GetDriverDetailsResponse
+	6, // 6: userspb.UsersService.GetDriverMetadataBatch:output_type -> userspb.GetDriverMetadataBatchResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_userspb_api_proto_init() }
@@ -328,7 +482,7 @@ func file_userspb_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_userspb_api_proto_rawDesc), len(file_userspb_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

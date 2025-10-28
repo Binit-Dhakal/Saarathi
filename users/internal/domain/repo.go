@@ -15,6 +15,8 @@ type UserRepo interface {
 
 	GetRiderByID(ctx context.Context, id string) (*UserDetail, error)
 	GetDriverByID(ctx context.Context, id string) (*DriverDetail, error)
+
+	BulkSearchMeta(ctx context.Context, driverIDs []string) ([]DriverVehicleMetadata, error)
 }
 
 type TokenRepo interface {

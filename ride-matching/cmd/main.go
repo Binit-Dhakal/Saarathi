@@ -16,10 +16,10 @@ import (
 	"github.com/Binit-Dhakal/Saarathi/pkg/registry"
 	"github.com/Binit-Dhakal/Saarathi/pkg/setup"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/application"
+	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/grpc"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/handlers/messaging"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/infrastructure"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/logging"
-	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/postgres"
 	"github.com/Binit-Dhakal/Saarathi/ride-matching/internal/repository/redis"
 	"github.com/nats-io/nats.go"
 )
@@ -33,11 +33,6 @@ func main() {
 }
 
 func infraSetup(app *app) (err error) {
-	app.usersDB, err = setup.SetupPostgresDB(app.cfg.PG.Conn)
-	if err != nil {
-		return err
-	}
-
 	app.cacheClient, err = setup.SetupRedis(app.cfg.Redis.CacheURL)
 	if err != nil {
 		return err
@@ -76,7 +71,6 @@ func run() (err error) {
 	if err != nil {
 		return
 	}
-	defer app.usersDB.Close()
 	defer app.cacheClient.Close()
 	defer app.nc.Close()
 
@@ -99,10 +93,15 @@ func run() (err error) {
 
 	rideRepo := redis.NewRideMatchingRepository(app.cacheClient)
 	redisMetaRepo := redis.NewCacheDriverMetaRepo(app.cacheClient)
-	pgMetaRepo := postgres.NewPGMetaRepo(app.usersDB)
 	availabilityRepo := redis.NewDriverAvailableRepo(app.cacheClient)
 
-	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, pgMetaRepo, availabilityRepo)
+	usersClient, err := grpc.NewGRPCClient(app.cfg.UsersGrpcAddress)
+	if err != nil {
+		return fmt.Errorf("failed to create users client: %w", err)
+	}
+	defer usersClient.Close()
+
+	driverInfoSvc := application.NewDriverInfoService(redisMetaRepo, availabilityRepo, usersClient)
 
 	driverInfoAdapter := infrastructure.NewDriverInfoAdapter(driverInfoSvc)
 

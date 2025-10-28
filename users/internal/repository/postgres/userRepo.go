@@ -212,3 +212,23 @@ func (u *UserRepo) GetDriverByID(ctx context.Context, id string) (*domain.Driver
 
 	return &user, nil
 }
+
+func (u *UserRepo) BulkSearchMeta(ctx context.Context, driverIDs []string) ([]domain.DriverVehicleMetadata, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	query := `
+		select u.id, dp.vehicle_model 
+		from users u
+		join driver_profiles dp ON dp.user_id = u.id
+		WHERE u.id = ANY($1)
+	`
+
+	rows, err := u.pool.Query(ctx, query, driverIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return pgx.CollectRows(rows, pgx.RowToStructByPos[domain.DriverVehicleMetadata])
+}

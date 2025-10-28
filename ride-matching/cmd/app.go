@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -9,7 +8,6 @@ import (
 
 type app struct {
 	cfg         MatchAppConfig
-	usersDB     *pgxpool.Pool
 	cacheClient *redis.Client
 	nc          *nats.Conn
 	js          nats.JetStreamContext

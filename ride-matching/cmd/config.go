@@ -9,10 +9,6 @@ import (
 )
 
 type (
-	PGUsersConfig struct {
-		Conn string `required:"true"`
-	}
-
 	NatsConfig struct {
 		URL    string `required:"true"`
 		Stream string `default:"saarathi"`
@@ -23,12 +19,12 @@ type (
 	}
 
 	MatchAppConfig struct {
-		Environment     string
-		LogLevel        string `envconfig:"LOG_LEVEL" default:"DEBUG"`
-		PG              PGUsersConfig
-		Nats            NatsConfig
-		Redis           CacheConfig
-		ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
+		Environment      string
+		LogLevel         string `envconfig:"LOG_LEVEL" default:"DEBUG"`
+		Nats             NatsConfig
+		Redis            CacheConfig
+		UsersGrpcAddress string
+		ShutdownTimeout  time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
 	}
 )
 

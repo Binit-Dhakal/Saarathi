@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -34,6 +35,17 @@ func main() {
 
 	riderServiceURL, _ := url.Parse("http://rider-service:8010")
 	riderServiceProxy := httputil.NewSingleHostReverseProxy(riderServiceURL)
+
+	riderServiceProxy.FlushInterval = -1
+	riderServiceProxy.Transport = &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           (&net.Dialer{Timeout: 30 * time.Second}).DialContext,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 0,
+		ExpectContinueTimeout: 1 * time.Second,
+		DisableKeepAlives:     false,
+		DisableCompression:    true,
+	}
 
 	driverStateURL, _ := url.Parse("http://driver-state-service:8050")
 	driverStateProxy := httputil.NewSingleHostReverseProxy(driverStateURL)

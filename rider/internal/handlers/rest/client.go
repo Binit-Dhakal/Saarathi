@@ -18,7 +18,6 @@ type Client struct {
 }
 
 func (c *Client) writePump() {
-
 	for {
 		select {
 		case message := <-c.send:
@@ -35,5 +34,4 @@ func (c *Client) writePump() {
 			return
 		}
 	}
-
 }
